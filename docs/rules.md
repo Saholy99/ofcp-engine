@@ -332,6 +332,13 @@ Royalties are added on top of row scoring and sweep scoring.
 
 ## 9. Foul Handling and Terminal Scoring
 
+Terminal scoring in this engine is **zero-sum** between the two players.
+
+- if one player's final score is **+X**
+- the other player's final score is **-X**
+
+This applies to normal row scoring, sweep bonuses, royalties, and one-player-foul outcomes.
+
 ## 9.1 If both players are legal
 
 If both players have legal hands:
@@ -369,9 +376,9 @@ If exactly one player fouls:
 So the terminal result is:
 
 - legal player: **+6 + legal player's royalties**
-- fouling player: **-6**
+- fouling player: **-(6 + legal player's royalties)**
 
-This rule is equivalent to treating the non-fouling player as having completed a standard sweep, and royalties **do count** for the legal player even when the opponent fouls.
+This rule is equivalent to treating the non-fouling player as having completed a standard sweep, and royalties **do count** for the legal player even when the opponent fouls. Because the game is scored zero-sum, the fouling player's final score is the exact negative of the legal player's final score.
 
 ## 9.3 If both players foul
 

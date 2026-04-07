@@ -146,7 +146,7 @@ tests/
   - both-player Fantasyland continuation hand
 
 ### Assumptions and Ambiguities
-- Adopt zero-sum terminal scoring as the implementation target. For one-player-foul hands, the legal player’s net result is `+6 + their royalties`, and the fouling player gets the exact negative. This resolves the tension between Sections 9.1 and 9.2 in [docs/rules.md](/Users/sahilparikh/Desktop/ofcp-engine/docs/rules.md).
+- Resolved in [docs/rules.md](/Users/sahilparikh/Desktop/ofcp-engine/docs/rules.md): terminal scoring is zero-sum. For one-player-foul hands, the legal player’s net result is `+6 + their royalties`, and the fouling player gets the exact negative.
 - Fantasyland continuation sequencing will reuse standard hand turn order. The button remains unchanged, the player to the left of the button acts first, and a Fantasyland set action occurs on that player’s turn while remaining concealed until showdown.
 - Because [docs/scoring_examples.md](/Users/sahilparikh/Desktop/ofcp-engine/docs/scoring_examples.md) is empty, all implementation details should be validated only against [docs/rules.md](/Users/sahilparikh/Desktop/ofcp-engine/docs/rules.md) and tests created from it.
 - For cross-row foul comparison when categories match and the shared ranking prefix is equal, treat the 3-card top row as exhausted once it runs out of kickers. The 5-card row remains stronger if it still has remaining lexicographic kicker detail. This should be documented in tests because the rules imply it but do not give a full equal-prefix example.
