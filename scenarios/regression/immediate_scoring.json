@@ -1,0 +1,113 @@
+{
+  "version": "1",
+  "state": {
+    "hand_number": 1,
+    "button": "player_1",
+    "acting_player": "player_0",
+    "phase": "draw",
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "deck": {
+      "undealt_cards": [
+        "3c",
+        "7c",
+        "8c",
+        "Ac",
+        "4d",
+        "9d",
+        "Td",
+        "Qd",
+        "2h",
+        "4h",
+        "Th",
+        "Qh",
+        "3s",
+        "5s",
+        "6s",
+        "Js",
+        "Qs",
+        "As"
+      ]
+    },
+    "players": [
+      {
+        "player_id": "player_0",
+        "board": {
+          "top": [
+            "Jh",
+            "Jd"
+          ],
+          "middle": [
+            "Kh",
+            "Kd",
+            "Ks",
+            "4c",
+            "3d"
+          ],
+          "bottom": [
+            "9c",
+            "Tc",
+            "Jc",
+            "Qc"
+          ]
+        },
+        "hidden_discards": [
+          "6h",
+          "7h",
+          "8h"
+        ],
+        "current_private_draw": [
+          "2s",
+          "Kc",
+          "5h"
+        ],
+        "fantasyland_active": false,
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "fantasyland_set_done": false
+      },
+      {
+        "player_id": "player_1",
+        "board": {
+          "top": [
+            "Ts",
+            "8d",
+            "4s"
+          ],
+          "middle": [
+            "Ah",
+            "Ad",
+            "7s",
+            "6c",
+            "3h"
+          ],
+          "bottom": [
+            "2c",
+            "2d",
+            "5c",
+            "5d",
+            "9h"
+          ]
+        },
+        "hidden_discards": [
+          "6d",
+          "7d",
+          "8s",
+          "9s"
+        ],
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "initial_placement_done": true,
+        "normal_draws_taken": 4,
+        "fantasyland_set_done": false
+      }
+    ]
+  }
+}

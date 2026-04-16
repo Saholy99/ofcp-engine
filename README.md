@@ -1,0 +1,34 @@
+# OFC Engine
+
+This repo contains a deterministic Python engine for heads-up Pineapple Open-Face Chinese Poker with Fantasyland. The rules live in `docs/rules.md`; engine code stays in `src/ofc/` and is kept separate from analysis and solver code.
+
+## Layout
+
+- `src/ofc/`: core game engine, including cards, boards, actions, transitions, scoring, and Fantasyland rules.
+- `src/ofc_analysis/`: scenario loading, player observations, deterministic rendering, and the CLI.
+- `src/ofc_solver/`: simple Monte Carlo move-ranker for the acting player's current move.
+- `scenarios/regression/`: small canned exact-state JSON scenarios for CLI and solver regression tests.
+- `tests/`: unit, integration, analysis, and solver tests.
+
+## Run Tests
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+## Inspect A Scenario
+
+```bash
+python3 -m ofc_analysis.cli show-state scenarios/regression/immediate_scoring.json
+python3 -m ofc_analysis.cli list-actions scenarios/regression/immediate_scoring.json
+```
+
+## Run The Simple Solver
+
+The current solver is a baseline Monte Carlo ranker. It estimates each legal move by applying that move, simulating many random futures, and ranking moves by average zero-sum score.
+
+```bash
+python3 -m ofc_analysis.cli solve-move scenarios/regression/immediate_scoring.json --observer player_0 --rollouts 100 --seed 123
+```
+
+More rollouts usually produce less noisy estimates but take longer. The seed makes results reproducible.

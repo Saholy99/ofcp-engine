@@ -90,6 +90,32 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertEqual("", stdout)
         self.assertIn("Unsupported phase for list-actions", stderr)
 
+    def test_solve_move_json_smoke(self) -> None:
+        scenario_path = Path("scenarios/regression/immediate_scoring.json")
+
+        exit_code, stdout, stderr = self._run_cli(
+            ["solve-move", str(scenario_path), "--observer", "player_0", "--rollouts", "2", "--seed", "101", "--json"]
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertEqual("player_0", payload["observer"])
+        self.assertEqual("draw", payload["phase"])
+        self.assertEqual(6, payload["action_count"])
+        self.assertEqual(1, payload["ranked_actions"][0]["action_index"])
+
+    def test_solve_move_rejects_non_acting_observer(self) -> None:
+        scenario_path = Path("scenarios/regression/immediate_scoring.json")
+
+        exit_code, stdout, stderr = self._run_cli(
+            ["solve-move", str(scenario_path), "--observer", "player_1", "--rollouts", "1", "--seed", "101"]
+        )
+
+        self.assertEqual(2, exit_code)
+        self.assertEqual("", stdout)
+        self.assertIn("observer to be the acting player", stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

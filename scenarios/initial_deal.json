@@ -1,0 +1,105 @@
+{
+  "version": "1",
+  "state": {
+    "hand_number": 1,
+    "button": "player_0",
+    "acting_player": "player_1",
+    "phase": "initial_deal",
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "deck": {
+      "undealt_cards": [
+        "Ks",
+        "8c",
+        "Jh",
+        "Jd",
+        "Qh",
+        "Ad",
+        "4s",
+        "5s",
+        "Qc",
+        "3s",
+        "6h",
+        "8s",
+        "6c",
+        "7d",
+        "9h",
+        "5d",
+        "Td",
+        "Qs",
+        "Tc",
+        "Jc",
+        "As",
+        "7c",
+        "5c",
+        "2d",
+        "3h",
+        "4h",
+        "2c",
+        "4d",
+        "6d",
+        "3c",
+        "4c",
+        "9c",
+        "Kc",
+        "3d",
+        "8d",
+        "Qd",
+        "2h",
+        "5h",
+        "7h",
+        "8h",
+        "Th",
+        "2s",
+        "6s",
+        "7s",
+        "9s",
+        "Ts",
+        "Js"
+      ]
+    },
+    "players": [
+      {
+        "player_id": "player_0",
+        "board": {
+          "top": [],
+          "middle": [],
+          "bottom": []
+        },
+        "hidden_discards": [],
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "initial_placement_done": false,
+        "normal_draws_taken": 0,
+        "fantasyland_set_done": false
+      },
+      {
+        "player_id": "player_1",
+        "board": {
+          "top": [],
+          "middle": [],
+          "bottom": []
+        },
+        "hidden_discards": [],
+        "current_private_draw": [
+          "Ac",
+          "9d",
+          "Kh",
+          "Kd",
+          "Ah"
+        ],
+        "fantasyland_active": false,
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "initial_placement_done": false,
+        "normal_draws_taken": 0,
+        "fantasyland_set_done": false
+      }
+    ]
+  }
+}

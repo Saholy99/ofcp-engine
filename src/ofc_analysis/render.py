@@ -11,6 +11,7 @@ from ofc.state import GameState
 from ofc_analysis.action_codec import EncodedAction
 from ofc_analysis.models import RenderedOutput
 from ofc_analysis.observation import PlayerObservation
+from ofc_solver.models import MoveAnalysis
 
 
 def render_state(state: GameState, *, as_json: bool = False) -> RenderedOutput:
@@ -41,6 +42,15 @@ def render_actions(actions: Sequence[EncodedAction], *, as_json: bool = False) -
     if as_json:
         return RenderedOutput(payload=payload)
     return RenderedOutput(text=_actions_text(payload), payload=payload)
+
+
+def render_move_analysis(analysis: MoveAnalysis, *, as_json: bool = False) -> RenderedOutput:
+    """Render Monte Carlo move-ranking output for CLI or tests."""
+
+    payload = _move_analysis_payload(analysis)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_move_analysis_text(payload), payload=payload)
 
 
 def _cards_payload(cards: tuple[Card, ...]) -> list[str]:
@@ -118,6 +128,29 @@ def _observation_payload(observation: PlayerObservation) -> dict[str, Any]:
         "opponent_fantasyland_active": observation.opponent_fantasyland_active,
         "opponent_hidden_discard_count": observation.opponent_hidden_discard_count,
         "unseen_card_count": observation.unseen_card_count,
+    }
+
+
+def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
+    return {
+        "observer": analysis.observer.value,
+        "phase": analysis.phase.value,
+        "rollouts_per_action": analysis.rollouts_per_action,
+        "rng_seed": analysis.rng_seed,
+        "action_count": len(analysis.ranked_actions),
+        "ranked_actions": [
+            {
+                "rank": rank,
+                "action_index": estimate.action_index,
+                "action": estimate.action.as_dict(),
+                "mean_value": estimate.mean_value,
+                "stddev": estimate.stddev,
+                "sample_count": estimate.sample_count,
+                "min_value": estimate.min_value,
+                "max_value": estimate.max_value,
+            }
+            for rank, estimate in enumerate(analysis.ranked_actions, start=1)
+        ],
     }
 
 
@@ -205,4 +238,29 @@ def _actions_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["render_actions", "render_observation", "render_state"]
+def _move_analysis_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Move Analysis",
+        f"observer: {payload['observer']}",
+        f"phase: {payload['phase']}",
+        f"rollouts_per_action: {payload['rollouts_per_action']}",
+        f"rng_seed: {json.dumps(payload['rng_seed'])}",
+        f"action_count: {payload['action_count']}",
+    ]
+    for estimate in payload["ranked_actions"]:
+        action = estimate["action"]
+        placements = ", ".join(
+            f"{placement['row']}:{placement['card']}" for placement in action["payload"]["placements"]
+        )
+        suffix = f" discard={action['payload']['discard']}" if "discard" in action["payload"] else ""
+        lines.append(
+            f"[{estimate['rank']}] action_index={estimate['action_index']} "
+            f"mean={estimate['mean_value']:.6f} stddev={estimate['stddev']:.6f} "
+            f"samples={estimate['sample_count']} min={estimate['min_value']:.6f} "
+            f"max={estimate['max_value']:.6f} {action['action_type']} "
+            f"{action['payload']['player_id']} placements=[{placements}]{suffix}"
+        )
+    return "\n".join(lines)
+
+
+__all__ = ["render_actions", "render_move_analysis", "render_observation", "render_state"]

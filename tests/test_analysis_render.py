@@ -8,7 +8,8 @@ from ofc.state import PlayerId
 from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_actions
 from ofc_analysis.observation import project_observation
-from ofc_analysis.render import render_actions, render_observation, render_state
+from ofc_analysis.render import render_actions, render_move_analysis, render_observation, render_state
+from ofc_solver.monte_carlo import rank_actions_from_state
 from tests.helpers import stacked_deck_tokens
 
 
@@ -57,6 +58,19 @@ class AnalysisRenderTest(unittest.TestCase):
         self.assertIn("[0] place_initial_five player_1", text_output.text)
         self.assertEqual(2, json_output.payload["action_count"])
         self.assertEqual("player_1", json_output.payload["actions"][0]["payload"]["player_id"])
+
+    def test_render_move_analysis_is_stable(self) -> None:
+        state = self._initial_state()
+        analysis = rank_actions_from_state(state, observer=PlayerId.PLAYER_1, rollouts_per_action=1, rng_seed=2)
+
+        text_output = render_move_analysis(analysis)
+        json_output = render_move_analysis(analysis, as_json=True)
+
+        self.assertTrue(text_output.text.startswith("Move Analysis"))
+        self.assertIn("observer: player_1", text_output.text)
+        self.assertEqual("player_1", json_output.payload["observer"])
+        self.assertEqual("initial_deal", json_output.payload["phase"])
+        self.assertEqual(232, json_output.payload["action_count"])
 
 
 if __name__ == "__main__":
