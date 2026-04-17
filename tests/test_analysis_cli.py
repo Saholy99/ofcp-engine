@@ -116,6 +116,18 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertEqual("", stdout)
         self.assertIn("observer to be the acting player", stderr)
 
+    def test_play_hand_command_is_registered(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with self.assertRaises(SystemExit) as caught:
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                main(["play-hand", "--help"])
+
+        self.assertEqual(0, caught.exception.code)
+        self.assertIn("play-hand", stdout.getvalue())
+        self.assertIn("--hero", stdout.getvalue())
+        self.assertIn("--rollouts", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

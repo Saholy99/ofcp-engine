@@ -11,6 +11,7 @@ from ofc.state import HandPhase, PlayerId
 from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_actions
 from ofc_analysis.observation import project_observation
+from ofc_analysis.play import run_play_hand
 from ofc_analysis.render import render_actions, render_move_analysis, render_observation, render_state
 from ofc_analysis.scenario import load_scenario
 from ofc_solver.monte_carlo import rank_actions_from_observation
@@ -64,6 +65,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             output = render_move_analysis(analysis, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
             return 0
+
+        if args.command == "play-hand":
+            hero_player = _resolve_play_hero(args)
+            button = _resolve_play_button(args)
+            fantasyland_flags = _resolve_play_fantasyland_flags(args)
+            return run_play_hand(
+                hero_player=hero_player,
+                button=button,
+                fantasyland_flags=fantasyland_flags,
+                rollouts_per_action=args.rollouts,
+                rng_seed=args.seed,
+            )
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
         return 2
@@ -92,6 +105,25 @@ def _build_parser() -> argparse.ArgumentParser:
     solve_move.add_argument("--seed", required=True)
     solve_move.add_argument("--json", action="store_true", dest="as_json")
 
+    play_hand = subparsers.add_parser(
+        "play-hand",
+        description=(
+            "Play one hand from a single hero seat. Hero turns show solver suggestions; "
+            "opponent turns ask only for visible placements."
+        ),
+    )
+    play_hand.add_argument("--hero", choices=[player.value for player in PlayerId], help="Seat controlled by you.")
+    play_hand.add_argument("--button", choices=[player.value for player in PlayerId], help="Button for this hand.")
+    play_hand.add_argument(
+        "--fantasyland",
+        choices=[player.value for player in PlayerId],
+        action="append",
+        help="Mark a player as already in Fantasyland. Repeat for both players.",
+    )
+    play_hand.add_argument("--no-fantasyland", action="store_true", help="Start with neither player in Fantasyland.")
+    play_hand.add_argument("--rollouts", type=int, default=1, help="Monte Carlo rollouts per legal hero action.")
+    play_hand.add_argument("--seed", default="play-hand", help="Seed for reproducible hero solver suggestions.")
+
     return parser
 
 
@@ -100,6 +132,50 @@ def _emit(output, *, as_json: bool) -> None:
         print(json.dumps(output.payload or {}, indent=2, sort_keys=True))
     else:
         print(output.text or "")
+
+
+def _resolve_play_button(args) -> PlayerId:
+    if args.button is not None:
+        return PlayerId(args.button)
+    while True:
+        raw_value = input("Button player [player_1]: ").strip() or "player_1"
+        try:
+            return PlayerId(raw_value)
+        except ValueError:
+            print("Button must be player_0 or player_1", file=sys.stderr)
+
+
+def _resolve_play_hero(args) -> PlayerId:
+    if args.hero is not None:
+        return PlayerId(args.hero)
+    while True:
+        raw_value = input("Hero player [player_0]: ").strip() or "player_0"
+        try:
+            return PlayerId(raw_value)
+        except ValueError:
+            print("Hero must be player_0 or player_1", file=sys.stderr)
+
+
+def _resolve_play_fantasyland_flags(args) -> tuple[bool, bool]:
+    if args.no_fantasyland:
+        return (False, False)
+    if args.fantasyland is not None:
+        selected = {PlayerId(value) for value in args.fantasyland}
+        return (PlayerId.PLAYER_0 in selected, PlayerId.PLAYER_1 in selected)
+    return (
+        _prompt_bool("Is player_0 already in Fantasyland? [y/N]: "),
+        _prompt_bool("Is player_1 already in Fantasyland? [y/N]: "),
+    )
+
+
+def _prompt_bool(prompt: str) -> bool:
+    while True:
+        value = input(prompt).strip().lower()
+        if value in {"", "n", "no"}:
+            return False
+        if value in {"y", "yes"}:
+            return True
+        print("Please answer y or n", file=sys.stderr)
 
 
 __all__ = ["main"]

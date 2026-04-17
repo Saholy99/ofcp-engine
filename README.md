@@ -32,3 +32,18 @@ python3 -m ofc_analysis.cli solve-move scenarios/regression/immediate_scoring.js
 ```
 
 More rollouts usually produce less noisy estimates but take longer. The seed makes results reproducible.
+
+## Play One Hand Interactively
+
+Use `play-hand` to play one hand from a single hero seat. Hero turns show the top 3 solver suggestions;
+opponent turns only ask for visible placements.
+
+```bash
+python3 -m ofc_analysis.cli play-hand --hero player_0 --button player_1 --no-fantasyland --rollouts 5 --seed manual
+```
+
+For your own turns, enter all dealt cards and use `top`, `middle`, `bottom`, or `discard` in card order.
+To choose a solver suggestion, type its displayed rank, such as `1` for the top suggestion.
+To choose a specific legal action after typing `list`, use `action N`.
+For opponent draw turns, enter only the 2 visible placed cards and then their rows;
+hidden discards are tracked internally as unknown cards.
