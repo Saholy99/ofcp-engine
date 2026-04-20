@@ -12,8 +12,9 @@ from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_actions
 from ofc_analysis.observation import project_observation
 from ofc_analysis.play import run_play_hand
-from ofc_analysis.render import render_actions, render_move_analysis, render_observation, render_state
+from ofc_analysis.render import render_actions, render_benchmark_run, render_move_analysis, render_observation, render_state
 from ofc_analysis.scenario import load_scenario
+from ofc_solver.benchmark import load_benchmark_manifest, run_benchmark_manifest
 from ofc_solver.monte_carlo import rank_actions_from_observation
 
 
@@ -66,6 +67,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             _emit(output, as_json=args.as_json)
             return 0
 
+        if args.command == "benchmark-solver":
+            manifest = load_benchmark_manifest(args.manifest)
+            run = run_benchmark_manifest(manifest, policy_name=args.policy)
+            output = render_benchmark_run(run, as_json=args.as_json)
+            _emit(output, as_json=args.as_json)
+            return 0
+
         if args.command == "play-hand":
             hero_player = _resolve_play_hero(args)
             button = _resolve_play_button(args)
@@ -104,6 +112,11 @@ def _build_parser() -> argparse.ArgumentParser:
     solve_move.add_argument("--rollouts", type=int, required=True)
     solve_move.add_argument("--seed", required=True)
     solve_move.add_argument("--json", action="store_true", dest="as_json")
+
+    benchmark_solver = subparsers.add_parser("benchmark-solver")
+    benchmark_solver.add_argument("manifest")
+    benchmark_solver.add_argument("--policy", choices=["random"], default="random")
+    benchmark_solver.add_argument("--json", action="store_true", dest="as_json")
 
     play_hand = subparsers.add_parser(
         "play-hand",

@@ -1,3 +1,6 @@
 .DS_Store
 __pycache__/
 *.py[cod]
+SOLVER_IMPROVEMENT_ROADMAP.md
+scenarios/benchmarks/generated/
+scenarios/benchmarks/solver_expansive.json
