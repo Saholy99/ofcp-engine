@@ -1,0 +1,43 @@
+{
+  "version": "1",
+  "cases": [
+    {
+      "name": "initial-deal-baseline",
+      "scenario": "../regression/initial_deal.json",
+      "observer": "player_1",
+      "rollouts": 1,
+      "seed": 401,
+      "tags": [
+        "initial_deal",
+        "unlabeled"
+      ]
+    },
+    {
+      "name": "late-draw-immediate-scoring",
+      "scenario": "../regression/immediate_scoring.json",
+      "observer": "player_0",
+      "rollouts": 3,
+      "seed": 302,
+      "expected_top_action_indices": [
+        1,
+        4
+      ],
+      "tags": [
+        "late_draw",
+        "oracle"
+      ]
+    },
+    {
+      "name": "fantasyland-continuation-impact",
+      "scenario": "../regression/fantasyland_continuation_ev.json",
+      "observer": "player_0",
+      "rollouts": 2,
+      "seed": 202,
+      "tags": [
+        "late_draw",
+        "fantasyland",
+        "unlabeled"
+      ]
+    }
+  ]
+}

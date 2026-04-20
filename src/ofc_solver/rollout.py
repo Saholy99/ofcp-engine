@@ -8,7 +8,7 @@ import random
 from ofc.actions import GameAction
 from ofc.engine import showdown
 from ofc.scoring import TerminalResult
-from ofc.state import GameState, HandPhase, PlayerId
+from ofc.state import GameState, HandPhase, PlayerId, player_index
 from ofc.transitions import advance_after_showdown, apply_action
 from ofc_solver.models import SUPPORTED_ROOT_PHASES
 from ofc_solver.rollout_policy import RolloutPolicy
@@ -24,6 +24,11 @@ class RolloutResult:
     current_hand_value: float
     continuation_value: float
     continuation_hands_simulated: int
+    root_player_fouled: bool = False
+    opponent_fouled: bool = False
+    both_players_fouled: bool = False
+    root_player_next_fantasyland: bool = False
+    opponent_next_fantasyland: bool = False
 
 
 def run_rollout(
@@ -45,6 +50,7 @@ def run_rollout(
     state_after_root = apply_action(state, root_action)
     terminal_state, current_result = _simulate_to_terminal(state_after_root, rng=rng, policy=policy)
     current_value = _value_for_player(current_result, root_player)
+    root_breakdown, opponent_breakdown = _breakdowns_for_player(current_result, root_player)
 
     continuation_value = 0.0
     continuation_hands_simulated = 0
@@ -60,6 +66,11 @@ def run_rollout(
         current_hand_value=current_value,
         continuation_value=continuation_value,
         continuation_hands_simulated=continuation_hands_simulated,
+        root_player_fouled=root_breakdown.fouled,
+        opponent_fouled=opponent_breakdown.fouled,
+        both_players_fouled=root_breakdown.fouled and opponent_breakdown.fouled,
+        root_player_next_fantasyland=terminal_state.next_hand_fantasyland[player_index(root_player)],
+        opponent_next_fantasyland=terminal_state.next_hand_fantasyland[1 - player_index(root_player)],
     )
 
 
@@ -80,6 +91,14 @@ def _value_for_player(result: TerminalResult, player_id: PlayerId) -> float:
         return float(result.left.total_points)
     if PlayerId(result.right.player_id) == player_id:
         return float(result.right.total_points)
+    raise ValueError(f"Terminal result does not contain player {player_id.value}")
+
+
+def _breakdowns_for_player(result: TerminalResult, player_id: PlayerId):
+    if PlayerId(result.left.player_id) == player_id:
+        return result.left, result.right
+    if PlayerId(result.right.player_id) == player_id:
+        return result.right, result.left
     raise ValueError(f"Terminal result does not contain player {player_id.value}")
 
 

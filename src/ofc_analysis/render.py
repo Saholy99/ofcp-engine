@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Sequence
+from typing import Any, Sequence, TYPE_CHECKING
 
 from ofc.board import Board
 from ofc.cards import Card, format_card
@@ -12,6 +12,9 @@ from ofc_analysis.action_codec import EncodedAction
 from ofc_analysis.models import RenderedOutput
 from ofc_analysis.observation import PlayerObservation
 from ofc_solver.models import MoveAnalysis
+
+if TYPE_CHECKING:
+    from ofc_solver.benchmark import BenchmarkRun
 
 
 def render_state(state: GameState, *, as_json: bool = False) -> RenderedOutput:
@@ -51,6 +54,15 @@ def render_move_analysis(analysis: MoveAnalysis, *, as_json: bool = False) -> Re
     if as_json:
         return RenderedOutput(payload=payload)
     return RenderedOutput(text=_move_analysis_text(payload), payload=payload)
+
+
+def render_benchmark_run(run: BenchmarkRun, *, as_json: bool = False) -> RenderedOutput:
+    """Render solver benchmark output for CLI or tests."""
+
+    payload = _benchmark_run_payload(run)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_benchmark_run_text(payload), payload=payload)
 
 
 def _cards_payload(cards: tuple[Card, ...]) -> list[str]:
@@ -150,6 +162,61 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
                 "max_value": estimate.max_value,
             }
             for rank, estimate in enumerate(analysis.ranked_actions, start=1)
+        ],
+    }
+
+
+def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
+    return {
+        "policy_name": run.policy_name,
+        "case_count": run.case_count,
+        "elapsed_seconds": run.elapsed_seconds,
+        "cases": [
+            {
+                "name": case.name,
+                "scenario_path": str(case.scenario_path),
+                "tags": list(case.tags),
+                "observer": case.observer.value,
+                "phase": case.phase.value,
+                "rollouts_per_action": case.rollouts_per_action,
+                "rng_seed": case.rng_seed,
+                "expected_top_action_indices": list(case.expected_top_action_indices),
+                "top_action_index": case.top_action_index,
+                "top1_agreement": case.top1_agreement,
+                "top3_agreement": case.top3_agreement,
+                "action_count": case.action_count,
+                "elapsed_seconds": case.elapsed_seconds,
+                "ranked_actions": [
+                    {
+                        "rank": rank,
+                        "action_index": estimate.action_index,
+                        "mean_value": estimate.mean_value,
+                        "stddev": estimate.stddev,
+                        "sample_count": estimate.sample_count,
+                        "min_value": estimate.min_value,
+                        "max_value": estimate.max_value,
+                        "action": estimate.action.as_dict(),
+                    }
+                    for rank, estimate in enumerate(case.ranked_actions, start=1)
+                ],
+                "action_diagnostics": [
+                    {
+                        "action_index": diagnostic.action_index,
+                        "sample_count": diagnostic.sample_count,
+                        "mean_total_value": diagnostic.mean_total_value,
+                        "mean_current_hand_value": diagnostic.mean_current_hand_value,
+                        "mean_continuation_value": diagnostic.mean_continuation_value,
+                        "continuation_frequency": diagnostic.continuation_frequency,
+                        "root_foul_rate": diagnostic.root_foul_rate,
+                        "opponent_foul_rate": diagnostic.opponent_foul_rate,
+                        "both_foul_rate": diagnostic.both_foul_rate,
+                        "root_fantasyland_frequency": diagnostic.root_fantasyland_frequency,
+                        "opponent_fantasyland_frequency": diagnostic.opponent_fantasyland_frequency,
+                    }
+                    for diagnostic in case.action_diagnostics
+                ],
+            }
+            for case in run.case_results
         ],
     }
 
@@ -263,4 +330,39 @@ def _move_analysis_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["render_actions", "render_move_analysis", "render_observation", "render_state"]
+def _benchmark_run_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Solver Benchmark",
+        f"policy_name: {payload['policy_name']}",
+        f"case_count: {payload['case_count']}",
+        f"elapsed_seconds: {payload['elapsed_seconds']:.6f}",
+    ]
+    for case in payload["cases"]:
+        top1 = "n/a" if case["top1_agreement"] is None else json.dumps(case["top1_agreement"])
+        top3 = "n/a" if case["top3_agreement"] is None else json.dumps(case["top3_agreement"])
+        lines.extend(
+            [
+                f"case: {case['name']}",
+                f"  scenario_path: {case['scenario_path']}",
+                f"  observer: {case['observer']}",
+                f"  phase: {case['phase']}",
+                f"  tags: {json.dumps(case['tags'])}",
+                f"  action_count: {case['action_count']}",
+                f"  rollouts_per_action: {case['rollouts_per_action']}",
+                f"  top_action_index: {case['top_action_index']}",
+                f"  expected_top_action_indices: {json.dumps(case['expected_top_action_indices'])}",
+                f"  top1_agreement: {top1}",
+                f"  top3_agreement: {top3}",
+                f"  elapsed_seconds: {case['elapsed_seconds']:.6f}",
+            ]
+        )
+        for estimate in case["ranked_actions"][:3]:
+            lines.append(
+                f"  rank {estimate['rank']}: action_index={estimate['action_index']} "
+                f"mean={estimate['mean_value']:.6f} stddev={estimate['stddev']:.6f} "
+                f"samples={estimate['sample_count']}"
+            )
+    return "\n".join(lines)
+
+
+__all__ = ["render_actions", "render_benchmark_run", "render_move_analysis", "render_observation", "render_state"]

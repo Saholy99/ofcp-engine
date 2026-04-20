@@ -33,6 +33,16 @@ python3 -m ofc_analysis.cli solve-move scenarios/regression/immediate_scoring.js
 
 More rollouts usually produce less noisy estimates but take longer. The seed makes results reproducible.
 
+## Run Solver Benchmarks
+
+The checked-in benchmark manifest is small and stable. To generate a larger local diagnostic corpus, run the generator first; generated scenarios are ignored by git.
+
+```bash
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_diagnostics.json --policy random --json
+python3 -m ofc_solver.benchmark_corpus
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_expansive.json --policy random --json
+```
+
 ## Play One Hand Interactively
 
 Use `play-hand` to play one hand from a single hero seat. Hero turns show the top 3 solver suggestions;

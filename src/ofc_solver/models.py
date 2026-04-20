@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from ofc.state import HandPhase, PlayerId
-from ofc_analysis.action_codec import EncodedAction
+
+if TYPE_CHECKING:
+    from ofc_analysis.action_codec import EncodedAction
 
 
 @dataclass(frozen=True)

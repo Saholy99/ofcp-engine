@@ -1,16 +1,36 @@
-"""Public scaffolding exports for the solver layer.
-
-This package is reserved for rollout policies, hidden-state sampling, and move
-ranking. It must stay separate from the engine package so rule logic remains in
-``src/ofc/`` and solver experimentation remains isolated.
-"""
-
-from ofc_solver.models import MoveAnalysis, MoveEstimate
-from ofc_solver.monte_carlo import rank_actions_from_observation, rank_actions_from_state
+"""Public scaffolding exports for the solver layer."""
 
 __all__ = [
+    "BenchmarkRun",
     "MoveAnalysis",
     "MoveEstimate",
+    "load_benchmark_manifest",
     "rank_actions_from_observation",
     "rank_actions_from_state",
+    "run_benchmark_manifest",
 ]
+
+
+def __getattr__(name: str):
+    """Lazily expose public solver helpers without creating import cycles."""
+
+    if name in {"MoveAnalysis", "MoveEstimate"}:
+        from ofc_solver.models import MoveAnalysis, MoveEstimate
+
+        return {"MoveAnalysis": MoveAnalysis, "MoveEstimate": MoveEstimate}[name]
+    if name in {"rank_actions_from_observation", "rank_actions_from_state"}:
+        from ofc_solver.monte_carlo import rank_actions_from_observation, rank_actions_from_state
+
+        return {
+            "rank_actions_from_observation": rank_actions_from_observation,
+            "rank_actions_from_state": rank_actions_from_state,
+        }[name]
+    if name in {"BenchmarkRun", "load_benchmark_manifest", "run_benchmark_manifest"}:
+        from ofc_solver.benchmark import BenchmarkRun, load_benchmark_manifest, run_benchmark_manifest
+
+        return {
+            "BenchmarkRun": BenchmarkRun,
+            "load_benchmark_manifest": load_benchmark_manifest,
+            "run_benchmark_manifest": run_benchmark_manifest,
+        }[name]
+    raise AttributeError(f"module 'ofc_solver' has no attribute {name!r}")
