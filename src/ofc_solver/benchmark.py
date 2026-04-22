@@ -18,8 +18,9 @@ from ofc_analysis.action_codec import encode_action
 from ofc_analysis.observation import project_observation
 from ofc_analysis.scenario import load_scenario
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
+from ofc_solver.policy_registry import policy_from_name
 from ofc_solver.rollout import RolloutResult, run_rollout
-from ofc_solver.rollout_policy import RandomRolloutPolicy, RolloutPolicy
+from ofc_solver.rollout_policy import RolloutPolicy
 from ofc_solver.sampler import sample_state
 
 
@@ -60,6 +61,10 @@ class BenchmarkActionDiagnostics:
     both_foul_rate: float
     root_fantasyland_frequency: float
     opponent_fantasyland_frequency: float
+    mean_policy_decisions: float
+    exact_late_search_rollout_frequency: float
+    mean_exact_late_search_decisions: float
+    mean_exact_late_search_nodes: float
 
 
 @dataclass(frozen=True)
@@ -94,6 +99,96 @@ class BenchmarkRun:
     @property
     def case_count(self) -> int:
         return len(self.case_results)
+
+
+@dataclass(frozen=True)
+class BenchmarkAggregate:
+    """Aggregate diagnostics for one benchmark run."""
+
+    policy_name: str
+    case_count: int
+    action_count: int
+    sample_count: int
+    root_foul_rate: float
+    opponent_foul_rate: float
+    both_foul_rate: float
+    continuation_frequency: float
+    root_fantasyland_frequency: float
+    opponent_fantasyland_frequency: float
+    mean_policy_decisions: float
+    exact_late_search_rollout_frequency: float
+    mean_exact_late_search_decisions: float
+    mean_exact_late_search_nodes: float
+    top_action_root_foul_rate: float
+    top_action_opponent_foul_rate: float
+    top_action_both_foul_rate: float
+    top_action_continuation_frequency: float
+    top_action_root_fantasyland_frequency: float
+    top_action_opponent_fantasyland_frequency: float
+    top_action_mean_policy_decisions: float
+    top_action_exact_late_search_rollout_frequency: float
+    top_action_mean_exact_late_search_decisions: float
+    top_action_mean_exact_late_search_nodes: float
+    labeled_top1_rate: float | None
+    labeled_top3_rate: float | None
+    elapsed_seconds: float
+
+
+@dataclass(frozen=True)
+class BenchmarkTagSliceAggregate:
+    """Aggregate diagnostics for cases sharing one benchmark tag."""
+
+    case_count: int
+    action_count: int
+    sample_count: int
+    root_foul_rate: float
+    both_foul_rate: float
+    continuation_frequency: float
+    root_fantasyland_frequency: float
+    exact_late_search_rollout_frequency: float
+    top_action_root_foul_rate: float
+    top_action_both_foul_rate: float
+    top_action_continuation_frequency: float
+    top_action_root_fantasyland_frequency: float
+    top_action_exact_late_search_rollout_frequency: float
+    labeled_top1_rate: float | None
+    labeled_top3_rate: float | None
+
+
+@dataclass(frozen=True)
+class BenchmarkTagSliceComparison:
+    """Side-by-side comparison for one benchmark tag slice."""
+
+    tag: str
+    case_count: int
+    left: BenchmarkTagSliceAggregate
+    right: BenchmarkTagSliceAggregate
+    deltas: dict[str, float | None]
+
+
+@dataclass(frozen=True)
+class TopActionChange:
+    """One benchmark case whose top-ranked action changed between runs."""
+
+    case_name: str
+    left_top_action_index: int
+    right_top_action_index: int
+    left_top_mean_value: float
+    right_top_mean_value: float
+
+
+@dataclass(frozen=True)
+class BenchmarkComparison:
+    """Side-by-side aggregate comparison of two benchmark runs."""
+
+    left_policy_name: str
+    right_policy_name: str
+    case_count: int
+    left: BenchmarkAggregate
+    right: BenchmarkAggregate
+    deltas: dict[str, float | None]
+    top_action_changes: tuple[TopActionChange, ...]
+    tag_slices: tuple[BenchmarkTagSliceComparison, ...]
 
 
 def load_benchmark_manifest(path: str | Path) -> BenchmarkManifest:
@@ -132,7 +227,7 @@ def load_benchmark_manifest_data(
 def run_benchmark_manifest(manifest: BenchmarkManifest, *, policy_name: str = "random") -> BenchmarkRun:
     """Run all cases in a loaded benchmark manifest."""
 
-    policy = _policy_from_name(policy_name)
+    policy = policy_from_name(policy_name)
     start = time.perf_counter()
     case_results = tuple(run_benchmark_case(case, policy=policy) for case in manifest.cases)
     return BenchmarkRun(
@@ -203,6 +298,53 @@ def run_benchmark_case(case: BenchmarkCase, *, policy: RolloutPolicy) -> Benchma
     )
 
 
+def compare_benchmark_runs(left: BenchmarkRun, right: BenchmarkRun) -> BenchmarkComparison:
+    """Compare two in-memory benchmark runs."""
+
+    _validate_comparable_case_names(
+        tuple(case.name for case in left.case_results),
+        tuple(case.name for case in right.case_results),
+    )
+    left_aggregate = _aggregate_benchmark_run(left)
+    right_aggregate = _aggregate_benchmark_run(right)
+    return BenchmarkComparison(
+        left_policy_name=left.policy_name,
+        right_policy_name=right.policy_name,
+        case_count=left.case_count,
+        left=left_aggregate,
+        right=right_aggregate,
+        deltas=_aggregate_deltas(left_aggregate, right_aggregate),
+        top_action_changes=_top_action_changes_from_runs(left, right),
+        tag_slices=_tag_slice_comparisons_from_runs(left, right),
+    )
+
+
+def compare_benchmark_payloads(
+    left_payload: Mapping[str, Any],
+    right_payload: Mapping[str, Any],
+) -> BenchmarkComparison:
+    """Compare two rendered benchmark JSON payloads."""
+
+    left_cases = _require_case_payloads(left_payload, "left benchmark")
+    right_cases = _require_case_payloads(right_payload, "right benchmark")
+    _validate_comparable_case_names(
+        tuple(str(case["name"]) for case in left_cases),
+        tuple(str(case["name"]) for case in right_cases),
+    )
+    left_aggregate = _aggregate_benchmark_payload(left_payload)
+    right_aggregate = _aggregate_benchmark_payload(right_payload)
+    return BenchmarkComparison(
+        left_policy_name=str(left_payload["policy_name"]),
+        right_policy_name=str(right_payload["policy_name"]),
+        case_count=len(left_cases),
+        left=left_aggregate,
+        right=right_aggregate,
+        deltas=_aggregate_deltas(left_aggregate, right_aggregate),
+        top_action_changes=_top_action_changes_from_payloads(left_cases, right_cases),
+        tag_slices=_tag_slice_comparisons_from_payloads(left_cases, right_cases),
+    )
+
+
 def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
     allowed_keys = {
         "name",
@@ -230,12 +372,6 @@ def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
         expected_top_action_indices=expected,
         tags=tags,
     )
-
-
-def _policy_from_name(policy_name: str) -> RolloutPolicy:
-    if policy_name == "random":
-        return RandomRolloutPolicy()
-    raise ValueError(f"Unsupported benchmark policy: {policy_name!r}. Supported policies: random.")
 
 
 def _estimate(action_index: int, action: GameAction, rollout_results: tuple[RolloutResult, ...]) -> MoveEstimate:
@@ -270,6 +406,14 @@ def _diagnostics(
         both_foul_rate=_rate(result.both_players_fouled for result in rollout_results),
         root_fantasyland_frequency=_rate(result.root_player_next_fantasyland for result in rollout_results),
         opponent_fantasyland_frequency=_rate(result.opponent_next_fantasyland for result in rollout_results),
+        mean_policy_decisions=_mean(result.policy_decision_count for result in rollout_results),
+        exact_late_search_rollout_frequency=_rate(
+            result.exact_late_search_decision_count > 0 for result in rollout_results
+        ),
+        mean_exact_late_search_decisions=_mean(
+            result.exact_late_search_decision_count for result in rollout_results
+        ),
+        mean_exact_late_search_nodes=_mean(result.exact_late_search_node_count for result in rollout_results),
     )
 
 
@@ -281,6 +425,390 @@ def _mean(values) -> float:
 def _rate(values) -> float:
     values = tuple(bool(value) for value in values)
     return sum(1 for value in values if value) / len(values)
+
+
+def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
+    diagnostics = tuple(diagnostic for case in run.case_results for diagnostic in case.action_diagnostics)
+    top_diagnostics = _top_action_diagnostics_from_run(run)
+    sample_count = sum(diagnostic.sample_count for diagnostic in diagnostics)
+    labeled_cases = tuple(case for case in run.case_results if case.top1_agreement is not None)
+    return BenchmarkAggregate(
+        policy_name=run.policy_name,
+        case_count=run.case_count,
+        action_count=sum(case.action_count for case in run.case_results),
+        sample_count=sample_count,
+        root_foul_rate=_weighted_diagnostic_rate(diagnostics, "root_foul_rate"),
+        opponent_foul_rate=_weighted_diagnostic_rate(diagnostics, "opponent_foul_rate"),
+        both_foul_rate=_weighted_diagnostic_rate(diagnostics, "both_foul_rate"),
+        continuation_frequency=_weighted_diagnostic_rate(diagnostics, "continuation_frequency"),
+        root_fantasyland_frequency=_weighted_diagnostic_rate(diagnostics, "root_fantasyland_frequency"),
+        opponent_fantasyland_frequency=_weighted_diagnostic_rate(diagnostics, "opponent_fantasyland_frequency"),
+        mean_policy_decisions=_weighted_diagnostic_rate(diagnostics, "mean_policy_decisions"),
+        exact_late_search_rollout_frequency=_weighted_diagnostic_rate(
+            diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        mean_exact_late_search_decisions=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_exact_late_search_decisions",
+        ),
+        mean_exact_late_search_nodes=_weighted_diagnostic_rate(diagnostics, "mean_exact_late_search_nodes"),
+        top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
+        top_action_opponent_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "opponent_foul_rate"),
+        top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
+        top_action_continuation_frequency=_weighted_diagnostic_rate(top_diagnostics, "continuation_frequency"),
+        top_action_root_fantasyland_frequency=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "root_fantasyland_frequency",
+        ),
+        top_action_opponent_fantasyland_frequency=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "opponent_fantasyland_frequency",
+        ),
+        top_action_mean_policy_decisions=_weighted_diagnostic_rate(top_diagnostics, "mean_policy_decisions"),
+        top_action_exact_late_search_rollout_frequency=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        top_action_mean_exact_late_search_decisions=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_exact_late_search_decisions",
+        ),
+        top_action_mean_exact_late_search_nodes=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_exact_late_search_nodes",
+        ),
+        labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
+        labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
+        elapsed_seconds=run.elapsed_seconds,
+    )
+
+
+def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggregate:
+    cases = _require_case_payloads(payload, "benchmark")
+    diagnostics = tuple(diagnostic for case in cases for diagnostic in case["action_diagnostics"])
+    top_diagnostics = _top_action_diagnostics_from_payloads(cases)
+    sample_count = sum(int(diagnostic["sample_count"]) for diagnostic in diagnostics)
+    labeled_cases = tuple(case for case in cases if case["top1_agreement"] is not None)
+    return BenchmarkAggregate(
+        policy_name=str(payload["policy_name"]),
+        case_count=int(payload["case_count"]),
+        action_count=sum(int(case["action_count"]) for case in cases),
+        sample_count=sample_count,
+        root_foul_rate=_weighted_payload_rate(diagnostics, "root_foul_rate"),
+        opponent_foul_rate=_weighted_payload_rate(diagnostics, "opponent_foul_rate"),
+        both_foul_rate=_weighted_payload_rate(diagnostics, "both_foul_rate"),
+        continuation_frequency=_weighted_payload_rate(diagnostics, "continuation_frequency"),
+        root_fantasyland_frequency=_weighted_payload_rate(diagnostics, "root_fantasyland_frequency"),
+        opponent_fantasyland_frequency=_weighted_payload_rate(diagnostics, "opponent_fantasyland_frequency"),
+        mean_policy_decisions=_weighted_payload_rate(diagnostics, "mean_policy_decisions"),
+        exact_late_search_rollout_frequency=_weighted_payload_rate(
+            diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        mean_exact_late_search_decisions=_weighted_payload_rate(
+            diagnostics,
+            "mean_exact_late_search_decisions",
+        ),
+        mean_exact_late_search_nodes=_weighted_payload_rate(diagnostics, "mean_exact_late_search_nodes"),
+        top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
+        top_action_opponent_foul_rate=_weighted_payload_rate(top_diagnostics, "opponent_foul_rate"),
+        top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
+        top_action_continuation_frequency=_weighted_payload_rate(top_diagnostics, "continuation_frequency"),
+        top_action_root_fantasyland_frequency=_weighted_payload_rate(top_diagnostics, "root_fantasyland_frequency"),
+        top_action_opponent_fantasyland_frequency=_weighted_payload_rate(
+            top_diagnostics,
+            "opponent_fantasyland_frequency",
+        ),
+        top_action_mean_policy_decisions=_weighted_payload_rate(top_diagnostics, "mean_policy_decisions"),
+        top_action_exact_late_search_rollout_frequency=_weighted_payload_rate(
+            top_diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        top_action_mean_exact_late_search_decisions=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_exact_late_search_decisions",
+        ),
+        top_action_mean_exact_late_search_nodes=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_exact_late_search_nodes",
+        ),
+        labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
+        labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
+        elapsed_seconds=float(payload["elapsed_seconds"]),
+    )
+
+
+def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> dict[str, float | None]:
+    fields = (
+        "root_foul_rate",
+        "opponent_foul_rate",
+        "both_foul_rate",
+        "continuation_frequency",
+        "root_fantasyland_frequency",
+        "opponent_fantasyland_frequency",
+        "mean_policy_decisions",
+        "exact_late_search_rollout_frequency",
+        "mean_exact_late_search_decisions",
+        "mean_exact_late_search_nodes",
+        "top_action_root_foul_rate",
+        "top_action_opponent_foul_rate",
+        "top_action_both_foul_rate",
+        "top_action_continuation_frequency",
+        "top_action_root_fantasyland_frequency",
+        "top_action_opponent_fantasyland_frequency",
+        "top_action_mean_policy_decisions",
+        "top_action_exact_late_search_rollout_frequency",
+        "top_action_mean_exact_late_search_decisions",
+        "top_action_mean_exact_late_search_nodes",
+        "labeled_top1_rate",
+        "labeled_top3_rate",
+        "elapsed_seconds",
+    )
+    return {field: _delta(getattr(left, field), getattr(right, field)) for field in fields}
+
+
+def _tag_slice_deltas(
+    left: BenchmarkTagSliceAggregate,
+    right: BenchmarkTagSliceAggregate,
+) -> dict[str, float | None]:
+    fields = (
+        "root_foul_rate",
+        "both_foul_rate",
+        "continuation_frequency",
+        "root_fantasyland_frequency",
+        "exact_late_search_rollout_frequency",
+        "top_action_root_foul_rate",
+        "top_action_both_foul_rate",
+        "top_action_continuation_frequency",
+        "top_action_root_fantasyland_frequency",
+        "top_action_exact_late_search_rollout_frequency",
+        "labeled_top1_rate",
+        "labeled_top3_rate",
+    )
+    return {field: _delta(getattr(left, field), getattr(right, field)) for field in fields}
+
+
+def _tag_slice_comparisons_from_runs(
+    left: BenchmarkRun,
+    right: BenchmarkRun,
+) -> tuple[BenchmarkTagSliceComparison, ...]:
+    tags = sorted({tag for case in left.case_results for tag in case.tags})
+    comparisons: list[BenchmarkTagSliceComparison] = []
+    for tag in tags:
+        left_cases = tuple(case for case in left.case_results if tag in case.tags)
+        right_cases = tuple(case for case in right.case_results if tag in case.tags)
+        left_aggregate = _aggregate_tag_slice_cases(left_cases)
+        right_aggregate = _aggregate_tag_slice_cases(right_cases)
+        comparisons.append(
+            BenchmarkTagSliceComparison(
+                tag=tag,
+                case_count=len(left_cases),
+                left=left_aggregate,
+                right=right_aggregate,
+                deltas=_tag_slice_deltas(left_aggregate, right_aggregate),
+            )
+        )
+    return tuple(comparisons)
+
+
+def _aggregate_tag_slice_cases(cases: tuple[BenchmarkCaseResult, ...]) -> BenchmarkTagSliceAggregate:
+    diagnostics = tuple(diagnostic for case in cases for diagnostic in case.action_diagnostics)
+    top_diagnostics = tuple(
+        _diagnostic_for_action_index(case.action_diagnostics, case.top_action_index)
+        for case in cases
+    )
+    labeled_cases = tuple(case for case in cases if case.top1_agreement is not None)
+    return BenchmarkTagSliceAggregate(
+        case_count=len(cases),
+        action_count=sum(case.action_count for case in cases),
+        sample_count=sum(diagnostic.sample_count for diagnostic in diagnostics),
+        root_foul_rate=_weighted_diagnostic_rate(diagnostics, "root_foul_rate"),
+        both_foul_rate=_weighted_diagnostic_rate(diagnostics, "both_foul_rate"),
+        continuation_frequency=_weighted_diagnostic_rate(diagnostics, "continuation_frequency"),
+        root_fantasyland_frequency=_weighted_diagnostic_rate(diagnostics, "root_fantasyland_frequency"),
+        exact_late_search_rollout_frequency=_weighted_diagnostic_rate(
+            diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
+        top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
+        top_action_continuation_frequency=_weighted_diagnostic_rate(top_diagnostics, "continuation_frequency"),
+        top_action_root_fantasyland_frequency=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "root_fantasyland_frequency",
+        ),
+        top_action_exact_late_search_rollout_frequency=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
+        labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
+    )
+
+
+def _tag_slice_comparisons_from_payloads(
+    left_cases: tuple[Mapping[str, Any], ...],
+    right_cases: tuple[Mapping[str, Any], ...],
+) -> tuple[BenchmarkTagSliceComparison, ...]:
+    tags = sorted({str(tag) for case in left_cases for tag in case["tags"]})
+    comparisons: list[BenchmarkTagSliceComparison] = []
+    for tag in tags:
+        left_slice_cases = tuple(case for case in left_cases if tag in case["tags"])
+        right_slice_cases = tuple(case for case in right_cases if tag in case["tags"])
+        left_aggregate = _aggregate_tag_slice_payload_cases(left_slice_cases)
+        right_aggregate = _aggregate_tag_slice_payload_cases(right_slice_cases)
+        comparisons.append(
+            BenchmarkTagSliceComparison(
+                tag=tag,
+                case_count=len(left_slice_cases),
+                left=left_aggregate,
+                right=right_aggregate,
+                deltas=_tag_slice_deltas(left_aggregate, right_aggregate),
+            )
+        )
+    return tuple(comparisons)
+
+
+def _aggregate_tag_slice_payload_cases(cases: tuple[Mapping[str, Any], ...]) -> BenchmarkTagSliceAggregate:
+    diagnostics = tuple(diagnostic for case in cases for diagnostic in case["action_diagnostics"])
+    top_diagnostics = _top_action_diagnostics_from_payloads(cases)
+    labeled_cases = tuple(case for case in cases if case["top1_agreement"] is not None)
+    return BenchmarkTagSliceAggregate(
+        case_count=len(cases),
+        action_count=sum(int(case["action_count"]) for case in cases),
+        sample_count=sum(int(diagnostic["sample_count"]) for diagnostic in diagnostics),
+        root_foul_rate=_weighted_payload_rate(diagnostics, "root_foul_rate"),
+        both_foul_rate=_weighted_payload_rate(diagnostics, "both_foul_rate"),
+        continuation_frequency=_weighted_payload_rate(diagnostics, "continuation_frequency"),
+        root_fantasyland_frequency=_weighted_payload_rate(diagnostics, "root_fantasyland_frequency"),
+        exact_late_search_rollout_frequency=_weighted_payload_rate(
+            diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
+        top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
+        top_action_continuation_frequency=_weighted_payload_rate(top_diagnostics, "continuation_frequency"),
+        top_action_root_fantasyland_frequency=_weighted_payload_rate(top_diagnostics, "root_fantasyland_frequency"),
+        top_action_exact_late_search_rollout_frequency=_weighted_payload_rate(
+            top_diagnostics,
+            "exact_late_search_rollout_frequency",
+        ),
+        labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
+        labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
+    )
+
+
+def _top_action_changes_from_runs(left: BenchmarkRun, right: BenchmarkRun) -> tuple[TopActionChange, ...]:
+    changes = []
+    for left_case, right_case in zip(left.case_results, right.case_results, strict=True):
+        if left_case.top_action_index == right_case.top_action_index:
+            continue
+        changes.append(
+            TopActionChange(
+                case_name=left_case.name,
+                left_top_action_index=left_case.top_action_index,
+                right_top_action_index=right_case.top_action_index,
+                left_top_mean_value=left_case.ranked_actions[0].mean_value,
+                right_top_mean_value=right_case.ranked_actions[0].mean_value,
+            )
+        )
+    return tuple(changes)
+
+
+def _top_action_changes_from_payloads(
+    left_cases: tuple[Mapping[str, Any], ...],
+    right_cases: tuple[Mapping[str, Any], ...],
+) -> tuple[TopActionChange, ...]:
+    changes = []
+    for left_case, right_case in zip(left_cases, right_cases, strict=True):
+        if left_case["top_action_index"] == right_case["top_action_index"]:
+            continue
+        changes.append(
+            TopActionChange(
+                case_name=str(left_case["name"]),
+                left_top_action_index=int(left_case["top_action_index"]),
+                right_top_action_index=int(right_case["top_action_index"]),
+                left_top_mean_value=float(left_case["ranked_actions"][0]["mean_value"]),
+                right_top_mean_value=float(right_case["ranked_actions"][0]["mean_value"]),
+            )
+        )
+    return tuple(changes)
+
+
+def _top_action_diagnostics_from_run(run: BenchmarkRun) -> tuple[BenchmarkActionDiagnostics, ...]:
+    return tuple(
+        _diagnostic_for_action_index(case.action_diagnostics, case.top_action_index)
+        for case in run.case_results
+    )
+
+
+def _diagnostic_for_action_index(
+    diagnostics: tuple[BenchmarkActionDiagnostics, ...],
+    action_index: int,
+) -> BenchmarkActionDiagnostics:
+    for diagnostic in diagnostics:
+        if diagnostic.action_index == action_index:
+            return diagnostic
+    raise ValueError(f"Benchmark case is missing diagnostics for top action index {action_index}")
+
+
+def _top_action_diagnostics_from_payloads(
+    cases: tuple[Mapping[str, Any], ...],
+) -> tuple[Mapping[str, Any], ...]:
+    return tuple(
+        _diagnostic_payload_for_action_index(case["action_diagnostics"], int(case["top_action_index"]))
+        for case in cases
+    )
+
+
+def _diagnostic_payload_for_action_index(diagnostics: Any, action_index: int) -> Mapping[str, Any]:
+    if not isinstance(diagnostics, list):
+        raise ValueError("benchmark case action_diagnostics must be a list")
+    for diagnostic in diagnostics:
+        normalized = _require_mapping(diagnostic, "benchmark case.action_diagnostics[]")
+        if int(normalized["action_index"]) == action_index:
+            return normalized
+    raise ValueError(f"benchmark case is missing diagnostics for top action index {action_index}")
+
+
+def _weighted_diagnostic_rate(diagnostics: tuple[BenchmarkActionDiagnostics, ...], field: str) -> float:
+    sample_count = sum(diagnostic.sample_count for diagnostic in diagnostics)
+    if sample_count == 0:
+        return 0.0
+    return sum(diagnostic.sample_count * float(getattr(diagnostic, field)) for diagnostic in diagnostics) / sample_count
+
+
+def _weighted_payload_rate(diagnostics: tuple[Mapping[str, Any], ...], field: str) -> float:
+    sample_count = sum(int(diagnostic["sample_count"]) for diagnostic in diagnostics)
+    if sample_count == 0:
+        return 0.0
+    return sum(int(diagnostic["sample_count"]) * float(diagnostic.get(field, 0.0)) for diagnostic in diagnostics) / sample_count
+
+
+def _optional_boolean_rate(values) -> float | None:
+    normalized = tuple(values)
+    if not normalized:
+        return None
+    return sum(1 for value in normalized if value) / len(normalized)
+
+
+def _delta(left: float | None, right: float | None) -> float | None:
+    if left is None or right is None:
+        return None
+    return right - left
+
+
+def _require_case_payloads(payload: Mapping[str, Any], path: str) -> tuple[Mapping[str, Any], ...]:
+    cases = payload.get("cases")
+    if not isinstance(cases, list):
+        raise ValueError(f"{path} must contain a cases list")
+    return tuple(_require_mapping(case, f"{path}.cases[{index}]") for index, case in enumerate(cases))
+
+
+def _validate_comparable_case_names(left_names: tuple[str, ...], right_names: tuple[str, ...]) -> None:
+    if left_names != right_names:
+        raise ValueError("Benchmark runs must contain the same cases in the same order")
 
 
 def _normalize_path(value: str, base_path: Path) -> Path:
@@ -359,10 +887,17 @@ def _parse_str_tuple(value: Any, path: str) -> tuple[str, ...]:
 
 __all__ = [
     "BenchmarkActionDiagnostics",
+    "BenchmarkAggregate",
     "BenchmarkCase",
     "BenchmarkCaseResult",
+    "BenchmarkComparison",
     "BenchmarkManifest",
     "BenchmarkRun",
+    "BenchmarkTagSliceAggregate",
+    "BenchmarkTagSliceComparison",
+    "TopActionChange",
+    "compare_benchmark_payloads",
+    "compare_benchmark_runs",
     "load_benchmark_manifest",
     "load_benchmark_manifest_data",
     "run_benchmark_case",

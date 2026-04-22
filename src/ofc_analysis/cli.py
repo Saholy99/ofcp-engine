@@ -12,10 +12,18 @@ from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_actions
 from ofc_analysis.observation import project_observation
 from ofc_analysis.play import run_play_hand
-from ofc_analysis.render import render_actions, render_benchmark_run, render_move_analysis, render_observation, render_state
+from ofc_analysis.render import (
+    render_actions,
+    render_benchmark_comparison,
+    render_benchmark_run,
+    render_move_analysis,
+    render_observation,
+    render_state,
+)
 from ofc_analysis.scenario import load_scenario
-from ofc_solver.benchmark import load_benchmark_manifest, run_benchmark_manifest
+from ofc_solver.benchmark import compare_benchmark_payloads, load_benchmark_manifest, run_benchmark_manifest
 from ofc_solver.monte_carlo import rank_actions_from_observation
+from ofc_solver.policy_registry import POLICY_NAMES, policy_from_name
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -62,6 +70,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 observation,
                 rollouts_per_action=args.rollouts,
                 rng_seed=args.seed,
+                policy=policy_from_name(args.policy),
             )
             output = render_move_analysis(analysis, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
@@ -71,6 +80,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             manifest = load_benchmark_manifest(args.manifest)
             run = run_benchmark_manifest(manifest, policy_name=args.policy)
             output = render_benchmark_run(run, as_json=args.as_json)
+            _emit(output, as_json=args.as_json)
+            return 0
+
+        if args.command == "compare-benchmarks":
+            left_payload = _load_json_payload(args.left)
+            right_payload = _load_json_payload(args.right)
+            comparison = compare_benchmark_payloads(left_payload, right_payload)
+            output = render_benchmark_comparison(comparison, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
             return 0
 
@@ -84,6 +101,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 fantasyland_flags=fantasyland_flags,
                 rollouts_per_action=args.rollouts,
                 rng_seed=args.seed,
+                policy_name=args.policy,
             )
     except ValueError as exc:
         print(str(exc), file=sys.stderr)
@@ -111,12 +129,18 @@ def _build_parser() -> argparse.ArgumentParser:
     solve_move.add_argument("--observer", choices=[player.value for player in PlayerId], required=True)
     solve_move.add_argument("--rollouts", type=int, required=True)
     solve_move.add_argument("--seed", required=True)
+    solve_move.add_argument("--policy", choices=POLICY_NAMES, default="random")
     solve_move.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_solver = subparsers.add_parser("benchmark-solver")
     benchmark_solver.add_argument("manifest")
-    benchmark_solver.add_argument("--policy", choices=["random"], default="random")
+    benchmark_solver.add_argument("--policy", choices=POLICY_NAMES, default="random")
     benchmark_solver.add_argument("--json", action="store_true", dest="as_json")
+
+    compare_benchmarks = subparsers.add_parser("compare-benchmarks")
+    compare_benchmarks.add_argument("left")
+    compare_benchmarks.add_argument("right")
+    compare_benchmarks.add_argument("--json", action="store_true", dest="as_json")
 
     play_hand = subparsers.add_parser(
         "play-hand",
@@ -136,6 +160,7 @@ def _build_parser() -> argparse.ArgumentParser:
     play_hand.add_argument("--no-fantasyland", action="store_true", help="Start with neither player in Fantasyland.")
     play_hand.add_argument("--rollouts", type=int, default=1, help="Monte Carlo rollouts per legal hero action.")
     play_hand.add_argument("--seed", default="play-hand", help="Seed for reproducible hero solver suggestions.")
+    play_hand.add_argument("--policy", choices=POLICY_NAMES, default="random", help="Rollout policy for hero suggestions.")
 
     return parser
 
@@ -145,6 +170,11 @@ def _emit(output, *, as_json: bool) -> None:
         print(json.dumps(output.payload or {}, indent=2, sort_keys=True))
     else:
         print(output.text or "")
+
+
+def _load_json_payload(path: str):
+    with open(path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
 
 
 def _resolve_play_button(args) -> PlayerId:

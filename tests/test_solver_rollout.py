@@ -7,9 +7,11 @@ from ofc.actions import PlaceDrawAction
 from ofc.board import RowName
 from ofc.engine import new_hand
 from ofc.state import PlayerId
+from ofc.transitions import legal_actions
+from ofc_solver.heuristic_policy import HeuristicRolloutPolicy
 from ofc_solver.rollout import run_rollout
 from ofc_solver.rollout_policy import RandomRolloutPolicy
-from tests.helpers import placements, solver_final_draw_state, stacked_deck_tokens
+from tests.helpers import placements, solver_final_draw_state, solver_late_street_exact_search_state, stacked_deck_tokens
 
 
 FANTASYLAND_PREFIX = [
@@ -70,6 +72,21 @@ class SolverRolloutTest(unittest.TestCase):
                 rng=random.Random(23),
                 policy=RandomRolloutPolicy(),
             )
+
+    def test_run_rollout_records_policy_decision_diagnostics(self) -> None:
+        state = solver_late_street_exact_search_state()
+
+        result = run_rollout(
+            state,
+            root_action=tuple(legal_actions(state))[0],
+            root_player=PlayerId.PLAYER_1,
+            rng=random.Random(24),
+            policy=HeuristicRolloutPolicy(),
+        )
+
+        self.assertGreater(result.policy_decision_count, 0)
+        self.assertGreater(result.exact_late_search_decision_count, 0)
+        self.assertGreater(result.exact_late_search_node_count, 0)
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ from ofc_analysis.action_codec import decode_action, encode_action, encode_actio
 from ofc_analysis.observation import project_observation
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
 from ofc_solver.monte_carlo import rank_actions_from_observation
+from ofc_solver.policy_registry import policy_from_name
 
 
 InputFunc = Callable[[str], str]
@@ -45,6 +46,7 @@ class MonteCarloSuggestionBackend:
 
     rollouts_per_action: int
     rng_seed: int | str | None
+    policy_name: str = "random"
 
     def top_moves(
         self,
@@ -63,6 +65,7 @@ class MonteCarloSuggestionBackend:
             project_observation(state, player_id),
             rollouts_per_action=self.rollouts_per_action,
             rng_seed=seed,
+            policy=policy_from_name(self.policy_name),
         )
         return analysis.ranked_actions[:top_n]
 
@@ -91,6 +94,7 @@ def run_play_hand(
     fantasyland_flags: tuple[bool, bool],
     rollouts_per_action: int,
     rng_seed: int | str | None,
+    policy_name: str = "random",
     input_func: InputFunc = input,
     output_func: OutputFunc = print,
     backend: SolverSuggestionBackend | None = None,
@@ -103,6 +107,7 @@ def run_play_hand(
     suggestion_backend = backend or MonteCarloSuggestionBackend(
         rollouts_per_action=rollouts_per_action,
         rng_seed=rng_seed,
+        policy_name=policy_name,
     )
     state = new_hand(
         button=button,

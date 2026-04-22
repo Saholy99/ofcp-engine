@@ -31,6 +31,28 @@ class SolverBenchmarkCorpusTest(unittest.TestCase):
         )
         self.assertTrue(any(case.expected_top_action_indices for case in manifest.cases))
         self.assertTrue(all(case.rollouts_per_action >= 1 for case in manifest.cases))
+        self.assertTrue(any({"strategy", "survivability"}.issubset(set(case.tags)) for case in manifest.cases))
+
+    def test_write_expansive_benchmark_corpus_strategy_cases_are_deterministic(self) -> None:
+        with TemporaryDirectory() as left_dir, TemporaryDirectory() as right_dir:
+            left_manifest_path = write_expansive_benchmark_corpus(Path(left_dir) / "benchmarks")
+            right_manifest_path = write_expansive_benchmark_corpus(Path(right_dir) / "benchmarks")
+
+            left_manifest = load_benchmark_manifest(left_manifest_path)
+            right_manifest = load_benchmark_manifest(right_manifest_path)
+
+        left_cases = [
+            (case.name, case.observer, case.rng_seed, case.tags)
+            for case in left_manifest.cases
+            if "strategy" in case.tags
+        ]
+        right_cases = [
+            (case.name, case.observer, case.rng_seed, case.tags)
+            for case in right_manifest.cases
+            if "strategy" in case.tags
+        ]
+        self.assertEqual(left_cases, right_cases)
+        self.assertGreaterEqual(len(left_cases), 3)
 
 
 if __name__ == "__main__":

@@ -216,3 +216,135 @@ def solver_final_draw_state(*, enters_fantasyland: bool) -> GameState:
         is_continuation_hand=False,
         next_hand_fantasyland=(False, False),
     )
+
+
+def solver_late_street_exact_search_state() -> GameState:
+    """Build a compact late-street state with a small exact-search tree."""
+
+    player_0 = PlayerState(
+        player_id=PlayerId.PLAYER_0,
+        board=Board(
+            top=cards("Qc 4s 3s"),
+            middle=cards("7c Ad Td 5s"),
+            bottom=cards("9c As 4h 6d"),
+        ),
+        hidden_discards=cards("9s Ah Ks"),
+        current_private_draw=(),
+        fantasyland_active=False,
+        initial_placement_done=True,
+        normal_draws_taken=3,
+        fantasyland_set_done=False,
+    )
+    player_1 = PlayerState(
+        player_id=PlayerId.PLAYER_1,
+        board=Board(
+            top=cards("4d Qd 3h"),
+            middle=cards("Tc Ac Jh Th 5c"),
+            bottom=cards("2s"),
+        ),
+        hidden_discards=cards("6s 7h"),
+        current_private_draw=cards("Qs 2d 5h"),
+        fantasyland_active=False,
+        initial_placement_done=True,
+        normal_draws_taken=2,
+        fantasyland_set_done=False,
+    )
+    return GameState(
+        config=DEFAULT_CONFIG,
+        hand_number=1,
+        button=PlayerId.PLAYER_1,
+        acting_player=PlayerId.PLAYER_1,
+        phase=HandPhase.DRAW,
+        deck=DeckState(
+            undealt_cards=cards("3c 8h 8s 5d 7d 3d Kh Ts Js 6c 6h 8d 9h 2h 8c 7s Kd Jc 2c Jd Qh Kc 9d 4c")
+        ),
+        players=(player_0, player_1),
+        is_continuation_hand=False,
+        next_hand_fantasyland=(False, False),
+    )
+
+
+def solver_unsupported_top_pair_state() -> GameState:
+    """Build an early draw where making QQ on top is structurally fragile."""
+
+    return _solver_survivability_draw_state(
+        board=Board(
+            top=cards("Qh"),
+            middle=cards("7c 4d"),
+            bottom=cards("8c 5d"),
+        ),
+        draw="Qd 2c 3d",
+    )
+
+
+def solver_unsupported_top_trips_state() -> GameState:
+    """Build an early draw where making top trips is unsupported below."""
+
+    return _solver_survivability_draw_state(
+        board=Board(
+            top=cards("Qh Qd"),
+            middle=cards("7c 4d"),
+            bottom=cards("8c 5d 6h"),
+        ),
+        hidden_discards="9s",
+        draw="Qs 2c 3d",
+    )
+
+
+def solver_middle_over_bottom_pressure_state() -> GameState:
+    """Build an early draw where improving middle creates pressure on bottom."""
+
+    return _solver_survivability_draw_state(
+        board=Board(
+            top=cards("4h"),
+            middle=cards("Ah Ad 7c"),
+            bottom=cards("9c 5d 6h"),
+        ),
+        hidden_discards="8s",
+        draw="As 2c 3d",
+    )
+
+
+def _solver_survivability_draw_state(*, board: Board, draw: str, hidden_discards: str = "") -> GameState:
+    acting_player = PlayerState(
+        player_id=PlayerId.PLAYER_0,
+        board=board,
+        hidden_discards=cards(hidden_discards),
+        current_private_draw=cards(draw),
+        fantasyland_active=False,
+        initial_placement_done=True,
+        normal_draws_taken=len(cards(hidden_discards)),
+        fantasyland_set_done=False,
+    )
+    opponent = PlayerState(
+        player_id=PlayerId.PLAYER_1,
+        board=Board(
+            top=cards("9h"),
+            middle=cards("Tc 3h"),
+            bottom=cards("Jc 4s"),
+        ),
+        hidden_discards=(),
+        current_private_draw=(),
+        fantasyland_active=False,
+        initial_placement_done=True,
+        normal_draws_taken=1,
+        fantasyland_set_done=False,
+    )
+    used_cards = (
+        visible_cards(acting_player.board)
+        + acting_player.hidden_discards
+        + acting_player.current_private_draw
+        + visible_cards(opponent.board)
+    )
+    deck = DeckState(undealt_cards=cards(remaining_deck_tokens(format_card(card) for card in used_cards)))
+    return GameState(
+        config=DEFAULT_CONFIG,
+        hand_number=1,
+        button=PlayerId.PLAYER_1,
+        acting_player=PlayerId.PLAYER_0,
+        phase=HandPhase.DRAW,
+        deck=deck,
+        players=(acting_player, opponent),
+        is_continuation_hand=False,
+        next_hand_fantasyland=(False, False),
+    )

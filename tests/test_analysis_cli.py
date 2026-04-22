@@ -105,6 +105,32 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertEqual(6, payload["action_count"])
         self.assertEqual(1, payload["ranked_actions"][0]["action_index"])
 
+    def test_solve_move_accepts_heuristic_policy(self) -> None:
+        scenario_path = Path("scenarios/regression/immediate_scoring.json")
+
+        exit_code, stdout, stderr = self._run_cli(
+            [
+                "solve-move",
+                str(scenario_path),
+                "--observer",
+                "player_0",
+                "--rollouts",
+                "1",
+                "--seed",
+                "101",
+                "--policy",
+                "heuristic",
+                "--json",
+            ]
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertEqual("player_0", payload["observer"])
+        self.assertEqual("draw", payload["phase"])
+        self.assertEqual(6, payload["action_count"])
+
     def test_solve_move_rejects_non_acting_observer(self) -> None:
         scenario_path = Path("scenarios/regression/immediate_scoring.json")
 
@@ -127,6 +153,7 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertIn("play-hand", stdout.getvalue())
         self.assertIn("--hero", stdout.getvalue())
         self.assertIn("--rollouts", stdout.getvalue())
+        self.assertIn("--policy", stdout.getvalue())
 
 
 if __name__ == "__main__":

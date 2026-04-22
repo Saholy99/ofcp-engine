@@ -14,7 +14,7 @@ from ofc_analysis.observation import PlayerObservation
 from ofc_solver.models import MoveAnalysis
 
 if TYPE_CHECKING:
-    from ofc_solver.benchmark import BenchmarkRun
+    from ofc_solver.benchmark import BenchmarkAggregate, BenchmarkComparison, BenchmarkRun
 
 
 def render_state(state: GameState, *, as_json: bool = False) -> RenderedOutput:
@@ -63,6 +63,15 @@ def render_benchmark_run(run: BenchmarkRun, *, as_json: bool = False) -> Rendere
     if as_json:
         return RenderedOutput(payload=payload)
     return RenderedOutput(text=_benchmark_run_text(payload), payload=payload)
+
+
+def render_benchmark_comparison(comparison: BenchmarkComparison, *, as_json: bool = False) -> RenderedOutput:
+    """Render a side-by-side solver benchmark comparison."""
+
+    payload = _benchmark_comparison_payload(comparison)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_benchmark_comparison_text(payload), payload=payload)
 
 
 def _cards_payload(cards: tuple[Card, ...]) -> list[str]:
@@ -212,11 +221,102 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                         "both_foul_rate": diagnostic.both_foul_rate,
                         "root_fantasyland_frequency": diagnostic.root_fantasyland_frequency,
                         "opponent_fantasyland_frequency": diagnostic.opponent_fantasyland_frequency,
+                        "mean_policy_decisions": diagnostic.mean_policy_decisions,
+                        "exact_late_search_rollout_frequency": diagnostic.exact_late_search_rollout_frequency,
+                        "mean_exact_late_search_decisions": diagnostic.mean_exact_late_search_decisions,
+                        "mean_exact_late_search_nodes": diagnostic.mean_exact_late_search_nodes,
                     }
                     for diagnostic in case.action_diagnostics
                 ],
             }
             for case in run.case_results
+        ],
+    }
+
+
+def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> dict[str, Any]:
+    return {
+        "policy_name": aggregate.policy_name,
+        "case_count": aggregate.case_count,
+        "action_count": aggregate.action_count,
+        "sample_count": aggregate.sample_count,
+        "root_foul_rate": aggregate.root_foul_rate,
+        "opponent_foul_rate": aggregate.opponent_foul_rate,
+        "both_foul_rate": aggregate.both_foul_rate,
+        "continuation_frequency": aggregate.continuation_frequency,
+        "root_fantasyland_frequency": aggregate.root_fantasyland_frequency,
+        "opponent_fantasyland_frequency": aggregate.opponent_fantasyland_frequency,
+        "mean_policy_decisions": aggregate.mean_policy_decisions,
+        "exact_late_search_rollout_frequency": aggregate.exact_late_search_rollout_frequency,
+        "mean_exact_late_search_decisions": aggregate.mean_exact_late_search_decisions,
+        "mean_exact_late_search_nodes": aggregate.mean_exact_late_search_nodes,
+        "top_action_root_foul_rate": aggregate.top_action_root_foul_rate,
+        "top_action_opponent_foul_rate": aggregate.top_action_opponent_foul_rate,
+        "top_action_both_foul_rate": aggregate.top_action_both_foul_rate,
+        "top_action_continuation_frequency": aggregate.top_action_continuation_frequency,
+        "top_action_root_fantasyland_frequency": aggregate.top_action_root_fantasyland_frequency,
+        "top_action_opponent_fantasyland_frequency": aggregate.top_action_opponent_fantasyland_frequency,
+        "top_action_mean_policy_decisions": aggregate.top_action_mean_policy_decisions,
+        "top_action_exact_late_search_rollout_frequency": (
+            aggregate.top_action_exact_late_search_rollout_frequency
+        ),
+        "top_action_mean_exact_late_search_decisions": aggregate.top_action_mean_exact_late_search_decisions,
+        "top_action_mean_exact_late_search_nodes": aggregate.top_action_mean_exact_late_search_nodes,
+        "labeled_top1_rate": aggregate.labeled_top1_rate,
+        "labeled_top3_rate": aggregate.labeled_top3_rate,
+        "elapsed_seconds": aggregate.elapsed_seconds,
+    }
+
+
+def _benchmark_tag_slice_aggregate_payload(aggregate) -> dict[str, Any]:
+    return {
+        "case_count": aggregate.case_count,
+        "action_count": aggregate.action_count,
+        "sample_count": aggregate.sample_count,
+        "root_foul_rate": aggregate.root_foul_rate,
+        "both_foul_rate": aggregate.both_foul_rate,
+        "continuation_frequency": aggregate.continuation_frequency,
+        "root_fantasyland_frequency": aggregate.root_fantasyland_frequency,
+        "exact_late_search_rollout_frequency": aggregate.exact_late_search_rollout_frequency,
+        "top_action_root_foul_rate": aggregate.top_action_root_foul_rate,
+        "top_action_both_foul_rate": aggregate.top_action_both_foul_rate,
+        "top_action_continuation_frequency": aggregate.top_action_continuation_frequency,
+        "top_action_root_fantasyland_frequency": aggregate.top_action_root_fantasyland_frequency,
+        "top_action_exact_late_search_rollout_frequency": (
+            aggregate.top_action_exact_late_search_rollout_frequency
+        ),
+        "labeled_top1_rate": aggregate.labeled_top1_rate,
+        "labeled_top3_rate": aggregate.labeled_top3_rate,
+    }
+
+
+def _benchmark_comparison_payload(comparison: BenchmarkComparison) -> dict[str, Any]:
+    return {
+        "left_policy_name": comparison.left_policy_name,
+        "right_policy_name": comparison.right_policy_name,
+        "case_count": comparison.case_count,
+        "left": _benchmark_aggregate_payload(comparison.left),
+        "right": _benchmark_aggregate_payload(comparison.right),
+        "deltas": dict(comparison.deltas),
+        "top_action_changes": [
+            {
+                "case_name": change.case_name,
+                "left_top_action_index": change.left_top_action_index,
+                "right_top_action_index": change.right_top_action_index,
+                "left_top_mean_value": change.left_top_mean_value,
+                "right_top_mean_value": change.right_top_mean_value,
+            }
+            for change in comparison.top_action_changes
+        ],
+        "tag_slices": [
+            {
+                "tag": tag_slice.tag,
+                "case_count": tag_slice.case_count,
+                "left": _benchmark_tag_slice_aggregate_payload(tag_slice.left),
+                "right": _benchmark_tag_slice_aggregate_payload(tag_slice.right),
+                "deltas": dict(tag_slice.deltas),
+            }
+            for tag_slice in comparison.tag_slices
         ],
     }
 
@@ -365,4 +465,79 @@ def _benchmark_run_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-__all__ = ["render_actions", "render_benchmark_run", "render_move_analysis", "render_observation", "render_state"]
+def _benchmark_comparison_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Benchmark Comparison",
+        f"left_policy_name: {payload['left_policy_name']}",
+        f"right_policy_name: {payload['right_policy_name']}",
+        f"case_count: {payload['case_count']}",
+    ]
+    for field in (
+        "root_foul_rate",
+        "opponent_foul_rate",
+        "both_foul_rate",
+        "continuation_frequency",
+        "root_fantasyland_frequency",
+        "opponent_fantasyland_frequency",
+        "mean_policy_decisions",
+        "exact_late_search_rollout_frequency",
+        "mean_exact_late_search_decisions",
+        "mean_exact_late_search_nodes",
+        "top_action_root_foul_rate",
+        "top_action_opponent_foul_rate",
+        "top_action_both_foul_rate",
+        "top_action_continuation_frequency",
+        "top_action_root_fantasyland_frequency",
+        "top_action_opponent_fantasyland_frequency",
+        "top_action_mean_policy_decisions",
+        "top_action_exact_late_search_rollout_frequency",
+        "top_action_mean_exact_late_search_decisions",
+        "top_action_mean_exact_late_search_nodes",
+        "labeled_top1_rate",
+        "labeled_top3_rate",
+        "elapsed_seconds",
+    ):
+        left_value = _format_optional_float(payload["left"][field])
+        right_value = _format_optional_float(payload["right"][field])
+        delta_value = _format_optional_float(payload["deltas"][field], signed=True)
+        lines.append(f"{field}: left={left_value} right={right_value} delta={delta_value}")
+    if payload["top_action_changes"]:
+        lines.append("top_action_changes:")
+        for change in payload["top_action_changes"]:
+            lines.append(
+                f"  {change['case_name']}: "
+                f"{change['left_top_action_index']} -> {change['right_top_action_index']} "
+                f"(means {change['left_top_mean_value']:.6f} -> {change['right_top_mean_value']:.6f})"
+            )
+    else:
+        lines.append("top_action_changes: none")
+    if payload["tag_slices"]:
+        lines.append("tag_slices:")
+        for tag_slice in payload["tag_slices"]:
+            lines.append(
+                f"  {tag_slice['tag']}: cases={tag_slice['case_count']} "
+                f"top_root={tag_slice['left']['top_action_root_foul_rate']:.6f}"
+                f"->{tag_slice['right']['top_action_root_foul_rate']:.6f} "
+                f"delta={tag_slice['deltas']['top_action_root_foul_rate']:+.6f}"
+            )
+    else:
+        lines.append("tag_slices: none")
+    return "\n".join(lines)
+
+
+def _format_optional_float(value: float | None, *, signed: bool = False) -> str:
+    if value is None:
+        return "n/a"
+    if signed:
+        return f"{value:+.6f}"
+    return f"{value:.6f}"
+
+
+__all__ = [
+    "render_actions",
+    "render_benchmark_comparison",
+    "render_benchmark_run",
+    "render_move_analysis",
+    "render_observation",
+    "render_state",
+]
