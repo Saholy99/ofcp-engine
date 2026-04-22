@@ -10,10 +10,12 @@ import random
 from typing import Any
 
 from ofc.actions import GameAction
-from ofc.board import Board
-from ofc.cards import format_card
+from ofc.board import Board, visible_cards
+from ofc.cards import Card, format_card, full_deck, parse_card
+from ofc.config import DEFAULT_CONFIG
+from ofc.deck import DeckState
 from ofc.engine import new_hand, new_match
-from ofc.state import GameState, PlayerId, PlayerState
+from ofc.state import GameState, HandPhase, PlayerId, PlayerState
 from ofc.transitions import apply_action, legal_actions
 from ofc_solver.models import SUPPORTED_ROOT_PHASES
 from ofc_solver.rollout_policy import sample_fantasyland_set_action
@@ -127,6 +129,8 @@ def _build_cases(*, output_dir: Path, generated_dir: Path) -> tuple[CorpusCase, 
         tags = _fantasyland_tags(normal_actions_to_apply)
         cases.append(_generated_case(generated_dir, f"generated-fantasyland-{index:02d}", state, tags))
 
+    cases.extend(_strategy_cases(generated_dir))
+
     return tuple(cases)
 
 
@@ -193,6 +197,106 @@ def _generated_case(
         rng_seed=name,
         tags=tags,
         state=state,
+    )
+
+
+def _cards(tokens: str) -> tuple[Card, ...]:
+    return tuple(parse_card(token) for token in tokens.split())
+
+
+def _remaining_cards(used_cards: tuple[Card, ...]) -> tuple[Card, ...]:
+    used = set(used_cards)
+    return tuple(card for card in full_deck() if card not in used)
+
+
+def _strategy_cases(generated_dir: Path) -> tuple[CorpusCase, ...]:
+    tags = ("early_draw", "strategy", "survivability", "generated")
+    return (
+        _generated_case(
+            generated_dir,
+            "generated-strategy-unsupported-top-pair",
+            _survivability_draw_state(
+                board=Board(
+                    top=_cards("Qh"),
+                    middle=_cards("7c 4d"),
+                    bottom=_cards("8c 5d"),
+                ),
+                draw="Qd 2c 3d",
+            ),
+            tags,
+        ),
+        _generated_case(
+            generated_dir,
+            "generated-strategy-unsupported-top-trips",
+            _survivability_draw_state(
+                board=Board(
+                    top=_cards("Qh Qd"),
+                    middle=_cards("7c 4d"),
+                    bottom=_cards("8c 5d 6h"),
+                ),
+                hidden_discards="9s",
+                draw="Qs 2c 3d",
+            ),
+            tags,
+        ),
+        _generated_case(
+            generated_dir,
+            "generated-strategy-middle-over-bottom-pressure",
+            _survivability_draw_state(
+                board=Board(
+                    top=_cards("4h"),
+                    middle=_cards("Ah Ad 7c"),
+                    bottom=_cards("9c 5d 6h"),
+                ),
+                hidden_discards="8s",
+                draw="As 2c 3d",
+            ),
+            tags,
+        ),
+    )
+
+
+def _survivability_draw_state(*, board: Board, draw: str, hidden_discards: str = "") -> GameState:
+    acting_player = PlayerState(
+        player_id=PlayerId.PLAYER_0,
+        board=board,
+        hidden_discards=_cards(hidden_discards),
+        current_private_draw=_cards(draw),
+        fantasyland_active=False,
+        initial_placement_done=True,
+        normal_draws_taken=len(_cards(hidden_discards)),
+        fantasyland_set_done=False,
+    )
+    opponent = PlayerState(
+        player_id=PlayerId.PLAYER_1,
+        board=Board(
+            top=_cards("9h"),
+            middle=_cards("Tc 3h"),
+            bottom=_cards("Jc 4s"),
+        ),
+        hidden_discards=(),
+        current_private_draw=(),
+        fantasyland_active=False,
+        initial_placement_done=True,
+        normal_draws_taken=1,
+        fantasyland_set_done=False,
+    )
+    used_cards = (
+        visible_cards(acting_player.board)
+        + acting_player.hidden_discards
+        + acting_player.current_private_draw
+        + visible_cards(opponent.board)
+    )
+    return GameState(
+        config=DEFAULT_CONFIG,
+        hand_number=1,
+        button=PlayerId.PLAYER_1,
+        acting_player=PlayerId.PLAYER_0,
+        phase=HandPhase.DRAW,
+        deck=DeckState(undealt_cards=_remaining_cards(used_cards)),
+        players=(acting_player, opponent),
+        is_continuation_hand=False,
+        next_hand_fantasyland=(False, False),
     )
 
 

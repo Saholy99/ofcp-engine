@@ -8,7 +8,9 @@ from ofc.engine import new_hand, new_match
 from ofc.state import HandPhase, PlayerId
 from ofc.transitions import apply_action, legal_actions, validate_action
 from ofc_analysis.action_codec import encode_action
+from ofc_analysis.scenario import load_scenario
 from ofc_analysis.play import (
+    MonteCarloSuggestionBackend,
     NoopSuggestionBackend,
     _parse_hero_action_choice,
     parse_cards_input,
@@ -209,6 +211,24 @@ class AnalysisPlayTest(unittest.TestCase):
         self.assertEqual(HandPhase.FANTASYLAND_SET, state.phase)
         self.assertIsInstance(action, SetFantasylandHandAction)
         validate_action(state, action)
+
+    def test_monte_carlo_suggestion_backend_accepts_heuristic_policy(self) -> None:
+        state = load_scenario("scenarios/regression/immediate_scoring.json").state
+        backend = MonteCarloSuggestionBackend(
+            rollouts_per_action=1,
+            rng_seed="heuristic-play-test",
+            policy_name="heuristic",
+        )
+
+        suggestions = backend.top_moves(
+            state,
+            player_id=PlayerId.PLAYER_0,
+            decision_index=0,
+            top_n=1,
+        )
+
+        self.assertEqual(1, len(suggestions))
+        self.assertIn(suggestions[0].action_index, {1, 4})
 
     def test_scripted_normal_hand_progresses_to_final_result(self) -> None:
         inputs = iter(

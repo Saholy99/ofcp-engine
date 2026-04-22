@@ -8,7 +8,8 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from ofc_analysis.cli import main
-from ofc_solver.benchmark import load_benchmark_manifest, run_benchmark_manifest
+from ofc_analysis.render import render_benchmark_run
+from ofc_solver.benchmark import compare_benchmark_runs, load_benchmark_manifest, run_benchmark_manifest
 
 
 FIXTURE_DIR = Path("scenarios/regression")
@@ -45,6 +46,10 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual(232, len(initial_case.action_diagnostics))
         self.assertTrue(all(diagnostic.sample_count == 1 for diagnostic in initial_case.action_diagnostics))
         self.assertTrue(all(0.0 <= diagnostic.continuation_frequency <= 1.0 for diagnostic in initial_case.action_diagnostics))
+        self.assertTrue(all(diagnostic.mean_policy_decisions >= 0.0 for diagnostic in initial_case.action_diagnostics))
+        self.assertTrue(
+            all(diagnostic.exact_late_search_rollout_frequency == 0.0 for diagnostic in initial_case.action_diagnostics)
+        )
         self.assertGreaterEqual(initial_case.elapsed_seconds, 0.0)
 
     def test_run_benchmark_manifest_scores_labeled_expected_actions(self) -> None:
@@ -65,6 +70,7 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual(3, top_diagnostic.sample_count)
         self.assertEqual(0.0, top_diagnostic.mean_continuation_value)
         self.assertEqual(0.0, top_diagnostic.continuation_frequency)
+        self.assertEqual(0.0, top_diagnostic.exact_late_search_rollout_frequency)
 
     def test_benchmark_solver_cli_outputs_json(self) -> None:
         stdout = io.StringIO()
@@ -82,12 +88,91 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual(232, payload["cases"][0]["action_count"])
         self.assertIn("action_diagnostics", payload["cases"][0])
         self.assertEqual(1, payload["cases"][0]["action_diagnostics"][0]["sample_count"])
+        self.assertIn("mean_policy_decisions", payload["cases"][0]["action_diagnostics"][0])
+        self.assertIn("exact_late_search_rollout_frequency", payload["cases"][0]["action_diagnostics"][0])
+
+    def test_run_benchmark_manifest_accepts_heuristic_policy(self) -> None:
+        manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
+
+        run = run_benchmark_manifest(manifest, policy_name="heuristic")
+
+        self.assertEqual("heuristic", run.policy_name)
+        self.assertEqual(len(manifest.cases), run.case_count)
+
+    def test_benchmark_solver_cli_accepts_heuristic_policy(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(["benchmark-solver", str(BENCHMARK_MANIFEST), "--policy", "heuristic", "--json"])
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("heuristic", payload["policy_name"])
 
     def test_manifest_rejects_invalid_policy_name(self) -> None:
         manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
 
-        with self.assertRaisesRegex(ValueError, "Unsupported benchmark policy"):
-            run_benchmark_manifest(manifest, policy_name="heuristic")
+        with self.assertRaisesRegex(ValueError, "Unsupported rollout policy"):
+            run_benchmark_manifest(manifest, policy_name="not-a-policy")
+
+    def test_compare_benchmark_runs_reports_aggregate_deltas(self) -> None:
+        manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
+        random_run = run_benchmark_manifest(manifest, policy_name="random")
+        heuristic_run = run_benchmark_manifest(manifest, policy_name="heuristic")
+
+        comparison = compare_benchmark_runs(random_run, heuristic_run)
+
+        self.assertEqual("random", comparison.left_policy_name)
+        self.assertEqual("heuristic", comparison.right_policy_name)
+        self.assertEqual(random_run.case_count, comparison.case_count)
+        self.assertIn("root_foul_rate", comparison.deltas)
+        self.assertIn("both_foul_rate", comparison.deltas)
+        self.assertIn("top_action_root_foul_rate", comparison.deltas)
+        self.assertIn("top_action_both_foul_rate", comparison.deltas)
+        self.assertIn("exact_late_search_rollout_frequency", comparison.deltas)
+        self.assertIn("top_action_exact_late_search_rollout_frequency", comparison.deltas)
+        self.assertGreaterEqual(comparison.left.top_action_root_foul_rate, 0.0)
+        self.assertGreaterEqual(comparison.right.top_action_root_foul_rate, 0.0)
+        self.assertEqual(tuple(sorted(slice.tag for slice in comparison.tag_slices)), tuple(slice.tag for slice in comparison.tag_slices))
+        initial_slice = next(slice for slice in comparison.tag_slices if slice.tag == "initial_deal")
+        self.assertGreaterEqual(initial_slice.case_count, 1)
+        self.assertIn("top_action_root_foul_rate", initial_slice.deltas)
+
+    def test_compare_benchmarks_cli_outputs_json(self) -> None:
+        manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
+        random_run = run_benchmark_manifest(manifest, policy_name="random")
+        heuristic_run = run_benchmark_manifest(manifest, policy_name="heuristic")
+
+        with TemporaryDirectory() as temp_dir:
+            left_path = Path(temp_dir) / "random.json"
+            right_path = Path(temp_dir) / "heuristic.json"
+            left_path.write_text(json.dumps(render_benchmark_run(random_run, as_json=True).payload), encoding="utf-8")
+            right_path.write_text(json.dumps(render_benchmark_run(heuristic_run, as_json=True).payload), encoding="utf-8")
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                exit_code = main(["compare-benchmarks", str(left_path), str(right_path), "--json"])
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("random", payload["left_policy_name"])
+        self.assertEqual("heuristic", payload["right_policy_name"])
+        self.assertIn("root_foul_rate", payload["deltas"])
+        self.assertIn("top_action_root_foul_rate", payload["deltas"])
+        self.assertIn("exact_late_search_rollout_frequency", payload["deltas"])
+        self.assertIn("top_action_exact_late_search_rollout_frequency", payload["deltas"])
+        self.assertIn("top_action_root_foul_rate", payload["left"])
+        self.assertIn("exact_late_search_rollout_frequency", payload["left"])
+        self.assertIn("top_action_changes", payload)
+        self.assertIn("tag_slices", payload)
+        self.assertEqual(sorted(slice["tag"] for slice in payload["tag_slices"]), [slice["tag"] for slice in payload["tag_slices"]])
+        initial_slice = next(slice for slice in payload["tag_slices"] if slice["tag"] == "initial_deal")
+        self.assertIn("top_action_root_foul_rate", initial_slice["left"])
+        self.assertIn("top_action_root_foul_rate", initial_slice["deltas"])
 
     def test_manifest_paths_are_resolved_relative_to_manifest_file(self) -> None:
         with TemporaryDirectory() as temp_dir:

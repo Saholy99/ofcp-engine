@@ -25,10 +25,11 @@ python3 -m ofc_analysis.cli list-actions scenarios/regression/immediate_scoring.
 
 ## Run The Simple Solver
 
-The current solver is a baseline Monte Carlo ranker. It estimates each legal move by applying that move, simulating many random futures, and ranking moves by average zero-sum score.
+The current solver is a Monte Carlo ranker. By default it uses the original random rollout policy; pass `--policy heuristic` to use the greedy heuristic rollout policy.
 
 ```bash
 python3 -m ofc_analysis.cli solve-move scenarios/regression/immediate_scoring.json --observer player_0 --rollouts 100 --seed 123
+python3 -m ofc_analysis.cli solve-move scenarios/regression/immediate_scoring.json --observer player_0 --rollouts 100 --seed 123 --policy heuristic
 ```
 
 More rollouts usually produce less noisy estimates but take longer. The seed makes results reproducible.
@@ -39,8 +40,11 @@ The checked-in benchmark manifest is small and stable. To generate a larger loca
 
 ```bash
 python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_diagnostics.json --policy random --json
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_diagnostics.json --policy heuristic --json
 python3 -m ofc_solver.benchmark_corpus
-python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_expansive.json --policy random --json
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_expansive.json --policy random --json > /tmp/ofcp_random_expansive.json
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_expansive.json --policy heuristic --json > /tmp/ofcp_heuristic_expansive.json
+python3 -m ofc_analysis.cli compare-benchmarks /tmp/ofcp_random_expansive.json /tmp/ofcp_heuristic_expansive.json --json
 ```
 
 ## Play One Hand Interactively
@@ -49,7 +53,7 @@ Use `play-hand` to play one hand from a single hero seat. Hero turns show the to
 opponent turns only ask for visible placements.
 
 ```bash
-python3 -m ofc_analysis.cli play-hand --hero player_0 --button player_1 --no-fantasyland --rollouts 5 --seed manual
+python3 -m ofc_analysis.cli play-hand --hero player_0 --button player_1 --no-fantasyland --rollouts 5 --seed manual --policy heuristic
 ```
 
 For your own turns, enter all dealt cards and use `top`, `middle`, `bottom`, or `discard` in card order.
