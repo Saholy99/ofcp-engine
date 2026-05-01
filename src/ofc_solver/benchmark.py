@@ -19,6 +19,7 @@ from ofc_analysis.observation import project_observation
 from ofc_analysis.scenario import load_scenario
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
 from ofc_solver.policy_registry import policy_from_name
+from ofc_solver.root_action_risk import RootActionRiskAssessment, score_root_action
 from ofc_solver.rollout import RolloutResult, run_rollout
 from ofc_solver.rollout_policy import RolloutPolicy
 from ofc_solver.sampler import sample_state
@@ -95,6 +96,7 @@ class BenchmarkRun:
     policy_name: str
     case_results: tuple[BenchmarkCaseResult, ...]
     elapsed_seconds: float
+    root_action_risk_enabled: bool = False
 
     @property
     def case_count(self) -> int:
@@ -191,6 +193,18 @@ class BenchmarkComparison:
     tag_slices: tuple[BenchmarkTagSliceComparison, ...]
 
 
+@dataclass(frozen=True)
+class RootActionRiskBenchmark:
+    """Focused comparison of heuristic root ranking with and without root risk."""
+
+    comparison: BenchmarkComparison
+    left_run: BenchmarkRun
+    right_run: BenchmarkRun
+    include_tags: tuple[str, ...]
+    exclude_tags: tuple[str, ...]
+    phases: tuple[HandPhase, ...]
+
+
 def load_benchmark_manifest(path: str | Path) -> BenchmarkManifest:
     """Load a solver benchmark manifest from disk."""
 
@@ -224,20 +238,34 @@ def load_benchmark_manifest_data(
     return BenchmarkManifest(version="1", cases=cases, source_path=source_path)
 
 
-def run_benchmark_manifest(manifest: BenchmarkManifest, *, policy_name: str = "random") -> BenchmarkRun:
+def run_benchmark_manifest(
+    manifest: BenchmarkManifest,
+    *,
+    policy_name: str = "random",
+    root_action_risk: bool = False,
+) -> BenchmarkRun:
     """Run all cases in a loaded benchmark manifest."""
 
     policy = policy_from_name(policy_name)
     start = time.perf_counter()
-    case_results = tuple(run_benchmark_case(case, policy=policy) for case in manifest.cases)
+    case_results = tuple(
+        run_benchmark_case(case, policy=policy, root_action_risk=root_action_risk)
+        for case in manifest.cases
+    )
     return BenchmarkRun(
-        policy_name=policy_name,
+        policy_name=f"{policy_name}+root-risk" if root_action_risk else policy_name,
         case_results=case_results,
         elapsed_seconds=time.perf_counter() - start,
+        root_action_risk_enabled=root_action_risk,
     )
 
 
-def run_benchmark_case(case: BenchmarkCase, *, policy: RolloutPolicy) -> BenchmarkCaseResult:
+def run_benchmark_case(
+    case: BenchmarkCase,
+    *,
+    policy: RolloutPolicy,
+    root_action_risk: bool = False,
+) -> BenchmarkCaseResult:
     """Run one benchmark case and collect ranked actions plus diagnostics."""
 
     exact_state = load_scenario(case.scenario_path).state
@@ -269,7 +297,8 @@ def run_benchmark_case(case: BenchmarkCase, *, policy: RolloutPolicy) -> Benchma
             )
             for _ in range(case.rollouts_per_action)
         )
-        estimates.append(_estimate(action_index, action, rollout_results))
+        risk = score_root_action(enumeration_state, action) if root_action_risk else None
+        estimates.append(_estimate(action_index, action, rollout_results, root_risk=risk))
         diagnostics.append(_diagnostics(action_index, rollout_results))
 
     ranked_actions = tuple(sorted(estimates, key=lambda estimate: (-estimate.mean_value, estimate.action_index)))
@@ -316,6 +345,63 @@ def compare_benchmark_runs(left: BenchmarkRun, right: BenchmarkRun) -> Benchmark
         deltas=_aggregate_deltas(left_aggregate, right_aggregate),
         top_action_changes=_top_action_changes_from_runs(left, right),
         tag_slices=_tag_slice_comparisons_from_runs(left, right),
+    )
+
+
+def filter_benchmark_manifest(
+    manifest: BenchmarkManifest,
+    *,
+    include_tags: tuple[str, ...] = (),
+    exclude_tags: tuple[str, ...] = (),
+    phases: tuple[HandPhase, ...] = (),
+) -> BenchmarkManifest:
+    """Return a manifest subset matching tag and root phase filters."""
+
+    include = set(include_tags)
+    exclude = set(exclude_tags)
+    phase_set = set(phases)
+    selected: list[BenchmarkCase] = []
+    for case in manifest.cases:
+        case_tags = set(case.tags)
+        if include and not case_tags.intersection(include):
+            continue
+        if exclude and case_tags.intersection(exclude):
+            continue
+        if phase_set:
+            state = load_scenario(case.scenario_path).state
+            if state.phase not in phase_set:
+                continue
+        selected.append(case)
+    if not selected:
+        raise ValueError("No benchmark cases matched the requested root-action-risk filters")
+    return BenchmarkManifest(version=manifest.version, cases=tuple(selected), source_path=manifest.source_path)
+
+
+def run_root_action_risk_benchmark(
+    manifest: BenchmarkManifest,
+    *,
+    policy_name: str = "heuristic",
+    include_tags: tuple[str, ...] = ("initial_deal", "early_draw"),
+    exclude_tags: tuple[str, ...] = ("final_draw",),
+    phases: tuple[HandPhase, ...] = (),
+) -> RootActionRiskBenchmark:
+    """Run a focused heuristic-vs-root-risk benchmark comparison."""
+
+    filtered = filter_benchmark_manifest(
+        manifest,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+    )
+    left = run_benchmark_manifest(filtered, policy_name=policy_name, root_action_risk=False)
+    right = run_benchmark_manifest(filtered, policy_name=policy_name, root_action_risk=True)
+    return RootActionRiskBenchmark(
+        comparison=compare_benchmark_runs(left, right),
+        left_run=left,
+        right_run=right,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
     )
 
 
@@ -374,18 +460,28 @@ def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
     )
 
 
-def _estimate(action_index: int, action: GameAction, rollout_results: tuple[RolloutResult, ...]) -> MoveEstimate:
+def _estimate(
+    action_index: int,
+    action: GameAction,
+    rollout_results: tuple[RolloutResult, ...],
+    *,
+    root_risk: RootActionRiskAssessment | None = None,
+) -> MoveEstimate:
     values = tuple(result.total_value for result in rollout_results)
     mean_value = sum(values) / len(values)
     variance = sum((value - mean_value) ** 2 for value in values) / len(values)
+    risk_score = 0.0 if root_risk is None else root_risk.contribution
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
-        mean_value=mean_value,
+        mean_value=mean_value + risk_score,
         stddev=math.sqrt(variance),
         sample_count=len(values),
         min_value=min(values),
         max_value=max(values),
+        rollout_mean_value=mean_value,
+        root_risk_score=risk_score,
+        root_risk_reasons=() if root_risk is None else root_risk.reasons,
     )
 
 
@@ -895,11 +991,14 @@ __all__ = [
     "BenchmarkRun",
     "BenchmarkTagSliceAggregate",
     "BenchmarkTagSliceComparison",
+    "RootActionRiskBenchmark",
     "TopActionChange",
     "compare_benchmark_payloads",
     "compare_benchmark_runs",
+    "filter_benchmark_manifest",
     "load_benchmark_manifest",
     "load_benchmark_manifest_data",
     "run_benchmark_case",
     "run_benchmark_manifest",
+    "run_root_action_risk_benchmark",
 ]

@@ -14,7 +14,7 @@ from ofc_analysis.observation import PlayerObservation
 from ofc_solver.models import MoveAnalysis
 
 if TYPE_CHECKING:
-    from ofc_solver.benchmark import BenchmarkAggregate, BenchmarkComparison, BenchmarkRun
+    from ofc_solver.benchmark import BenchmarkAggregate, BenchmarkComparison, BenchmarkRun, RootActionRiskBenchmark
 
 
 def render_state(state: GameState, *, as_json: bool = False) -> RenderedOutput:
@@ -72,6 +72,19 @@ def render_benchmark_comparison(comparison: BenchmarkComparison, *, as_json: boo
     if as_json:
         return RenderedOutput(payload=payload)
     return RenderedOutput(text=_benchmark_comparison_text(payload), payload=payload)
+
+
+def render_root_action_risk_benchmark(
+    benchmark: RootActionRiskBenchmark,
+    *,
+    as_json: bool = False,
+) -> RenderedOutput:
+    """Render the focused root-action-risk benchmark comparison."""
+
+    payload = _root_action_risk_benchmark_payload(benchmark)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_root_action_risk_benchmark_text(payload), payload=payload)
 
 
 def _cards_payload(cards: tuple[Card, ...]) -> list[str]:
@@ -165,10 +178,13 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
                 "action_index": estimate.action_index,
                 "action": estimate.action.as_dict(),
                 "mean_value": estimate.mean_value,
+                "rollout_mean_value": estimate.rollout_mean_value,
                 "stddev": estimate.stddev,
                 "sample_count": estimate.sample_count,
                 "min_value": estimate.min_value,
                 "max_value": estimate.max_value,
+                "root_risk_score": estimate.root_risk_score,
+                "root_risk_reasons": list(estimate.root_risk_reasons),
             }
             for rank, estimate in enumerate(analysis.ranked_actions, start=1)
         ],
@@ -178,6 +194,7 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
 def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
     return {
         "policy_name": run.policy_name,
+        "root_action_risk_enabled": run.root_action_risk_enabled,
         "case_count": run.case_count,
         "elapsed_seconds": run.elapsed_seconds,
         "cases": [
@@ -200,10 +217,13 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                         "rank": rank,
                         "action_index": estimate.action_index,
                         "mean_value": estimate.mean_value,
+                        "rollout_mean_value": estimate.rollout_mean_value,
                         "stddev": estimate.stddev,
                         "sample_count": estimate.sample_count,
                         "min_value": estimate.min_value,
                         "max_value": estimate.max_value,
+                        "root_risk_score": estimate.root_risk_score,
+                        "root_risk_reasons": list(estimate.root_risk_reasons),
                         "action": estimate.action.as_dict(),
                     }
                     for rank, estimate in enumerate(case.ranked_actions, start=1)
@@ -321,6 +341,53 @@ def _benchmark_comparison_payload(comparison: BenchmarkComparison) -> dict[str, 
     }
 
 
+def _root_action_risk_benchmark_payload(benchmark) -> dict[str, Any]:
+    comparison_payload = _benchmark_comparison_payload(benchmark.comparison)
+    comparison_payload["root_action_risk"] = {
+        "enabled_on_left": benchmark.left_run.root_action_risk_enabled,
+        "enabled_on_right": benchmark.right_run.root_action_risk_enabled,
+        "include_tags": list(benchmark.include_tags),
+        "exclude_tags": list(benchmark.exclude_tags),
+        "phases": [phase.value for phase in benchmark.phases],
+    }
+    comparison_payload["cases"] = [
+        {
+            "name": left_case.name,
+            "scenario_path": str(left_case.scenario_path),
+            "tags": list(left_case.tags),
+            "phase": left_case.phase.value,
+            "left_top_action_index": left_case.top_action_index,
+            "right_top_action_index": right_case.top_action_index,
+            "left_elapsed_seconds": left_case.elapsed_seconds,
+            "right_elapsed_seconds": right_case.elapsed_seconds,
+            "left_ranked_actions": _ranked_action_payloads(left_case.ranked_actions[:5]),
+            "right_ranked_actions": _ranked_action_payloads(right_case.ranked_actions[:5]),
+        }
+        for left_case, right_case in zip(
+            benchmark.left_run.case_results,
+            benchmark.right_run.case_results,
+            strict=True,
+        )
+    ]
+    return comparison_payload
+
+
+def _ranked_action_payloads(ranked_actions) -> list[dict[str, Any]]:
+    return [
+        {
+            "rank": rank,
+            "action_index": estimate.action_index,
+            "mean_value": estimate.mean_value,
+            "rollout_mean_value": estimate.rollout_mean_value,
+            "root_risk_score": estimate.root_risk_score,
+            "root_risk_reasons": list(estimate.root_risk_reasons),
+            "sample_count": estimate.sample_count,
+            "action": estimate.action.as_dict(),
+        }
+        for rank, estimate in enumerate(ranked_actions, start=1)
+    ]
+
+
 def _state_text(payload: dict[str, Any]) -> str:
     lines = [
         "Exact State",
@@ -422,7 +489,8 @@ def _move_analysis_text(payload: dict[str, Any]) -> str:
         suffix = f" discard={action['payload']['discard']}" if "discard" in action["payload"] else ""
         lines.append(
             f"[{estimate['rank']}] action_index={estimate['action_index']} "
-            f"mean={estimate['mean_value']:.6f} stddev={estimate['stddev']:.6f} "
+            f"mean={estimate['mean_value']:.6f} rollout_mean={_format_optional_float(estimate['rollout_mean_value'])} "
+            f"root_risk={estimate['root_risk_score']:.6f} stddev={estimate['stddev']:.6f} "
             f"samples={estimate['sample_count']} min={estimate['min_value']:.6f} "
             f"max={estimate['max_value']:.6f} {action['action_type']} "
             f"{action['payload']['player_id']} placements=[{placements}]{suffix}"
@@ -459,7 +527,8 @@ def _benchmark_run_text(payload: dict[str, Any]) -> str:
         for estimate in case["ranked_actions"][:3]:
             lines.append(
                 f"  rank {estimate['rank']}: action_index={estimate['action_index']} "
-                f"mean={estimate['mean_value']:.6f} stddev={estimate['stddev']:.6f} "
+                f"mean={estimate['mean_value']:.6f} "
+                f"root_risk={estimate['root_risk_score']:.6f} stddev={estimate['stddev']:.6f} "
                 f"samples={estimate['sample_count']}"
             )
     return "\n".join(lines)
@@ -525,6 +594,42 @@ def _benchmark_comparison_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _root_action_risk_benchmark_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Root Action Risk Benchmark",
+        f"left_policy_name: {payload['left_policy_name']}",
+        f"right_policy_name: {payload['right_policy_name']}",
+        f"case_count: {payload['case_count']}",
+        f"include_tags: {json.dumps(payload['root_action_risk']['include_tags'])}",
+        f"exclude_tags: {json.dumps(payload['root_action_risk']['exclude_tags'])}",
+    ]
+    for field in (
+        "top_action_root_foul_rate",
+        "top_action_both_foul_rate",
+        "top_action_continuation_frequency",
+        "labeled_top1_rate",
+        "labeled_top3_rate",
+        "elapsed_seconds",
+    ):
+        left_value = _format_optional_float(payload["left"][field])
+        right_value = _format_optional_float(payload["right"][field])
+        delta_value = _format_optional_float(payload["deltas"][field], signed=True)
+        lines.append(f"{field}: left={left_value} right={right_value} delta={delta_value}")
+    for case in payload["cases"]:
+        lines.append(
+            f"case: {case['name']} left_top={case['left_top_action_index']} "
+            f"right_top={case['right_top_action_index']}"
+        )
+        for estimate in case["right_ranked_actions"][:3]:
+            reasons = ",".join(estimate["root_risk_reasons"]) or "none"
+            lines.append(
+                f"  right rank {estimate['rank']}: action_index={estimate['action_index']} "
+                f"mean={estimate['mean_value']:.6f} root_risk={estimate['root_risk_score']:.6f} "
+                f"reasons={reasons}"
+            )
+    return "\n".join(lines)
+
+
 def _format_optional_float(value: float | None, *, signed: bool = False) -> str:
     if value is None:
         return "n/a"
@@ -539,5 +644,6 @@ __all__ = [
     "render_benchmark_run",
     "render_move_analysis",
     "render_observation",
+    "render_root_action_risk_benchmark",
     "render_state",
 ]
