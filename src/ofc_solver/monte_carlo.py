@@ -12,6 +12,7 @@ from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_action
 from ofc_analysis.observation import PlayerObservation
 from ofc_solver.models import SUPPORTED_ROOT_PHASES, MoveAnalysis, MoveEstimate
+from ofc_solver.root_action_risk import RootActionRiskAssessment, score_root_action
 from ofc_solver.rollout import run_rollout
 from ofc_solver.rollout_policy import RandomRolloutPolicy, RolloutPolicy
 from ofc_solver.sampler import sample_state
@@ -24,6 +25,7 @@ def rank_actions_from_state(
     rollouts_per_action: int,
     rng_seed: int | str | None,
     policy: RolloutPolicy | None = None,
+    root_action_risk: bool = False,
 ) -> MoveAnalysis:
     """Rank legal root actions from an exact engine state."""
 
@@ -34,6 +36,7 @@ def rank_actions_from_state(
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts_per_action,
+        root_risk_fn=_root_risk_fn(state) if root_action_risk else None,
         rollout_fn=lambda action: run_rollout(
             state,
             root_action=action,
@@ -57,6 +60,7 @@ def rank_actions_from_observation(
     rollouts_per_action: int,
     rng_seed: int | str | None,
     policy: RolloutPolicy | None = None,
+    root_action_risk: bool = False,
 ) -> MoveAnalysis:
     """Rank legal root actions from an observer-facing information set."""
 
@@ -68,6 +72,7 @@ def rank_actions_from_observation(
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts_per_action,
+        root_risk_fn=_root_risk_fn(enumeration_state) if root_action_risk else None,
         rollout_fn=lambda action: run_rollout(
             sample_state(observation, rng=rng).state,
             root_action=action,
@@ -106,25 +111,41 @@ def _rank_actions(
     *,
     rollouts_per_action: int,
     rollout_fn: Callable[[GameAction], float],
+    root_risk_fn: Callable[[GameAction], RootActionRiskAssessment] | None = None,
 ) -> tuple[MoveEstimate, ...]:
     estimates = []
     for action_index, action in enumerate(actions):
         values = tuple(float(rollout_fn(action)) for _ in range(rollouts_per_action))
-        estimates.append(_estimate(action_index, action, values))
+        root_risk = root_risk_fn(action) if root_risk_fn is not None else None
+        estimates.append(_estimate(action_index, action, values, root_risk=root_risk))
     return tuple(sorted(estimates, key=lambda estimate: (-estimate.mean_value, estimate.action_index)))
 
 
-def _estimate(action_index: int, action: GameAction, values: tuple[float, ...]) -> MoveEstimate:
+def _root_risk_fn(state: GameState) -> Callable[[GameAction], RootActionRiskAssessment]:
+    return lambda action: score_root_action(state, action)
+
+
+def _estimate(
+    action_index: int,
+    action: GameAction,
+    values: tuple[float, ...],
+    *,
+    root_risk: RootActionRiskAssessment | None = None,
+) -> MoveEstimate:
     mean_value = sum(values) / len(values)
     variance = sum((value - mean_value) ** 2 for value in values) / len(values)
+    risk_score = 0.0 if root_risk is None else root_risk.contribution
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
-        mean_value=mean_value,
+        mean_value=mean_value + risk_score,
         stddev=math.sqrt(variance),
         sample_count=len(values),
         min_value=min(values),
         max_value=max(values),
+        rollout_mean_value=mean_value,
+        root_risk_score=risk_score,
+        root_risk_reasons=() if root_risk is None else root_risk.reasons,
     )
 
 

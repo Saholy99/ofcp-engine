@@ -22,6 +22,9 @@ class MoveEstimate:
     sample_count: int
     min_value: float
     max_value: float
+    rollout_mean_value: float | None = None
+    root_risk_score: float = 0.0
+    root_risk_reasons: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

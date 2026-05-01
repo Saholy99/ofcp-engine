@@ -5,8 +5,10 @@ import unittest
 from ofc.engine import new_hand, new_match
 from ofc.state import HandPhase, PlayerId
 from ofc_analysis.observation import project_observation
+from ofc_analysis.scenario import load_scenario
 from ofc_solver.monte_carlo import rank_actions_from_observation, rank_actions_from_state
 from ofc_solver.models import MoveAnalysis
+from ofc_solver.rollout_policy import RandomRolloutPolicy
 from tests.helpers import solver_final_draw_state, stacked_deck_tokens
 
 
@@ -57,6 +59,22 @@ class SolverMonteCarloTest(unittest.TestCase):
         exact_values = {estimate.action_index: estimate.mean_value for estimate in exact.ranked_actions}
         sampled_values = {estimate.action_index: estimate.mean_value for estimate in sampled.ranked_actions}
         self.assertEqual(exact_values, sampled_values)
+
+    def test_rank_actions_can_include_root_action_risk_metadata(self) -> None:
+        state = load_scenario("scenarios/regression/draw_root.json").state
+
+        analysis = rank_actions_from_state(
+            state,
+            observer=PlayerId.PLAYER_1,
+            rollouts_per_action=1,
+            rng_seed=37,
+            policy=RandomRolloutPolicy(),
+            root_action_risk=True,
+        )
+
+        self.assertTrue(any(estimate.root_risk_score < 0.0 for estimate in analysis.ranked_actions))
+        self.assertTrue(any(estimate.root_risk_reasons for estimate in analysis.ranked_actions))
+        self.assertTrue(all(estimate.rollout_mean_value is not None for estimate in analysis.ranked_actions))
 
     def test_rank_actions_rejects_unsupported_root_phase(self) -> None:
         state = new_hand(

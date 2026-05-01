@@ -111,6 +111,63 @@ class SolverBenchmarkTest(unittest.TestCase):
         payload = json.loads(stdout.getvalue())
         self.assertEqual("heuristic", payload["policy_name"])
 
+    def test_benchmark_root_action_risk_cli_outputs_comparison_json(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            manifest_path = Path(temp_dir) / "root_risk_manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "version": "1",
+                        "cases": [
+                            {
+                                "name": "early-root-risk",
+                                "scenario": str(Path.cwd() / FIXTURE_DIR / "draw_root.json"),
+                                "observer": "player_1",
+                                "rollouts": 1,
+                                "seed": "root-risk-cli",
+                                "tags": ["early_draw", "root_risk"],
+                            },
+                            {
+                                "name": "final-draw-excluded",
+                                "scenario": str(Path.cwd() / FIXTURE_DIR / "immediate_scoring.json"),
+                                "observer": "player_0",
+                                "rollouts": 1,
+                                "seed": "root-risk-final",
+                                "tags": ["final_draw"],
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                exit_code = main(
+                    [
+                        "benchmark-root-action-risk",
+                        str(manifest_path),
+                        "--include-tag",
+                        "early_draw",
+                        "--exclude-tag",
+                        "final_draw",
+                        "--json",
+                    ]
+                )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("heuristic", payload["left_policy_name"])
+        self.assertEqual("heuristic+root-risk", payload["right_policy_name"])
+        self.assertEqual(1, payload["case_count"])
+        self.assertIn("top_action_root_foul_rate", payload["deltas"])
+        self.assertIn("top_action_continuation_frequency", payload["deltas"])
+        self.assertEqual("early-root-risk", payload["cases"][0]["name"])
+        self.assertIn("root_risk_score", payload["cases"][0]["right_ranked_actions"][0])
+        self.assertTrue(payload["root_action_risk"]["enabled_on_right"])
+
     def test_manifest_rejects_invalid_policy_name(self) -> None:
         manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
 
