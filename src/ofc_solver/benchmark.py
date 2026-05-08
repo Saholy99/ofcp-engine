@@ -283,7 +283,7 @@ def run_benchmark_manifest(
     """Run all cases in a loaded benchmark manifest."""
 
     effective_root_risk_config = root_action_risk_config or (
-        RootRiskConfig.all_on() if root_action_risk else RootRiskConfig.all_off()
+        RootRiskConfig.default() if root_action_risk else RootRiskConfig.all_off()
     )
     risk_enabled = bool(effective_root_risk_config.enabled_components)
     policy = policy_from_name(policy_name)
@@ -439,6 +439,7 @@ def run_root_action_risk_benchmark(
     include_tags: tuple[str, ...] = ("initial_deal", "early_draw"),
     exclude_tags: tuple[str, ...] = ("final_draw",),
     phases: tuple[HandPhase, ...] = (),
+    root_action_risk_config: RootRiskConfig | None = None,
 ) -> RootActionRiskBenchmark:
     """Run a focused heuristic-vs-root-risk benchmark comparison."""
 
@@ -454,11 +455,12 @@ def run_root_action_risk_benchmark(
         root_action_risk=False,
         root_action_risk_config=RootRiskConfig.all_off(),
     )
+    comparison_config = root_action_risk_config or RootRiskConfig.default()
     right = run_benchmark_manifest(
         filtered,
         policy_name=policy_name,
         root_action_risk=True,
-        root_action_risk_config=RootRiskConfig.all_on(),
+        root_action_risk_config=comparison_config,
     )
     return RootActionRiskBenchmark(
         comparison=compare_benchmark_runs(left, right),
@@ -590,8 +592,10 @@ def _policy_name_for_root_risk(
 ) -> str:
     if not root_action_risk_enabled:
         return policy_name
-    if root_action_risk_config == RootRiskConfig.all_on():
+    if root_action_risk_config == RootRiskConfig.default():
         return f"{policy_name}+root-risk"
+    if root_action_risk_config == RootRiskConfig.all_on():
+        return f"{policy_name}+root-risk[full]"
     return f"{policy_name}+root-risk[{root_action_risk_config.label}]"
 
 

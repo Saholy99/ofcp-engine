@@ -10,7 +10,11 @@ import unittest
 from ofc.engine import new_match
 from ofc.state import PlayerId
 from ofc_analysis.cli import main
-from tests.helpers import scenario_payload_from_state, stacked_deck_tokens
+from tests.helpers import (
+    scenario_payload_from_state,
+    solver_middle_over_bottom_pressure_state,
+    stacked_deck_tokens,
+)
 
 
 INITIAL_PREFIX = [
@@ -130,6 +134,62 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertEqual("player_0", payload["observer"])
         self.assertEqual("draw", payload["phase"])
         self.assertEqual(6, payload["action_count"])
+
+    def test_solve_move_root_action_risk_uses_safer_default_config(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            scenario_path = self._write_scenario(
+                temp_dir,
+                scenario_payload_from_state(solver_middle_over_bottom_pressure_state()),
+            )
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "solve-move",
+                    str(scenario_path),
+                    "--observer",
+                    "player_0",
+                    "--rollouts",
+                    "1",
+                    "--seed",
+                    "101",
+                    "--root-action-risk",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(all("middle-over-bottom-pressure" not in action["root_risk_reasons"] for action in payload["ranked_actions"]))
+
+    def test_solve_move_root_action_risk_can_enable_full_component_set(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            scenario_path = self._write_scenario(
+                temp_dir,
+                scenario_payload_from_state(solver_middle_over_bottom_pressure_state()),
+            )
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "solve-move",
+                    str(scenario_path),
+                    "--observer",
+                    "player_0",
+                    "--rollouts",
+                    "1",
+                    "--seed",
+                    "101",
+                    "--root-action-risk",
+                    "--root-action-risk-config",
+                    "full",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(any("middle-over-bottom-pressure" in action["root_risk_reasons"] for action in payload["ranked_actions"]))
 
     def test_solve_move_rejects_non_acting_observer(self) -> None:
         scenario_path = Path("scenarios/regression/immediate_scoring.json")
