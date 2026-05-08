@@ -9,7 +9,12 @@ import unittest
 
 from ofc_analysis.cli import main
 from ofc_analysis.render import render_benchmark_run
-from ofc_solver.benchmark import compare_benchmark_runs, load_benchmark_manifest, run_benchmark_manifest
+from ofc_solver.benchmark import (
+    compare_benchmark_runs,
+    load_benchmark_manifest,
+    run_benchmark_manifest,
+    run_root_action_risk_ablation_benchmark,
+)
 
 
 FIXTURE_DIR = Path("scenarios/regression")
@@ -167,6 +172,103 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual("early-root-risk", payload["cases"][0]["name"])
         self.assertIn("root_risk_score", payload["cases"][0]["right_ranked_actions"][0])
         self.assertTrue(payload["root_action_risk"]["enabled_on_right"])
+
+    def test_run_root_action_risk_ablation_benchmark_builds_expected_runs(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            manifest_path = Path(temp_dir) / "ablation_manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "version": "1",
+                        "cases": [
+                            {
+                                "name": "early-root-risk",
+                                "scenario": str(Path.cwd() / FIXTURE_DIR / "draw_root.json"),
+                                "observer": "player_1",
+                                "rollouts": 1,
+                                "seed": "root-risk-ablation",
+                                "tags": ["early_draw", "root_risk"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest = load_benchmark_manifest(manifest_path)
+
+        benchmark = run_root_action_risk_ablation_benchmark(
+            manifest,
+            include_tags=("early_draw",),
+            exclude_tags=(),
+        )
+
+        self.assertEqual(1, benchmark.baseline_run.case_count)
+        self.assertEqual(1, benchmark.full_run.case_count)
+        self.assertEqual(10, len(benchmark.ablations))
+        self.assertEqual(
+            "unsupported_top_pair",
+            benchmark.ablations[0].component,
+        )
+        self.assertIn("top_action_root_foul_rate", benchmark.ablations[0].comparison_vs_baseline.deltas)
+        self.assertIn("top_action_continuation_frequency", benchmark.ablations[0].comparison_vs_full.deltas)
+
+    def test_benchmark_root_action_risk_ablation_cli_outputs_json(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            manifest_path = Path(temp_dir) / "ablation_manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "version": "1",
+                        "cases": [
+                            {
+                                "name": "early-root-risk",
+                                "scenario": str(Path.cwd() / FIXTURE_DIR / "draw_root.json"),
+                                "observer": "player_1",
+                                "rollouts": 1,
+                                "seed": "root-risk-ablation-cli",
+                                "tags": ["early_draw", "root_risk"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                exit_code = main(
+                    [
+                        "benchmark-root-action-risk-ablation",
+                        str(manifest_path),
+                        "--include-tag",
+                        "early_draw",
+                        "--json",
+                    ]
+                )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("heuristic", payload["baseline"]["policy_name"])
+        self.assertEqual("heuristic+root-risk", payload["full"]["policy_name"])
+        self.assertEqual(10, len(payload["ablations"]))
+        self.assertEqual(
+            [
+                "unsupported_top_pair",
+                "unsupported_top_trips",
+                "middle_over_bottom_pressure",
+                "bottom_underbuilt",
+                "top_slots_closed",
+            ],
+            payload["component_order"],
+        )
+        first = payload["ablations"][0]
+        self.assertIn("top_action_root_foul_rate", first["aggregate"])
+        self.assertIn("top_action_both_foul_rate", first["aggregate"])
+        self.assertIn("top_action_continuation_frequency", first["aggregate"])
+        self.assertIn("top_action_changes_vs_baseline", first)
+        self.assertIn("top_action_changes_vs_full", first)
 
     def test_manifest_rejects_invalid_policy_name(self) -> None:
         manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)

@@ -6,7 +6,7 @@ from ofc.board import RowName
 from ofc.cards import format_card
 from ofc.transitions import legal_actions
 from ofc_analysis.scenario import load_scenario
-from ofc_solver.root_action_risk import score_root_action
+from ofc_solver.root_action_risk import ROOT_RISK_COMPONENT_KEYS, RootRiskConfig, score_root_action
 from tests.helpers import (
     solver_final_draw_state,
     solver_middle_over_bottom_pressure_state,
@@ -16,6 +16,66 @@ from tests.helpers import (
 
 
 class SolverRootActionRiskTest(unittest.TestCase):
+    def test_root_risk_all_on_matches_default_behavior(self) -> None:
+        state = solver_unsupported_top_pair_state()
+        action = _first_action_placing(state, RowName.TOP, "Qd")
+
+        default_assessment = score_root_action(state, action)
+        configured_assessment = score_root_action(state, action, config=RootRiskConfig.all_on())
+
+        self.assertEqual(default_assessment, configured_assessment)
+
+    def test_root_risk_all_off_disables_existing_components(self) -> None:
+        state = solver_unsupported_top_pair_state()
+        action = _first_action_placing(state, RowName.TOP, "Qd")
+
+        assessment = score_root_action(state, action, config=RootRiskConfig.all_off())
+
+        self.assertEqual(0.0, assessment.contribution)
+        self.assertEqual((), assessment.reasons)
+        self.assertEqual((), assessment.components)
+
+    def test_root_risk_single_component_only_limits_reasons(self) -> None:
+        state = solver_unsupported_top_pair_state()
+        action = _first_action_placing(state, RowName.TOP, "Qd")
+
+        assessment = score_root_action(
+            state,
+            action,
+            config=RootRiskConfig.only("unsupported_top_pair"),
+        )
+
+        self.assertLess(assessment.contribution, 0.0)
+        self.assertEqual(("unsupported-top-pair",), assessment.reasons)
+
+    def test_root_risk_leave_one_out_removes_component(self) -> None:
+        state = solver_unsupported_top_pair_state()
+        action = _first_action_placing(state, RowName.TOP, "Qd")
+
+        assessment = score_root_action(
+            state,
+            action,
+            config=RootRiskConfig.leave_one_out("unsupported_top_pair"),
+        )
+
+        self.assertNotIn("unsupported-top-pair", assessment.reasons)
+
+    def test_root_risk_config_rejects_unknown_component(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Unknown root-risk components"):
+            RootRiskConfig.only("not-a-component")
+
+    def test_root_risk_component_order_is_stable(self) -> None:
+        self.assertEqual(
+            (
+                "unsupported_top_pair",
+                "unsupported_top_trips",
+                "middle_over_bottom_pressure",
+                "bottom_underbuilt",
+                "top_slots_closed",
+            ),
+            ROOT_RISK_COMPONENT_KEYS,
+        )
+
     def test_penalizes_unsupported_top_qq_pair_at_root(self) -> None:
         state = solver_unsupported_top_pair_state()
         bad_action = _first_action_placing(state, RowName.TOP, "Qd")

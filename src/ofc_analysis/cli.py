@@ -18,6 +18,7 @@ from ofc_analysis.render import (
     render_benchmark_run,
     render_move_analysis,
     render_observation,
+    render_root_action_risk_ablation_benchmark,
     render_root_action_risk_benchmark,
     render_state,
 )
@@ -26,6 +27,7 @@ from ofc_solver.benchmark import (
     compare_benchmark_payloads,
     load_benchmark_manifest,
     run_benchmark_manifest,
+    run_root_action_risk_ablation_benchmark,
     run_root_action_risk_benchmark,
 )
 from ofc_solver.monte_carlo import rank_actions_from_observation
@@ -109,6 +111,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             _emit(output, as_json=args.as_json)
             return 0
 
+        if args.command == "benchmark-root-action-risk-ablation":
+            manifest = load_benchmark_manifest(args.manifest)
+            include_tags = tuple(args.include_tag) if args.include_tag is not None else ("initial_deal", "early_draw")
+            exclude_tags = tuple(args.exclude_tag) if args.exclude_tag is not None else ("final_draw",)
+            if args.non_final and "final_draw" not in exclude_tags:
+                exclude_tags = exclude_tags + ("final_draw",)
+            if args.exclude_strategy and "strategy" not in exclude_tags:
+                exclude_tags = exclude_tags + ("strategy",)
+            benchmark = run_root_action_risk_ablation_benchmark(
+                manifest,
+                policy_name=args.policy,
+                include_tags=include_tags,
+                exclude_tags=exclude_tags,
+                phases=tuple(HandPhase(phase) for phase in (args.phase or ())),
+            )
+            output = render_root_action_risk_ablation_benchmark(benchmark, as_json=args.as_json)
+            _emit(output, as_json=args.as_json)
+            return 0
+
         if args.command == "compare-benchmarks":
             left_payload = _load_json_payload(args.left)
             right_payload = _load_json_payload(args.right)
@@ -186,6 +207,37 @@ def _build_parser() -> argparse.ArgumentParser:
     benchmark_root_risk.add_argument("--non-final", action="store_true", help="Exclude final_draw-tagged cases.")
     benchmark_root_risk.add_argument("--exclude-strategy", action="store_true", help="Exclude strategy stress cases.")
     benchmark_root_risk.add_argument("--json", action="store_true", dest="as_json")
+
+    benchmark_root_risk_ablation = subparsers.add_parser("benchmark-root-action-risk-ablation")
+    benchmark_root_risk_ablation.add_argument("manifest")
+    benchmark_root_risk_ablation.add_argument("--policy", choices=POLICY_NAMES, default="heuristic")
+    benchmark_root_risk_ablation.add_argument(
+        "--include-tag",
+        action="append",
+        help="Include cases with this tag. Repeat to allow multiple tags.",
+    )
+    benchmark_root_risk_ablation.add_argument(
+        "--exclude-tag",
+        action="append",
+        help="Exclude cases with this tag. Repeat to exclude multiple tags.",
+    )
+    benchmark_root_risk_ablation.add_argument(
+        "--phase",
+        action="append",
+        choices=[HandPhase.INITIAL_DEAL.value, HandPhase.DRAW.value],
+        help="Restrict to a root engine phase. Repeat to allow multiple phases.",
+    )
+    benchmark_root_risk_ablation.add_argument(
+        "--non-final",
+        action="store_true",
+        help="Exclude final_draw-tagged cases.",
+    )
+    benchmark_root_risk_ablation.add_argument(
+        "--exclude-strategy",
+        action="store_true",
+        help="Exclude strategy stress cases.",
+    )
+    benchmark_root_risk_ablation.add_argument("--json", action="store_true", dest="as_json")
 
     compare_benchmarks = subparsers.add_parser("compare-benchmarks")
     compare_benchmarks.add_argument("left")
