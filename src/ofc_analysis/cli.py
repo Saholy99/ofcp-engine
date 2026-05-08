@@ -10,6 +10,8 @@ import sys
 from ofc.state import HandPhase, PlayerId
 from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_actions
+from ofc_analysis.benchmark_generation import generate_late_final_benchmark
+from ofc_analysis.models import RenderedOutput
 from ofc_analysis.observation import project_observation
 from ofc_analysis.play import run_play_hand
 from ofc_analysis.render import (
@@ -37,7 +39,7 @@ from ofc_solver.benchmark import (
 from ofc_solver.monte_carlo import rank_actions_from_observation
 from ofc_solver.policy_registry import POLICY_NAMES, policy_from_name
 from ofc_solver.early_search import EarlySearchConfig
-from ofc_solver.late_search import LateSearchConfig
+from ofc_solver.late_search import FinalDrawAutoSearchConfig, LateSearchConfig
 from ofc_solver.root_action_risk import RootRiskConfig
 
 
@@ -107,6 +109,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     max_nodes=args.late_search_max_nodes,
                     beam_size=args.late_search_beam_size,
                 ),
+                final_draw_auto_search=args.final_draw_auto_search,
+                final_draw_auto_search_config=FinalDrawAutoSearchConfig(
+                    max_depth=args.final_draw_auto_max_depth,
+                    max_nodes=args.final_draw_auto_max_nodes,
+                ),
             )
             output = render_move_analysis(analysis, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
@@ -114,6 +121,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         if args.command == "benchmark-solver":
             manifest = load_benchmark_manifest(args.manifest)
+            if args.include_tag is not None or args.exclude_tag is not None or args.phase is not None:
+                from ofc_solver.benchmark import filter_benchmark_manifest
+
+                manifest = filter_benchmark_manifest(
+                    manifest,
+                    include_tags=tuple(args.include_tag or ()),
+                    exclude_tags=tuple(args.exclude_tag or ()),
+                    phases=tuple(HandPhase(phase) for phase in (args.phase or ())),
+                )
             run = run_benchmark_manifest(
                 manifest,
                 policy_name=args.policy,
@@ -135,6 +151,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                     max_depth=args.late_search_max_depth,
                     max_nodes=args.late_search_max_nodes,
                     beam_size=args.late_search_beam_size,
+                ),
+                final_draw_auto_search=args.final_draw_auto_search,
+                final_draw_auto_search_config=FinalDrawAutoSearchConfig(
+                    max_depth=args.final_draw_auto_max_depth,
+                    max_nodes=args.final_draw_auto_max_nodes,
                 ),
             )
             output = render_benchmark_run(run, as_json=args.as_json)
@@ -247,6 +268,25 @@ def main(argv: Sequence[str] | None = None) -> int:
             _emit(output, as_json=args.as_json)
             return 0
 
+        if args.command == "generate-late-final-benchmark":
+            summary = generate_late_final_benchmark(
+                manifest_path=args.manifest,
+                scenario_dir=args.scenario_dir,
+                seed=args.seed,
+                final_count=args.final_count,
+                late_count=args.late_count,
+                mid_count=args.mid_count,
+                rollouts=args.rollouts,
+            )
+            payload = {
+                "manifest_path": str(summary.manifest_path),
+                "scenario_dir": str(summary.scenario_dir),
+                "case_count": summary.case_count,
+                "tag_counts": summary.tag_counts,
+            }
+            _emit(RenderedOutput(text=json.dumps(payload, indent=2), payload=payload), as_json=args.as_json)
+            return 0
+
         if args.command == "play-hand":
             hero_player = _resolve_play_hero(args)
             button = _resolve_play_button(args)
@@ -303,11 +343,13 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     _add_draw_safe_candidate_args(solve_move)
     _add_late_search_args(solve_move)
+    _add_final_draw_auto_search_args(solve_move)
     solve_move.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_solver = subparsers.add_parser("benchmark-solver")
     benchmark_solver.add_argument("manifest")
     benchmark_solver.add_argument("--policy", choices=POLICY_NAMES, default="random")
+    _add_benchmark_filter_args(benchmark_solver)
     benchmark_solver.add_argument("--root-action-risk", action="store_true", help="Apply root-only risk scoring.")
     benchmark_solver.add_argument(
         "--root-action-risk-config",
@@ -325,6 +367,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     _add_draw_safe_candidate_args(benchmark_solver)
     _add_late_search_args(benchmark_solver)
+    _add_final_draw_auto_search_args(benchmark_solver)
     benchmark_solver.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_early_search = subparsers.add_parser("benchmark-early-search")
@@ -455,6 +498,16 @@ def _build_parser() -> argparse.ArgumentParser:
     compare_benchmarks.add_argument("right")
     compare_benchmarks.add_argument("--json", action="store_true", dest="as_json")
 
+    generate_benchmark = subparsers.add_parser("generate-late-final-benchmark")
+    generate_benchmark.add_argument("manifest")
+    generate_benchmark.add_argument("--scenario-dir", required=True)
+    generate_benchmark.add_argument("--seed", default="late-final-large")
+    generate_benchmark.add_argument("--final-count", type=int, default=100)
+    generate_benchmark.add_argument("--late-count", type=int, default=100)
+    generate_benchmark.add_argument("--mid-count", type=int, default=50)
+    generate_benchmark.add_argument("--rollouts", type=int, default=1)
+    generate_benchmark.add_argument("--json", action="store_true", dest="as_json")
+
     play_hand = subparsers.add_parser(
         "play-hand",
         description=(
@@ -499,6 +552,25 @@ def _add_draw_safe_candidate_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_benchmark_filter_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--include-tag",
+        action="append",
+        help="Include cases with this tag. Repeat to allow multiple tags.",
+    )
+    parser.add_argument(
+        "--exclude-tag",
+        action="append",
+        help="Exclude cases with this tag. Repeat to exclude multiple tags.",
+    )
+    parser.add_argument(
+        "--phase",
+        action="append",
+        choices=[HandPhase.INITIAL_DEAL.value, HandPhase.DRAW.value],
+        help="Restrict to a root engine phase. Repeat to allow multiple phases.",
+    )
+
+
 def _add_late_search_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--late-search", action="store_true", help="Use bounded late-street DRAW search.")
     _add_late_search_config_args(parser)
@@ -514,6 +586,16 @@ def _add_late_search_config_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--late-search-max-depth", type=int, default=4)
     parser.add_argument("--late-search-max-nodes", type=int, default=500)
     parser.add_argument("--late-search-beam-size", type=int, default=8)
+
+
+def _add_final_draw_auto_search_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--final-draw-auto-search",
+        action="store_true",
+        help="Use exact late-search only when a DRAW root has a tiny remaining tree.",
+    )
+    parser.add_argument("--final-draw-auto-max-depth", type=int, default=0)
+    parser.add_argument("--final-draw-auto-max-nodes", type=int, default=64)
 
 
 def _emit(output, *, as_json: bool) -> None:

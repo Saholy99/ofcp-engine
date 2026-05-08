@@ -7,7 +7,10 @@ from ofc.engine import showdown
 from ofc.state import HandPhase, PlayerId
 from ofc.transitions import apply_action, legal_actions
 from ofc_solver.late_search import (
+    FinalDrawAutoSearchConfig,
     LateSearchConfig,
+    assess_final_draw_auto_search,
+    evaluate_final_draw_auto_root_action,
     evaluate_late_root_action,
     rank_late_root_actions,
 )
@@ -143,6 +146,79 @@ class SolverLateSearchTest(unittest.TestCase):
         self.assertEqual(len(tuple(legal_actions(state))), analysis.total_legal_actions)
         rendered_actions = [estimate.action.as_dict() for estimate in analysis.ranked_actions]
         self.assertTrue(all("hidden_discards" not in str(action) for action in rendered_actions))
+
+    def test_final_draw_auto_gate_activates_on_terminal_root_draw(self) -> None:
+        state = solver_final_draw_state(enters_fantasyland=False)
+        action = tuple(legal_actions(state))[0]
+
+        assessment = assess_final_draw_auto_search(
+            state,
+            action,
+            config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16),
+        )
+        result = evaluate_final_draw_auto_root_action(
+            state,
+            action,
+            perspective=PlayerId.PLAYER_0,
+            rng=random.Random(58),
+            config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16),
+        )
+
+        self.assertTrue(assessment.eligible)
+        self.assertEqual("eligible", assessment.reason)
+        self.assertTrue(result.activated)
+        self.assertTrue(result.phase_auto_search_activated)
+        self.assertEqual("exact", result.mode)
+        self.assertEqual(assessment.tree_nodes, result.phase_auto_search_tree_nodes)
+
+    def test_final_draw_auto_gate_does_not_activate_on_mid_draw(self) -> None:
+        state = solver_late_street_exact_search_state()
+        action = tuple(legal_actions(state))[0]
+
+        result = evaluate_final_draw_auto_root_action(
+            state,
+            action,
+            perspective=PlayerId.PLAYER_1,
+            rng=random.Random(59),
+            config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16),
+        )
+
+        self.assertFalse(result.activated)
+        self.assertFalse(result.phase_auto_search_activated)
+        self.assertIn(result.phase_auto_search_reason, {"tree-depth-exceeded", "tree-budget-exceeded"})
+
+    def test_final_draw_auto_gate_falls_back_when_budget_is_exceeded(self) -> None:
+        state = solver_late_street_exact_search_state()
+        action = tuple(legal_actions(state))[0]
+
+        result = evaluate_final_draw_auto_root_action(
+            state,
+            action,
+            perspective=PlayerId.PLAYER_1,
+            rng=random.Random(60),
+            config=FinalDrawAutoSearchConfig(max_depth=4, max_nodes=1),
+        )
+
+        self.assertFalse(result.activated)
+        self.assertEqual("fallback", result.mode)
+        self.assertFalse(result.phase_auto_search_activated)
+        self.assertEqual("tree-budget-exceeded", result.phase_auto_search_reason)
+
+    def test_rank_actions_from_state_exposes_final_draw_auto_metadata(self) -> None:
+        state = solver_final_draw_state(enters_fantasyland=False)
+
+        analysis = rank_actions_from_state(
+            state,
+            observer=PlayerId.PLAYER_0,
+            rollouts_per_action=1,
+            rng_seed=61,
+            final_draw_auto_search=True,
+            final_draw_auto_search_config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16),
+        )
+
+        self.assertTrue(analysis.final_draw_auto_search_enabled)
+        self.assertTrue(any(estimate.phase_auto_search_activated for estimate in analysis.ranked_actions))
+        self.assertTrue(all(estimate.phase_auto_search_tree_nodes >= 0 for estimate in analysis.ranked_actions))
 
 
 if __name__ == "__main__":

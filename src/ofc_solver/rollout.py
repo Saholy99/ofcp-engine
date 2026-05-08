@@ -41,6 +41,10 @@ class RolloutResult:
     late_search_candidate_count: int = 0
     late_search_terminal_evaluations: int = 0
     late_search_fallback_reason: str | None = None
+    phase_auto_search_activated: bool = False
+    phase_auto_search_reason: str | None = None
+    phase_auto_search_tree_nodes: int = 0
+    phase_auto_search_depth: int = 0
     late_search_runtime_seconds: float = 0.0
 
     def with_late_search(
@@ -67,6 +71,24 @@ class RolloutResult:
             late_search_terminal_evaluations=terminal_evaluations,
             late_search_fallback_reason=fallback_reason,
             late_search_runtime_seconds=runtime_seconds,
+        )
+
+    def with_phase_auto_search(
+        self,
+        *,
+        activated: bool,
+        reason: str | None,
+        tree_nodes: int,
+        depth: int,
+    ) -> "RolloutResult":
+        """Return a copy annotated with final-draw auto gate diagnostics."""
+
+        return replace(
+            self,
+            phase_auto_search_activated=activated,
+            phase_auto_search_reason=reason,
+            phase_auto_search_tree_nodes=tree_nodes,
+            phase_auto_search_depth=depth,
         )
 
 

@@ -12,7 +12,13 @@ from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_action
 from ofc_analysis.observation import PlayerObservation
 from ofc_solver.early_search import EarlySearchCandidate, EarlySearchConfig, select_early_search_candidates
-from ofc_solver.late_search import LateSearchConfig, LateSearchResult, evaluate_late_root_action
+from ofc_solver.late_search import (
+    FinalDrawAutoSearchConfig,
+    LateSearchConfig,
+    LateSearchResult,
+    evaluate_final_draw_auto_root_action,
+    evaluate_late_root_action,
+)
 from ofc_solver.models import SUPPORTED_ROOT_PHASES, MoveAnalysis, MoveEstimate
 from ofc_solver.root_action_risk import RootActionRiskAssessment, RootRiskConfig, score_root_action
 from ofc_solver.rollout import run_rollout
@@ -38,6 +44,8 @@ def rank_actions_from_state(
     early_search_config: EarlySearchConfig | None = None,
     late_search: bool = False,
     late_search_config: LateSearchConfig | None = None,
+    final_draw_auto_search: bool = False,
+    final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
 ) -> MoveAnalysis:
     """Rank legal root actions from an exact engine state."""
 
@@ -58,6 +66,7 @@ def rank_actions_from_state(
         else rollouts_per_action
     )
     effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts,
@@ -72,6 +81,8 @@ def rank_actions_from_state(
             policy=rollout_policy,
             late_search=late_search,
             late_search_config=effective_late_search_config,
+            final_draw_auto_search=final_draw_auto_search,
+            final_draw_auto_search_config=effective_final_draw_auto_config,
         ),
     )
     return MoveAnalysis(
@@ -93,6 +104,9 @@ def rank_actions_from_state(
         late_search_max_depth=effective_late_search_config.max_depth if late_search else None,
         late_search_max_nodes=effective_late_search_config.max_nodes if late_search else None,
         late_search_beam_size=effective_late_search_config.beam_size if late_search else None,
+        final_draw_auto_search_enabled=final_draw_auto_search,
+        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
+        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
     )
 
 
@@ -108,6 +122,8 @@ def rank_actions_from_observation(
     early_search_config: EarlySearchConfig | None = None,
     late_search: bool = False,
     late_search_config: LateSearchConfig | None = None,
+    final_draw_auto_search: bool = False,
+    final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
 ) -> MoveAnalysis:
     """Rank legal root actions from an observer-facing information set."""
 
@@ -129,6 +145,7 @@ def rank_actions_from_observation(
         else rollouts_per_action
     )
     effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts,
@@ -143,6 +160,8 @@ def rank_actions_from_observation(
             policy=rollout_policy,
             late_search=late_search,
             late_search_config=effective_late_search_config,
+            final_draw_auto_search=final_draw_auto_search,
+            final_draw_auto_search_config=effective_final_draw_auto_config,
         ),
     )
     return MoveAnalysis(
@@ -164,6 +183,9 @@ def rank_actions_from_observation(
         late_search_max_depth=effective_late_search_config.max_depth if late_search else None,
         late_search_max_nodes=effective_late_search_config.max_nodes if late_search else None,
         late_search_beam_size=effective_late_search_config.beam_size if late_search else None,
+        final_draw_auto_search_enabled=final_draw_auto_search,
+        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
+        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
     )
 
 
@@ -245,6 +267,11 @@ def _estimate(
         for reason in (result.fallback_reason for result in late_search_results)
         if reason is not None
     )
+    phase_auto_reasons = tuple(
+        reason
+        for reason in (result.phase_auto_search_reason for result in late_search_results)
+        if reason is not None
+    )
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
@@ -268,6 +295,10 @@ def _estimate(
         late_search_candidate_count=sum(result.candidate_count for result in late_search_results),
         late_search_terminal_evaluations=sum(result.terminal_evaluations for result in late_search_results),
         late_search_fallback_reason=";".join(dict.fromkeys(fallback_reasons)) if fallback_reasons else None,
+        phase_auto_search_activated=any(result.phase_auto_search_activated for result in late_search_results),
+        phase_auto_search_reason=";".join(dict.fromkeys(phase_auto_reasons)) if phase_auto_reasons else None,
+        phase_auto_search_tree_nodes=sum(result.phase_auto_search_tree_nodes for result in late_search_results),
+        phase_auto_search_depth=max((result.phase_auto_search_depth for result in late_search_results), default=0),
         late_search_runtime_seconds=sum(result.runtime_seconds for result in late_search_results),
     )
 
@@ -281,6 +312,8 @@ def _evaluate_root_action(
     policy: RolloutPolicy,
     late_search: bool,
     late_search_config: LateSearchConfig,
+    final_draw_auto_search: bool,
+    final_draw_auto_search_config: FinalDrawAutoSearchConfig,
 ) -> _ActionEvaluation:
     if late_search and state.phase == HandPhase.DRAW:
         result = evaluate_late_root_action(
@@ -289,6 +322,16 @@ def _evaluate_root_action(
             perspective=root_player,
             rng=rng,
             config=late_search_config,
+            policy=policy,
+        )
+        return _ActionEvaluation(value=result.value, late_search=result)
+    if final_draw_auto_search and state.phase == HandPhase.DRAW:
+        result = evaluate_final_draw_auto_root_action(
+            state,
+            action,
+            perspective=root_player,
+            rng=rng,
+            config=final_draw_auto_search_config,
             policy=policy,
         )
         return _ActionEvaluation(value=result.value, late_search=result)

@@ -232,6 +232,56 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertIn("late_search_nodes", payload["cases"][1]["ranked_actions"][0])
         self.assertIn("top_action_late_search_activation_rate", payload["aggregate"])
 
+    def test_benchmark_solver_cli_accepts_final_draw_auto_search_options(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--final-draw-auto-search",
+                    "--final-draw-auto-max-depth",
+                    "1",
+                    "--final-draw-auto-max-nodes",
+                    "16",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertTrue(payload["final_draw_auto_search_enabled"])
+        self.assertIn("phase_auto_search_activation_rate", payload["cases"][1]["action_diagnostics"][0])
+        self.assertIn("top_action_phase_auto_search_activation_rate", payload["aggregate"])
+
+    def test_benchmark_solver_cli_can_filter_by_tag(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--include-tag",
+                    "late_draw",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(2, payload["case_count"])
+        self.assertTrue(all("late_draw" in case["tags"] for case in payload["cases"]))
+
     def test_run_late_search_benchmark_builds_comparison(self) -> None:
         manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
 

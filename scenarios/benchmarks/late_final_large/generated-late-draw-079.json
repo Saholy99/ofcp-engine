@@ -1,0 +1,113 @@
+{
+  "state": {
+    "acting_player": "player_0",
+    "button": "player_1",
+    "deck": {
+      "undealt_cards": [
+        "4s",
+        "Ad",
+        "Td",
+        "Jd",
+        "Js",
+        "9s",
+        "7c",
+        "8d",
+        "Jh",
+        "Jc",
+        "Kh",
+        "Qs",
+        "4h",
+        "Qh",
+        "3h",
+        "6d",
+        "2h",
+        "3c",
+        "5s",
+        "2d",
+        "Ah"
+      ]
+    },
+    "hand_number": 1,
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "phase": "draw",
+    "players": [
+      {
+        "board": {
+          "bottom": [
+            "Th",
+            "Tc",
+            "7h",
+            "9d",
+            "5c"
+          ],
+          "middle": [
+            "9c",
+            "9h",
+            "6h",
+            "8h",
+            "Qd"
+          ],
+          "top": [
+            "8s"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [
+          "4d",
+          "7d",
+          "2s"
+        ],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "2c",
+          "7s",
+          "4c"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "player_id": "player_0"
+      },
+      {
+        "board": {
+          "bottom": [
+            "Kd",
+            "6c",
+            "8c",
+            "Qc",
+            "6s"
+          ],
+          "middle": [
+            "3d",
+            "Kc",
+            "As",
+            "Ks"
+          ],
+          "top": [
+            "Ac",
+            "3s"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "5h",
+          "5d",
+          "Ts"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "player_id": "player_1"
+      }
+    ]
+  },
+  "version": "1"
+}

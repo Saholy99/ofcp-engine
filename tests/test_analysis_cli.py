@@ -302,6 +302,38 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertIn("late_search_nodes", payload["ranked_actions"][0])
         self.assertIn("late_search_terminal_evaluations", payload["ranked_actions"][0])
 
+    def test_solve_move_final_draw_auto_search_outputs_diagnostics(self) -> None:
+        scenario_path = Path("scenarios/regression/immediate_scoring.json")
+
+        exit_code, stdout, stderr = self._run_cli(
+            [
+                "solve-move",
+                str(scenario_path),
+                "--observer",
+                "player_0",
+                "--rollouts",
+                "1",
+                "--seed",
+                "final-auto-cli",
+                "--policy",
+                "heuristic",
+                "--final-draw-auto-search",
+                "--final-draw-auto-max-depth",
+                "1",
+                "--final-draw-auto-max-nodes",
+                "16",
+                "--json",
+            ]
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["final_draw_auto_search_enabled"])
+        self.assertIn("phase_auto_search_activated", payload["ranked_actions"][0])
+        self.assertIn("phase_auto_search_tree_nodes", payload["ranked_actions"][0])
+        self.assertTrue(any(action["phase_auto_search_activated"] for action in payload["ranked_actions"]))
+
     def test_solve_move_rejects_non_acting_observer(self) -> None:
         scenario_path = Path("scenarios/regression/immediate_scoring.json")
 

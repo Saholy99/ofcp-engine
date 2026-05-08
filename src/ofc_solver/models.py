@@ -37,6 +37,10 @@ class MoveEstimate:
     late_search_candidate_count: int = 0
     late_search_terminal_evaluations: int = 0
     late_search_fallback_reason: str | None = None
+    phase_auto_search_activated: bool = False
+    phase_auto_search_reason: str | None = None
+    phase_auto_search_tree_nodes: int = 0
+    phase_auto_search_depth: int = 0
     late_search_runtime_seconds: float = 0.0
 
 
@@ -62,6 +66,9 @@ class MoveAnalysis:
     late_search_max_depth: int | None = None
     late_search_max_nodes: int | None = None
     late_search_beam_size: int | None = None
+    final_draw_auto_search_enabled: bool = False
+    final_draw_auto_max_depth: int | None = None
+    final_draw_auto_max_nodes: int | None = None
 
 
 SUPPORTED_ROOT_PHASES = frozenset({HandPhase.INITIAL_DEAL, HandPhase.DRAW})

@@ -11,6 +11,7 @@ __path__ = [str(_SRC_PACKAGE)]
 __all__ = [
     "BenchmarkRun",
     "EarlySearchConfig",
+    "FinalDrawAutoSearchConfig",
     "LateSearchConfig",
     "MoveAnalysis",
     "MoveEstimate",
@@ -45,10 +46,13 @@ def __getattr__(name: str):
             "EarlySearchConfig": EarlySearchConfig,
             "select_early_search_candidates": select_early_search_candidates,
         }[name]
-    if name in {"LateSearchConfig"}:
-        from ofc_solver.late_search import LateSearchConfig
+    if name in {"FinalDrawAutoSearchConfig", "LateSearchConfig"}:
+        from ofc_solver.late_search import FinalDrawAutoSearchConfig, LateSearchConfig
 
-        return {"LateSearchConfig": LateSearchConfig}[name]
+        return {
+            "FinalDrawAutoSearchConfig": FinalDrawAutoSearchConfig,
+            "LateSearchConfig": LateSearchConfig,
+        }[name]
     if name in {
         "BenchmarkRun",
         "load_benchmark_manifest",

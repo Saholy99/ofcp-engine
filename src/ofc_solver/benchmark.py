@@ -18,7 +18,13 @@ from ofc_analysis.action_codec import encode_action
 from ofc_analysis.observation import project_observation
 from ofc_analysis.scenario import load_scenario
 from ofc_solver.early_search import EarlySearchCandidate, EarlySearchConfig, select_early_search_candidates
-from ofc_solver.late_search import LateSearchConfig, LateSearchResult, evaluate_late_root_action
+from ofc_solver.late_search import (
+    FinalDrawAutoSearchConfig,
+    LateSearchConfig,
+    LateSearchResult,
+    evaluate_final_draw_auto_root_action,
+    evaluate_late_root_action,
+)
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
 from ofc_solver.policy_registry import policy_from_name
 from ofc_solver.root_action_risk import (
@@ -80,6 +86,9 @@ class BenchmarkActionDiagnostics:
     mean_late_search_nodes: float
     mean_late_search_depth: float
     mean_late_search_terminal_evaluations: float
+    phase_auto_search_activation_rate: float
+    mean_phase_auto_search_tree_nodes: float
+    mean_phase_auto_search_depth: float
 
 
 @dataclass(frozen=True)
@@ -125,6 +134,9 @@ class BenchmarkRun:
     late_search_max_depth: int | None = None
     late_search_max_nodes: int | None = None
     late_search_beam_size: int | None = None
+    final_draw_auto_search_enabled: bool = False
+    final_draw_auto_max_depth: int | None = None
+    final_draw_auto_max_nodes: int | None = None
 
     @property
     def case_count(self) -> int:
@@ -156,6 +168,9 @@ class BenchmarkAggregate:
     mean_late_search_nodes: float
     mean_late_search_depth: float
     mean_late_search_terminal_evaluations: float
+    phase_auto_search_activation_rate: float
+    mean_phase_auto_search_tree_nodes: float
+    mean_phase_auto_search_depth: float
     top_action_root_foul_rate: float
     top_action_opponent_foul_rate: float
     top_action_both_foul_rate: float
@@ -173,6 +188,9 @@ class BenchmarkAggregate:
     top_action_mean_late_search_nodes: float
     top_action_mean_late_search_depth: float
     top_action_mean_late_search_terminal_evaluations: float
+    top_action_phase_auto_search_activation_rate: float
+    top_action_mean_phase_auto_search_tree_nodes: float
+    top_action_mean_phase_auto_search_depth: float
     labeled_top1_rate: float | None
     labeled_top3_rate: float | None
     elapsed_seconds: float
@@ -195,6 +213,8 @@ class BenchmarkTagSliceAggregate:
     late_search_beam_rate: float
     late_search_fallback_rate: float
     mean_late_search_nodes: float
+    phase_auto_search_activation_rate: float
+    mean_phase_auto_search_tree_nodes: float
     top_action_root_foul_rate: float
     top_action_both_foul_rate: float
     top_action_continuation_frequency: float
@@ -205,6 +225,8 @@ class BenchmarkTagSliceAggregate:
     top_action_late_search_beam_rate: float
     top_action_late_search_fallback_rate: float
     top_action_mean_late_search_nodes: float
+    top_action_phase_auto_search_activation_rate: float
+    top_action_mean_phase_auto_search_tree_nodes: float
     labeled_top1_rate: float | None
     labeled_top3_rate: float | None
 
@@ -357,6 +379,8 @@ def run_benchmark_manifest(
     draw_safety_keep: int = 8,
     late_search: bool = False,
     late_search_config: LateSearchConfig | None = None,
+    final_draw_auto_search: bool = False,
+    final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
 ) -> BenchmarkRun:
     """Run all cases in a loaded benchmark manifest."""
 
@@ -373,6 +397,7 @@ def run_benchmark_manifest(
     )
     policy = policy_from_name(policy_name)
     effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
     start = time.perf_counter()
     case_results = tuple(
         run_benchmark_case(
@@ -384,6 +409,8 @@ def run_benchmark_manifest(
             early_search_config=early_search_config,
             late_search=late_search,
             late_search_config=effective_late_search_config,
+            final_draw_auto_search=final_draw_auto_search,
+            final_draw_auto_search_config=effective_final_draw_auto_config,
         )
         for case in manifest.cases
     )
@@ -397,6 +424,11 @@ def run_benchmark_manifest(
         effective_name,
         late_search,
         effective_late_search_config,
+    )
+    effective_name = _policy_name_for_final_draw_auto_search(
+        effective_name,
+        final_draw_auto_search,
+        effective_final_draw_auto_config,
     )
     return BenchmarkRun(
         policy_name=effective_name,
@@ -415,6 +447,9 @@ def run_benchmark_manifest(
         late_search_max_depth=effective_late_search_config.max_depth if late_search else None,
         late_search_max_nodes=effective_late_search_config.max_nodes if late_search else None,
         late_search_beam_size=effective_late_search_config.beam_size if late_search else None,
+        final_draw_auto_search_enabled=final_draw_auto_search,
+        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
+        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
     )
 
 
@@ -428,6 +463,8 @@ def run_benchmark_case(
     early_search_config: EarlySearchConfig | None = None,
     late_search: bool = False,
     late_search_config: LateSearchConfig | None = None,
+    final_draw_auto_search: bool = False,
+    final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
 ) -> BenchmarkCaseResult:
     """Run one benchmark case and collect ranked actions plus diagnostics."""
 
@@ -454,6 +491,7 @@ def run_benchmark_case(
         early_search_config.candidate_extra_rollouts if early_search and early_search_config is not None else 0
     )
     effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
 
     rng = random.Random(case.rng_seed)
     estimates: list[MoveEstimate] = []
@@ -470,6 +508,19 @@ def run_benchmark_case(
                     perspective=case.observer,
                     rng=rng,
                     config=effective_late_search_config,
+                    policy=policy,
+                )
+                for _ in range(rollouts_per_candidate)
+            )
+            rollout_results = tuple(result.rollout_result for result in late_results)
+        elif final_draw_auto_search:
+            late_results = tuple(
+                evaluate_final_draw_auto_root_action(
+                    sample_state(observation, rng=rng).state,
+                    action,
+                    perspective=case.observer,
+                    rng=rng,
+                    config=effective_final_draw_auto_config,
                     policy=policy,
                 )
                 for _ in range(rollouts_per_candidate)
@@ -873,6 +924,16 @@ def _policy_name_for_late_search(
     )
 
 
+def _policy_name_for_final_draw_auto_search(
+    policy_name: str,
+    enabled: bool,
+    config: FinalDrawAutoSearchConfig,
+) -> str:
+    if not enabled:
+        return policy_name
+    return f"{policy_name}+final-draw-auto[d={config.max_depth},n={config.max_nodes}]"
+
+
 def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
     allowed_keys = {
         "name",
@@ -923,6 +984,11 @@ def _estimate(
         for reason in (result.fallback_reason for result in late_search_results)
         if reason is not None
     )
+    phase_auto_reasons = tuple(
+        reason
+        for reason in (result.phase_auto_search_reason for result in late_search_results)
+        if reason is not None
+    )
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
@@ -946,6 +1012,10 @@ def _estimate(
         late_search_candidate_count=sum(result.candidate_count for result in late_search_results),
         late_search_terminal_evaluations=sum(result.terminal_evaluations for result in late_search_results),
         late_search_fallback_reason=";".join(dict.fromkeys(fallback_reasons)) if fallback_reasons else None,
+        phase_auto_search_activated=any(result.phase_auto_search_activated for result in late_search_results),
+        phase_auto_search_reason=";".join(dict.fromkeys(phase_auto_reasons)) if phase_auto_reasons else None,
+        phase_auto_search_tree_nodes=sum(result.phase_auto_search_tree_nodes for result in late_search_results),
+        phase_auto_search_depth=max((result.phase_auto_search_depth for result in late_search_results), default=0),
         late_search_runtime_seconds=sum(result.runtime_seconds for result in late_search_results),
     )
 
@@ -984,6 +1054,9 @@ def _diagnostics(
         mean_late_search_terminal_evaluations=_mean(
             result.late_search_terminal_evaluations for result in rollout_results
         ),
+        phase_auto_search_activation_rate=_rate(result.phase_auto_search_activated for result in rollout_results),
+        mean_phase_auto_search_tree_nodes=_mean(result.phase_auto_search_tree_nodes for result in rollout_results),
+        mean_phase_auto_search_depth=_mean(result.phase_auto_search_depth for result in rollout_results),
     )
 
 
@@ -1033,6 +1106,15 @@ def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
             diagnostics,
             "mean_late_search_terminal_evaluations",
         ),
+        phase_auto_search_activation_rate=_weighted_diagnostic_rate(
+            diagnostics,
+            "phase_auto_search_activation_rate",
+        ),
+        mean_phase_auto_search_tree_nodes=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_phase_auto_search_tree_nodes",
+        ),
+        mean_phase_auto_search_depth=_weighted_diagnostic_rate(diagnostics, "mean_phase_auto_search_depth"),
         top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
         top_action_opponent_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "opponent_foul_rate"),
         top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
@@ -1073,6 +1155,18 @@ def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
         top_action_mean_late_search_terminal_evaluations=_weighted_diagnostic_rate(
             top_diagnostics,
             "mean_late_search_terminal_evaluations",
+        ),
+        top_action_phase_auto_search_activation_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "phase_auto_search_activation_rate",
+        ),
+        top_action_mean_phase_auto_search_tree_nodes=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_phase_auto_search_tree_nodes",
+        ),
+        top_action_mean_phase_auto_search_depth=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_phase_auto_search_depth",
         ),
         labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
@@ -1117,6 +1211,9 @@ def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggrega
             diagnostics,
             "mean_late_search_terminal_evaluations",
         ),
+        phase_auto_search_activation_rate=_weighted_payload_rate(diagnostics, "phase_auto_search_activation_rate"),
+        mean_phase_auto_search_tree_nodes=_weighted_payload_rate(diagnostics, "mean_phase_auto_search_tree_nodes"),
+        mean_phase_auto_search_depth=_weighted_payload_rate(diagnostics, "mean_phase_auto_search_depth"),
         top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
         top_action_opponent_foul_rate=_weighted_payload_rate(top_diagnostics, "opponent_foul_rate"),
         top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
@@ -1155,6 +1252,18 @@ def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggrega
             top_diagnostics,
             "mean_late_search_terminal_evaluations",
         ),
+        top_action_phase_auto_search_activation_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "phase_auto_search_activation_rate",
+        ),
+        top_action_mean_phase_auto_search_tree_nodes=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_phase_auto_search_tree_nodes",
+        ),
+        top_action_mean_phase_auto_search_depth=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_phase_auto_search_depth",
+        ),
         labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
         elapsed_seconds=float(payload["elapsed_seconds"]),
@@ -1180,6 +1289,9 @@ def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> di
         "mean_late_search_nodes",
         "mean_late_search_depth",
         "mean_late_search_terminal_evaluations",
+        "phase_auto_search_activation_rate",
+        "mean_phase_auto_search_tree_nodes",
+        "mean_phase_auto_search_depth",
         "top_action_root_foul_rate",
         "top_action_opponent_foul_rate",
         "top_action_both_foul_rate",
@@ -1197,6 +1309,9 @@ def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> di
         "top_action_mean_late_search_nodes",
         "top_action_mean_late_search_depth",
         "top_action_mean_late_search_terminal_evaluations",
+        "top_action_phase_auto_search_activation_rate",
+        "top_action_mean_phase_auto_search_tree_nodes",
+        "top_action_mean_phase_auto_search_depth",
         "labeled_top1_rate",
         "labeled_top3_rate",
         "elapsed_seconds",
@@ -1219,6 +1334,8 @@ def _tag_slice_deltas(
         "late_search_beam_rate",
         "late_search_fallback_rate",
         "mean_late_search_nodes",
+        "phase_auto_search_activation_rate",
+        "mean_phase_auto_search_tree_nodes",
         "top_action_root_foul_rate",
         "top_action_both_foul_rate",
         "top_action_continuation_frequency",
@@ -1229,6 +1346,8 @@ def _tag_slice_deltas(
         "top_action_late_search_beam_rate",
         "top_action_late_search_fallback_rate",
         "top_action_mean_late_search_nodes",
+        "top_action_phase_auto_search_activation_rate",
+        "top_action_mean_phase_auto_search_tree_nodes",
         "labeled_top1_rate",
         "labeled_top3_rate",
     )
@@ -1282,6 +1401,14 @@ def _aggregate_tag_slice_cases(cases: tuple[BenchmarkCaseResult, ...]) -> Benchm
         late_search_beam_rate=_weighted_diagnostic_rate(diagnostics, "late_search_beam_rate"),
         late_search_fallback_rate=_weighted_diagnostic_rate(diagnostics, "late_search_fallback_rate"),
         mean_late_search_nodes=_weighted_diagnostic_rate(diagnostics, "mean_late_search_nodes"),
+        phase_auto_search_activation_rate=_weighted_diagnostic_rate(
+            diagnostics,
+            "phase_auto_search_activation_rate",
+        ),
+        mean_phase_auto_search_tree_nodes=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_phase_auto_search_tree_nodes",
+        ),
         top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
         top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
         top_action_continuation_frequency=_weighted_diagnostic_rate(top_diagnostics, "continuation_frequency"),
@@ -1304,6 +1431,14 @@ def _aggregate_tag_slice_cases(cases: tuple[BenchmarkCaseResult, ...]) -> Benchm
             "late_search_fallback_rate",
         ),
         top_action_mean_late_search_nodes=_weighted_diagnostic_rate(top_diagnostics, "mean_late_search_nodes"),
+        top_action_phase_auto_search_activation_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "phase_auto_search_activation_rate",
+        ),
+        top_action_mean_phase_auto_search_tree_nodes=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_phase_auto_search_tree_nodes",
+        ),
         labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
     )
@@ -1353,6 +1488,8 @@ def _aggregate_tag_slice_payload_cases(cases: tuple[Mapping[str, Any], ...]) -> 
         late_search_beam_rate=_weighted_payload_rate(diagnostics, "late_search_beam_rate"),
         late_search_fallback_rate=_weighted_payload_rate(diagnostics, "late_search_fallback_rate"),
         mean_late_search_nodes=_weighted_payload_rate(diagnostics, "mean_late_search_nodes"),
+        phase_auto_search_activation_rate=_weighted_payload_rate(diagnostics, "phase_auto_search_activation_rate"),
+        mean_phase_auto_search_tree_nodes=_weighted_payload_rate(diagnostics, "mean_phase_auto_search_tree_nodes"),
         top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
         top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
         top_action_continuation_frequency=_weighted_payload_rate(top_diagnostics, "continuation_frequency"),
@@ -1372,6 +1509,14 @@ def _aggregate_tag_slice_payload_cases(cases: tuple[Mapping[str, Any], ...]) -> 
             "late_search_fallback_rate",
         ),
         top_action_mean_late_search_nodes=_weighted_payload_rate(top_diagnostics, "mean_late_search_nodes"),
+        top_action_phase_auto_search_activation_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "phase_auto_search_activation_rate",
+        ),
+        top_action_mean_phase_auto_search_tree_nodes=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_phase_auto_search_tree_nodes",
+        ),
         labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
     )

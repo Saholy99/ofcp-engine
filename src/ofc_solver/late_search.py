@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import random
 import time
 from typing import TYPE_CHECKING, Literal
@@ -43,6 +43,32 @@ class LateSearchConfig:
 
 
 @dataclass(frozen=True)
+class FinalDrawAutoSearchConfig:
+    """Conservative exact-search gate for final-draw-like root states."""
+
+    max_depth: int = 0
+    max_nodes: int = 64
+
+    def __post_init__(self) -> None:
+        if self.max_depth < 0:
+            raise ValueError("final_draw_auto_search max_depth must be non-negative")
+        if self.max_nodes <= 0:
+            raise ValueError("final_draw_auto_search max_nodes must be positive")
+
+
+@dataclass(frozen=True)
+class FinalDrawAutoSearchAssessment:
+    """Decision and tree-size estimate for the final-draw auto gate."""
+
+    eligible: bool
+    reason: str
+    tree_nodes: int = 0
+    depth_reached: int = 0
+    candidate_count: int = 0
+    terminal_evaluations: int = 0
+
+
+@dataclass(frozen=True)
 class LateSearchResult:
     """Value and diagnostics for one searched root action."""
 
@@ -55,6 +81,10 @@ class LateSearchResult:
     candidate_count: int
     terminal_evaluations: int
     fallback_reason: str | None = None
+    phase_auto_search_activated: bool = False
+    phase_auto_search_reason: str | None = None
+    phase_auto_search_tree_nodes: int = 0
+    phase_auto_search_depth: int = 0
     runtime_seconds: float = field(default=0.0, compare=False)
 
 
@@ -87,6 +117,21 @@ class _SearchOutcome:
     value: float
     terminal_state: GameState
     terminal_result: TerminalResult
+
+
+@dataclass
+class _TreeEstimateStats:
+    max_nodes: int
+    nodes: int = 0
+    depth_reached: int = 0
+    candidate_count: int = 0
+    terminal_evaluations: int = 0
+
+    def visit(self, depth: int) -> None:
+        self.nodes += 1
+        self.depth_reached = max(self.depth_reached, depth)
+        if self.nodes > self.max_nodes:
+            raise _SearchBudgetExceeded
 
 
 class _SearchBudgetExceeded(Exception):
@@ -288,6 +333,142 @@ def evaluate_late_root_action(
     )
 
 
+def assess_final_draw_auto_search(
+    state: GameState,
+    action: GameAction,
+    *,
+    config: FinalDrawAutoSearchConfig | None = None,
+) -> FinalDrawAutoSearchAssessment:
+    """Return whether exact search should be auto-enabled for one root action."""
+
+    effective_config = config or FinalDrawAutoSearchConfig()
+    if state.phase != HandPhase.DRAW:
+        return FinalDrawAutoSearchAssessment(eligible=False, reason="unsupported-phase")
+    stats = _TreeEstimateStats(max_nodes=effective_config.max_nodes)
+    try:
+        _estimate_remaining_tree(
+            apply_action(state, action),
+            stats=stats,
+            depth=0,
+            max_depth=effective_config.max_depth,
+        )
+    except _SearchBudgetExceeded:
+        return _assessment_from_stats(False, "tree-budget-exceeded", stats)
+    except _SearchDepthExceeded:
+        return _assessment_from_stats(False, "tree-depth-exceeded", stats)
+    except _SearchUnsupported:
+        return _assessment_from_stats(False, "tree-unsupported-state", stats)
+    return _assessment_from_stats(True, "eligible", stats)
+
+
+def evaluate_final_draw_auto_root_action(
+    state: GameState,
+    action: GameAction,
+    *,
+    perspective: PlayerId,
+    rng: random.Random,
+    config: FinalDrawAutoSearchConfig | None = None,
+    policy: RolloutPolicy | None = None,
+) -> LateSearchResult:
+    """Use exact late-search only when the root action has a tiny remaining tree."""
+
+    effective_config = config or FinalDrawAutoSearchConfig()
+    assessment = assess_final_draw_auto_search(state, action, config=effective_config)
+    if assessment.eligible:
+        result = evaluate_late_root_action(
+            state,
+            action,
+            perspective=perspective,
+            rng=rng,
+            config=LateSearchConfig(
+                mode="exact",
+                max_depth=effective_config.max_depth,
+                max_nodes=effective_config.max_nodes,
+                beam_size=1,
+            ),
+            policy=policy,
+        )
+        return _annotate_phase_auto_result(result, assessment=assessment, activated=result.activated)
+
+    start = time.perf_counter()
+    result = _fallback_result(
+        state,
+        action,
+        perspective=perspective,
+        rng=rng,
+        policy=policy,
+        reason=f"final-draw-auto-{assessment.reason}",
+        mode="fallback",
+        runtime_start=start,
+    )
+    return _annotate_phase_auto_result(result, assessment=assessment, activated=False)
+
+
+def _assessment_from_stats(
+    eligible: bool,
+    reason: str,
+    stats: _TreeEstimateStats,
+) -> FinalDrawAutoSearchAssessment:
+    return FinalDrawAutoSearchAssessment(
+        eligible=eligible,
+        reason=reason,
+        tree_nodes=min(stats.nodes, stats.max_nodes),
+        depth_reached=stats.depth_reached,
+        candidate_count=stats.candidate_count,
+        terminal_evaluations=stats.terminal_evaluations,
+    )
+
+
+def _estimate_remaining_tree(
+    state: GameState,
+    *,
+    stats: _TreeEstimateStats,
+    depth: int,
+    max_depth: int,
+) -> None:
+    stats.visit(depth)
+    if state.phase in {HandPhase.SHOWDOWN, HandPhase.TERMINAL}:
+        stats.terminal_evaluations += 1
+        return
+    if state.phase != HandPhase.DRAW:
+        raise _SearchUnsupported
+    if depth >= max_depth:
+        raise _SearchDepthExceeded
+
+    actions = tuple(legal_actions(state))
+    if not actions:
+        raise _SearchUnsupported
+    stats.candidate_count += len(actions)
+    for child_action in actions:
+        _estimate_remaining_tree(
+            apply_action(state, child_action),
+            stats=stats,
+            depth=depth + 1,
+            max_depth=max_depth,
+        )
+
+
+def _annotate_phase_auto_result(
+    result: LateSearchResult,
+    *,
+    assessment: FinalDrawAutoSearchAssessment,
+    activated: bool,
+) -> LateSearchResult:
+    return replace(
+        result,
+        phase_auto_search_activated=activated,
+        phase_auto_search_reason=assessment.reason,
+        phase_auto_search_tree_nodes=assessment.tree_nodes,
+        phase_auto_search_depth=assessment.depth_reached,
+        rollout_result=result.rollout_result.with_phase_auto_search(
+            activated=activated,
+            reason=assessment.reason,
+            tree_nodes=assessment.tree_nodes,
+            depth=assessment.depth_reached,
+        ),
+    )
+
+
 def _search_value(
     state: GameState,
     *,
@@ -462,7 +643,11 @@ def _breakdowns_for_player(result: TerminalResult, player_id: PlayerId):
 __all__ = [
     "LateSearchConfig",
     "LateSearchResult",
+    "FinalDrawAutoSearchAssessment",
+    "FinalDrawAutoSearchConfig",
     "RankedLateSearchAction",
+    "assess_final_draw_auto_search",
+    "evaluate_final_draw_auto_root_action",
     "evaluate_late_root_action",
     "rank_late_root_actions",
 ]
