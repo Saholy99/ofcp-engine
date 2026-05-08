@@ -191,6 +191,117 @@ class AnalysisCliTest(unittest.TestCase):
         payload = json.loads(stdout)
         self.assertTrue(any("middle-over-bottom-pressure" in action["root_risk_reasons"] for action in payload["ranked_actions"]))
 
+    def test_solve_move_early_search_outputs_candidate_metadata(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            scenario_path = self._write_scenario(temp_dir, self._initial_payload())
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "solve-move",
+                    str(scenario_path),
+                    "--observer",
+                    "player_1",
+                    "--rollouts",
+                    "1",
+                    "--seed",
+                    "early-cli",
+                    "--policy",
+                    "heuristic",
+                    "--early-search",
+                    "--beam-size",
+                    "5",
+                    "--candidate-extra-rollouts",
+                    "1",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["early_search_enabled"])
+        self.assertEqual(232, payload["total_legal_actions"])
+        self.assertEqual(5, payload["candidate_count"])
+        self.assertEqual(5, payload["action_count"])
+        self.assertEqual(2, payload["rollouts_per_action"])
+        self.assertIn("pattern_score", payload["ranked_actions"][0])
+        self.assertIn("pattern_reasons", payload["ranked_actions"][0])
+        self.assertIn("final_score", payload["ranked_actions"][0])
+
+    def test_solve_move_early_search_accepts_safe_draw_candidate_options(self) -> None:
+        scenario_path = Path("scenarios/regression/draw_root.json")
+
+        exit_code, stdout, stderr = self._run_cli(
+            [
+                "solve-move",
+                str(scenario_path),
+                "--observer",
+                "player_1",
+                "--rollouts",
+                "1",
+                "--seed",
+                "safe-draw-cli",
+                "--policy",
+                "heuristic",
+                "--early-search",
+                "--beam-size",
+                "8",
+                "--draw-safe-candidates",
+                "--draw-baseline-keep",
+                "3",
+                "--draw-safety-keep",
+                "3",
+                "--json",
+            ]
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["early_search_enabled"])
+        self.assertTrue(payload["draw_safe_candidates"])
+        self.assertEqual(3, payload["draw_baseline_keep"])
+        self.assertEqual(3, payload["draw_safety_keep"])
+        self.assertIn("selection_reasons", payload["ranked_actions"][0])
+        self.assertTrue(any("baseline-keep" in action["selection_reasons"] for action in payload["ranked_actions"]))
+
+    def test_solve_move_late_search_outputs_diagnostics(self) -> None:
+        scenario_path = Path("scenarios/regression/draw_root.json")
+
+        exit_code, stdout, stderr = self._run_cli(
+            [
+                "solve-move",
+                str(scenario_path),
+                "--observer",
+                "player_1",
+                "--rollouts",
+                "1",
+                "--seed",
+                "late-cli",
+                "--policy",
+                "heuristic",
+                "--late-search",
+                "--late-search-mode",
+                "auto",
+                "--late-search-max-depth",
+                "4",
+                "--late-search-max-nodes",
+                "500",
+                "--late-search-beam-size",
+                "2",
+                "--json",
+            ]
+        )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["late_search_enabled"])
+        self.assertEqual("auto", payload["late_search_mode"])
+        self.assertIn("late_search_activated", payload["ranked_actions"][0])
+        self.assertIn("late_search_nodes", payload["ranked_actions"][0])
+        self.assertIn("late_search_terminal_evaluations", payload["ranked_actions"][0])
+
     def test_solve_move_rejects_non_acting_observer(self) -> None:
         scenario_path = Path("scenarios/regression/immediate_scoring.json")
 

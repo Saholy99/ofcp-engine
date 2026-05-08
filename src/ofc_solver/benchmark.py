@@ -17,6 +17,8 @@ from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_action
 from ofc_analysis.observation import project_observation
 from ofc_analysis.scenario import load_scenario
+from ofc_solver.early_search import EarlySearchCandidate, EarlySearchConfig, select_early_search_candidates
+from ofc_solver.late_search import LateSearchConfig, LateSearchResult, evaluate_late_root_action
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
 from ofc_solver.policy_registry import policy_from_name
 from ofc_solver.root_action_risk import (
@@ -71,6 +73,13 @@ class BenchmarkActionDiagnostics:
     exact_late_search_rollout_frequency: float
     mean_exact_late_search_decisions: float
     mean_exact_late_search_nodes: float
+    late_search_activation_rate: float
+    late_search_exact_rate: float
+    late_search_beam_rate: float
+    late_search_fallback_rate: float
+    mean_late_search_nodes: float
+    mean_late_search_depth: float
+    mean_late_search_terminal_evaluations: float
 
 
 @dataclass(frozen=True)
@@ -89,6 +98,8 @@ class BenchmarkCaseResult:
     top1_agreement: bool | None
     top3_agreement: bool | None
     action_count: int
+    candidate_count: int
+    candidate_pruning_ratio: float
     elapsed_seconds: float
     ranked_actions: tuple[MoveEstimate, ...]
     action_diagnostics: tuple[BenchmarkActionDiagnostics, ...]
@@ -103,6 +114,17 @@ class BenchmarkRun:
     elapsed_seconds: float
     root_action_risk_enabled: bool = False
     root_action_risk_config_label: str | None = None
+    early_search_enabled: bool = False
+    beam_size: int | None = None
+    candidate_extra_rollouts: int = 0
+    draw_safe_candidates: bool = True
+    draw_baseline_keep: int = 0
+    draw_safety_keep: int = 0
+    late_search_enabled: bool = False
+    late_search_mode: str | None = None
+    late_search_max_depth: int | None = None
+    late_search_max_nodes: int | None = None
+    late_search_beam_size: int | None = None
 
     @property
     def case_count(self) -> int:
@@ -127,6 +149,13 @@ class BenchmarkAggregate:
     exact_late_search_rollout_frequency: float
     mean_exact_late_search_decisions: float
     mean_exact_late_search_nodes: float
+    late_search_activation_rate: float
+    late_search_exact_rate: float
+    late_search_beam_rate: float
+    late_search_fallback_rate: float
+    mean_late_search_nodes: float
+    mean_late_search_depth: float
+    mean_late_search_terminal_evaluations: float
     top_action_root_foul_rate: float
     top_action_opponent_foul_rate: float
     top_action_both_foul_rate: float
@@ -137,6 +166,13 @@ class BenchmarkAggregate:
     top_action_exact_late_search_rollout_frequency: float
     top_action_mean_exact_late_search_decisions: float
     top_action_mean_exact_late_search_nodes: float
+    top_action_late_search_activation_rate: float
+    top_action_late_search_exact_rate: float
+    top_action_late_search_beam_rate: float
+    top_action_late_search_fallback_rate: float
+    top_action_mean_late_search_nodes: float
+    top_action_mean_late_search_depth: float
+    top_action_mean_late_search_terminal_evaluations: float
     labeled_top1_rate: float | None
     labeled_top3_rate: float | None
     elapsed_seconds: float
@@ -154,11 +190,21 @@ class BenchmarkTagSliceAggregate:
     continuation_frequency: float
     root_fantasyland_frequency: float
     exact_late_search_rollout_frequency: float
+    late_search_activation_rate: float
+    late_search_exact_rate: float
+    late_search_beam_rate: float
+    late_search_fallback_rate: float
+    mean_late_search_nodes: float
     top_action_root_foul_rate: float
     top_action_both_foul_rate: float
     top_action_continuation_frequency: float
     top_action_root_fantasyland_frequency: float
     top_action_exact_late_search_rollout_frequency: float
+    top_action_late_search_activation_rate: float
+    top_action_late_search_exact_rate: float
+    top_action_late_search_beam_rate: float
+    top_action_late_search_fallback_rate: float
+    top_action_mean_late_search_nodes: float
     labeled_top1_rate: float | None
     labeled_top3_rate: float | None
 
@@ -240,6 +286,30 @@ class RootActionRiskAblationBenchmark:
     component_order: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class EarlySearchBenchmark:
+    """Focused comparison of baseline ranking against early-search pruning."""
+
+    comparison: BenchmarkComparison
+    left_run: BenchmarkRun
+    right_run: BenchmarkRun
+    include_tags: tuple[str, ...]
+    exclude_tags: tuple[str, ...]
+    phases: tuple[HandPhase, ...]
+
+
+@dataclass(frozen=True)
+class LateSearchBenchmark:
+    """Focused comparison of baseline ranking against bounded late-street search."""
+
+    comparison: BenchmarkComparison
+    left_run: BenchmarkRun
+    right_run: BenchmarkRun
+    include_tags: tuple[str, ...]
+    exclude_tags: tuple[str, ...]
+    phases: tuple[HandPhase, ...]
+
+
 def load_benchmark_manifest(path: str | Path) -> BenchmarkManifest:
     """Load a solver benchmark manifest from disk."""
 
@@ -279,6 +349,14 @@ def run_benchmark_manifest(
     policy_name: str = "random",
     root_action_risk: bool = False,
     root_action_risk_config: RootRiskConfig | None = None,
+    early_search: bool = False,
+    beam_size: int = 48,
+    candidate_extra_rollouts: int = 0,
+    draw_safe_candidates: bool = True,
+    draw_baseline_keep: int = 8,
+    draw_safety_keep: int = 8,
+    late_search: bool = False,
+    late_search_config: LateSearchConfig | None = None,
 ) -> BenchmarkRun:
     """Run all cases in a loaded benchmark manifest."""
 
@@ -286,7 +364,15 @@ def run_benchmark_manifest(
         RootRiskConfig.default() if root_action_risk else RootRiskConfig.all_off()
     )
     risk_enabled = bool(effective_root_risk_config.enabled_components)
+    early_search_config = EarlySearchConfig(
+        beam_size=beam_size,
+        candidate_extra_rollouts=candidate_extra_rollouts,
+        draw_safe_candidates=draw_safe_candidates,
+        draw_baseline_keep=draw_baseline_keep,
+        draw_safety_keep=draw_safety_keep,
+    )
     policy = policy_from_name(policy_name)
+    effective_late_search_config = late_search_config or LateSearchConfig()
     start = time.perf_counter()
     case_results = tuple(
         run_benchmark_case(
@@ -294,15 +380,41 @@ def run_benchmark_manifest(
             policy=policy,
             root_action_risk=risk_enabled,
             root_action_risk_config=effective_root_risk_config,
+            early_search=early_search,
+            early_search_config=early_search_config,
+            late_search=late_search,
+            late_search_config=effective_late_search_config,
         )
         for case in manifest.cases
     )
+    effective_name = _policy_name_for_root_risk(policy_name, risk_enabled, effective_root_risk_config)
+    effective_name = _policy_name_for_early_search(
+        effective_name,
+        early_search,
+        early_search_config,
+    )
+    effective_name = _policy_name_for_late_search(
+        effective_name,
+        late_search,
+        effective_late_search_config,
+    )
     return BenchmarkRun(
-        policy_name=_policy_name_for_root_risk(policy_name, risk_enabled, effective_root_risk_config),
+        policy_name=effective_name,
         case_results=case_results,
         elapsed_seconds=time.perf_counter() - start,
         root_action_risk_enabled=risk_enabled,
         root_action_risk_config_label=effective_root_risk_config.label if risk_enabled else "off",
+        early_search_enabled=early_search,
+        beam_size=beam_size if early_search else None,
+        candidate_extra_rollouts=candidate_extra_rollouts if early_search else 0,
+        draw_safe_candidates=draw_safe_candidates if early_search else False,
+        draw_baseline_keep=draw_baseline_keep if early_search else 0,
+        draw_safety_keep=draw_safety_keep if early_search else 0,
+        late_search_enabled=late_search,
+        late_search_mode=effective_late_search_config.mode if late_search else None,
+        late_search_max_depth=effective_late_search_config.max_depth if late_search else None,
+        late_search_max_nodes=effective_late_search_config.max_nodes if late_search else None,
+        late_search_beam_size=effective_late_search_config.beam_size if late_search else None,
     )
 
 
@@ -312,6 +424,10 @@ def run_benchmark_case(
     policy: RolloutPolicy,
     root_action_risk: bool = False,
     root_action_risk_config: RootRiskConfig | None = None,
+    early_search: bool = False,
+    early_search_config: EarlySearchConfig | None = None,
+    late_search: bool = False,
+    late_search_config: LateSearchConfig | None = None,
 ) -> BenchmarkCaseResult:
     """Run one benchmark case and collect ranked actions plus diagnostics."""
 
@@ -326,24 +442,50 @@ def run_benchmark_case(
 
     observation = project_observation(exact_state, case.observer)
     enumeration_state = sample_state(observation, rng=random.Random(case.rng_seed)).state
-    root_actions = tuple(legal_actions(enumeration_state))
+    candidate_set = (
+        select_early_search_candidates(enumeration_state, config=early_search_config)
+        if early_search
+        else None
+    )
+    root_actions = tuple(candidate.action for candidate in candidate_set.candidates) if candidate_set else tuple(legal_actions(enumeration_state))
+    action_indices = tuple(candidate.action_index for candidate in candidate_set.candidates) if candidate_set else tuple(range(len(root_actions)))
+    candidate_by_index = {} if candidate_set is None else {candidate.action_index: candidate for candidate in candidate_set.candidates}
+    rollouts_per_candidate = case.rollouts_per_action + (
+        early_search_config.candidate_extra_rollouts if early_search and early_search_config is not None else 0
+    )
+    effective_late_search_config = late_search_config or LateSearchConfig()
 
     rng = random.Random(case.rng_seed)
     estimates: list[MoveEstimate] = []
     diagnostics: list[BenchmarkActionDiagnostics] = []
     start = time.perf_counter()
 
-    for action_index, action in enumerate(root_actions):
-        rollout_results = tuple(
-            run_rollout(
-                sample_state(observation, rng=rng).state,
-                root_action=action,
-                root_player=case.observer,
-                rng=rng,
-                policy=policy,
+    for action_index, action in zip(action_indices, root_actions, strict=True):
+        late_results: tuple[LateSearchResult, ...] = ()
+        if late_search:
+            late_results = tuple(
+                evaluate_late_root_action(
+                    sample_state(observation, rng=rng).state,
+                    action,
+                    perspective=case.observer,
+                    rng=rng,
+                    config=effective_late_search_config,
+                    policy=policy,
+                )
+                for _ in range(rollouts_per_candidate)
             )
-            for _ in range(case.rollouts_per_action)
-        )
+            rollout_results = tuple(result.rollout_result for result in late_results)
+        else:
+            rollout_results = tuple(
+                run_rollout(
+                    sample_state(observation, rng=rng).state,
+                    root_action=action,
+                    root_player=case.observer,
+                    rng=rng,
+                    policy=policy,
+                )
+                for _ in range(rollouts_per_candidate)
+            )
         risk = (
             score_root_action(
                 enumeration_state,
@@ -353,7 +495,16 @@ def run_benchmark_case(
             if root_action_risk
             else None
         )
-        estimates.append(_estimate(action_index, action, rollout_results, root_risk=risk))
+        estimates.append(
+            _estimate(
+                action_index,
+                action,
+                rollout_results,
+                root_risk=risk,
+                candidate=candidate_by_index.get(action_index),
+                late_search_results=late_results,
+            )
+        )
         diagnostics.append(_diagnostics(action_index, rollout_results))
 
     ranked_actions = tuple(sorted(estimates, key=lambda estimate: (-estimate.mean_value, estimate.action_index)))
@@ -369,13 +520,15 @@ def run_benchmark_case(
         tags=case.tags,
         observer=case.observer,
         phase=exact_state.phase,
-        rollouts_per_action=case.rollouts_per_action,
+        rollouts_per_action=rollouts_per_candidate,
         rng_seed=case.rng_seed,
         expected_top_action_indices=case.expected_top_action_indices,
         top_action_index=top_action_index,
         top1_agreement=top1_agreement,
         top3_agreement=top3_agreement,
-        action_count=len(root_actions),
+        action_count=candidate_set.total_legal_actions if candidate_set else len(root_actions),
+        candidate_count=len(root_actions),
+        candidate_pruning_ratio=candidate_set.pruning_ratio if candidate_set else 0.0,
         elapsed_seconds=time.perf_counter() - start,
         ranked_actions=ranked_actions,
         action_diagnostics=tuple(diagnostics),
@@ -463,6 +616,103 @@ def run_root_action_risk_benchmark(
         root_action_risk_config=comparison_config,
     )
     return RootActionRiskBenchmark(
+        comparison=compare_benchmark_runs(left, right),
+        left_run=left,
+        right_run=right,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+    )
+
+
+def run_early_search_benchmark(
+    manifest: BenchmarkManifest,
+    *,
+    policy_name: str = "heuristic",
+    include_tags: tuple[str, ...] = ("initial_deal", "early_draw"),
+    exclude_tags: tuple[str, ...] = ("final_draw",),
+    phases: tuple[HandPhase, ...] = (),
+    beam_size: int = 48,
+    candidate_extra_rollouts: int = 0,
+    draw_safe_candidates: bool = True,
+    draw_baseline_keep: int = 8,
+    draw_safety_keep: int = 8,
+    root_action_risk: bool = False,
+    root_action_risk_config: RootRiskConfig | None = None,
+) -> EarlySearchBenchmark:
+    """Run a focused baseline-vs-early-search benchmark comparison."""
+
+    filtered = filter_benchmark_manifest(
+        manifest,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+    )
+    left = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=root_action_risk,
+        root_action_risk_config=root_action_risk_config,
+        early_search=False,
+    )
+    right = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=root_action_risk,
+        root_action_risk_config=root_action_risk_config,
+        early_search=True,
+        beam_size=beam_size,
+        candidate_extra_rollouts=candidate_extra_rollouts,
+        draw_safe_candidates=draw_safe_candidates,
+        draw_baseline_keep=draw_baseline_keep,
+        draw_safety_keep=draw_safety_keep,
+    )
+    return EarlySearchBenchmark(
+        comparison=compare_benchmark_runs(left, right),
+        left_run=left,
+        right_run=right,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+    )
+
+
+def run_late_search_benchmark(
+    manifest: BenchmarkManifest,
+    *,
+    policy_name: str = "heuristic",
+    include_tags: tuple[str, ...] = ("late_draw", "final_draw"),
+    exclude_tags: tuple[str, ...] = (),
+    phases: tuple[HandPhase, ...] = (HandPhase.DRAW,),
+    late_search_config: LateSearchConfig | None = None,
+    root_action_risk: bool = False,
+    root_action_risk_config: RootRiskConfig | None = None,
+) -> LateSearchBenchmark:
+    """Run a focused baseline-vs-late-search benchmark comparison."""
+
+    filtered = filter_benchmark_manifest(
+        manifest,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+    )
+    left = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=root_action_risk,
+        root_action_risk_config=root_action_risk_config,
+        late_search=False,
+    )
+    effective_late_search_config = late_search_config or LateSearchConfig()
+    right = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=root_action_risk,
+        root_action_risk_config=root_action_risk_config,
+        late_search=True,
+        late_search_config=effective_late_search_config,
+    )
+    return LateSearchBenchmark(
         comparison=compare_benchmark_runs(left, right),
         left_run=left,
         right_run=right,
@@ -599,6 +849,30 @@ def _policy_name_for_root_risk(
     return f"{policy_name}+root-risk[{root_action_risk_config.label}]"
 
 
+def _policy_name_for_early_search(
+    policy_name: str,
+    enabled: bool,
+    config: EarlySearchConfig,
+) -> str:
+    if not enabled:
+        return policy_name
+    extra = f",+{config.candidate_extra_rollouts}" if config.candidate_extra_rollouts else ""
+    return f"{policy_name}+early-search[beam={config.beam_size}{extra}]"
+
+
+def _policy_name_for_late_search(
+    policy_name: str,
+    enabled: bool,
+    config: LateSearchConfig,
+) -> str:
+    if not enabled:
+        return policy_name
+    return (
+        f"{policy_name}+late-search[{config.mode},d={config.max_depth},"
+        f"n={config.max_nodes},b={config.beam_size}]"
+    )
+
+
 def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
     allowed_keys = {
         "name",
@@ -634,15 +908,25 @@ def _estimate(
     rollout_results: tuple[RolloutResult, ...],
     *,
     root_risk: RootActionRiskAssessment | None = None,
+    candidate: EarlySearchCandidate | None = None,
+    late_search_results: tuple[LateSearchResult, ...] = (),
 ) -> MoveEstimate:
     values = tuple(result.total_value for result in rollout_results)
     mean_value = sum(values) / len(values)
     variance = sum((value - mean_value) ** 2 for value in values) / len(values)
     risk_score = 0.0 if root_risk is None else root_risk.contribution
+    pattern_score = 0.0 if candidate is None else candidate.pattern_score
+    final_score = mean_value + risk_score
+    late_modes = {result.mode for result in late_search_results}
+    fallback_reasons = tuple(
+        reason
+        for reason in (result.fallback_reason for result in late_search_results)
+        if reason is not None
+    )
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
-        mean_value=mean_value + risk_score,
+        mean_value=final_score,
         stddev=math.sqrt(variance),
         sample_count=len(values),
         min_value=min(values),
@@ -650,6 +934,19 @@ def _estimate(
         rollout_mean_value=mean_value,
         root_risk_score=risk_score,
         root_risk_reasons=() if root_risk is None else root_risk.reasons,
+        pattern_score=pattern_score,
+        pattern_reasons=() if candidate is None else candidate.reasons,
+        selection_reasons=() if candidate is None else candidate.selection_reasons,
+        candidate_rank=None if candidate is None else candidate.candidate_rank,
+        final_score=final_score,
+        late_search_activated=any(result.activated for result in late_search_results),
+        late_search_mode=late_modes.pop() if len(late_modes) == 1 else "mixed" if late_modes else None,
+        late_search_nodes=sum(result.nodes_searched for result in late_search_results),
+        late_search_depth=max((result.depth_reached for result in late_search_results), default=0),
+        late_search_candidate_count=sum(result.candidate_count for result in late_search_results),
+        late_search_terminal_evaluations=sum(result.terminal_evaluations for result in late_search_results),
+        late_search_fallback_reason=";".join(dict.fromkeys(fallback_reasons)) if fallback_reasons else None,
+        late_search_runtime_seconds=sum(result.runtime_seconds for result in late_search_results),
     )
 
 
@@ -678,6 +975,15 @@ def _diagnostics(
             result.exact_late_search_decision_count for result in rollout_results
         ),
         mean_exact_late_search_nodes=_mean(result.exact_late_search_node_count for result in rollout_results),
+        late_search_activation_rate=_rate(result.late_search_activated for result in rollout_results),
+        late_search_exact_rate=_rate(result.late_search_mode == "exact" for result in rollout_results),
+        late_search_beam_rate=_rate(result.late_search_mode == "beam" for result in rollout_results),
+        late_search_fallback_rate=_rate(result.late_search_mode == "fallback" for result in rollout_results),
+        mean_late_search_nodes=_mean(result.late_search_nodes for result in rollout_results),
+        mean_late_search_depth=_mean(result.late_search_depth for result in rollout_results),
+        mean_late_search_terminal_evaluations=_mean(
+            result.late_search_terminal_evaluations for result in rollout_results
+        ),
     )
 
 
@@ -717,6 +1023,16 @@ def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
             "mean_exact_late_search_decisions",
         ),
         mean_exact_late_search_nodes=_weighted_diagnostic_rate(diagnostics, "mean_exact_late_search_nodes"),
+        late_search_activation_rate=_weighted_diagnostic_rate(diagnostics, "late_search_activation_rate"),
+        late_search_exact_rate=_weighted_diagnostic_rate(diagnostics, "late_search_exact_rate"),
+        late_search_beam_rate=_weighted_diagnostic_rate(diagnostics, "late_search_beam_rate"),
+        late_search_fallback_rate=_weighted_diagnostic_rate(diagnostics, "late_search_fallback_rate"),
+        mean_late_search_nodes=_weighted_diagnostic_rate(diagnostics, "mean_late_search_nodes"),
+        mean_late_search_depth=_weighted_diagnostic_rate(diagnostics, "mean_late_search_depth"),
+        mean_late_search_terminal_evaluations=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_late_search_terminal_evaluations",
+        ),
         top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
         top_action_opponent_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "opponent_foul_rate"),
         top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
@@ -741,6 +1057,22 @@ def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
         top_action_mean_exact_late_search_nodes=_weighted_diagnostic_rate(
             top_diagnostics,
             "mean_exact_late_search_nodes",
+        ),
+        top_action_late_search_activation_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "late_search_activation_rate",
+        ),
+        top_action_late_search_exact_rate=_weighted_diagnostic_rate(top_diagnostics, "late_search_exact_rate"),
+        top_action_late_search_beam_rate=_weighted_diagnostic_rate(top_diagnostics, "late_search_beam_rate"),
+        top_action_late_search_fallback_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "late_search_fallback_rate",
+        ),
+        top_action_mean_late_search_nodes=_weighted_diagnostic_rate(top_diagnostics, "mean_late_search_nodes"),
+        top_action_mean_late_search_depth=_weighted_diagnostic_rate(top_diagnostics, "mean_late_search_depth"),
+        top_action_mean_late_search_terminal_evaluations=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_late_search_terminal_evaluations",
         ),
         labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
@@ -775,6 +1107,16 @@ def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggrega
             "mean_exact_late_search_decisions",
         ),
         mean_exact_late_search_nodes=_weighted_payload_rate(diagnostics, "mean_exact_late_search_nodes"),
+        late_search_activation_rate=_weighted_payload_rate(diagnostics, "late_search_activation_rate"),
+        late_search_exact_rate=_weighted_payload_rate(diagnostics, "late_search_exact_rate"),
+        late_search_beam_rate=_weighted_payload_rate(diagnostics, "late_search_beam_rate"),
+        late_search_fallback_rate=_weighted_payload_rate(diagnostics, "late_search_fallback_rate"),
+        mean_late_search_nodes=_weighted_payload_rate(diagnostics, "mean_late_search_nodes"),
+        mean_late_search_depth=_weighted_payload_rate(diagnostics, "mean_late_search_depth"),
+        mean_late_search_terminal_evaluations=_weighted_payload_rate(
+            diagnostics,
+            "mean_late_search_terminal_evaluations",
+        ),
         top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
         top_action_opponent_foul_rate=_weighted_payload_rate(top_diagnostics, "opponent_foul_rate"),
         top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
@@ -797,6 +1139,22 @@ def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggrega
             top_diagnostics,
             "mean_exact_late_search_nodes",
         ),
+        top_action_late_search_activation_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "late_search_activation_rate",
+        ),
+        top_action_late_search_exact_rate=_weighted_payload_rate(top_diagnostics, "late_search_exact_rate"),
+        top_action_late_search_beam_rate=_weighted_payload_rate(top_diagnostics, "late_search_beam_rate"),
+        top_action_late_search_fallback_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "late_search_fallback_rate",
+        ),
+        top_action_mean_late_search_nodes=_weighted_payload_rate(top_diagnostics, "mean_late_search_nodes"),
+        top_action_mean_late_search_depth=_weighted_payload_rate(top_diagnostics, "mean_late_search_depth"),
+        top_action_mean_late_search_terminal_evaluations=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_late_search_terminal_evaluations",
+        ),
         labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
         elapsed_seconds=float(payload["elapsed_seconds"]),
@@ -815,6 +1173,13 @@ def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> di
         "exact_late_search_rollout_frequency",
         "mean_exact_late_search_decisions",
         "mean_exact_late_search_nodes",
+        "late_search_activation_rate",
+        "late_search_exact_rate",
+        "late_search_beam_rate",
+        "late_search_fallback_rate",
+        "mean_late_search_nodes",
+        "mean_late_search_depth",
+        "mean_late_search_terminal_evaluations",
         "top_action_root_foul_rate",
         "top_action_opponent_foul_rate",
         "top_action_both_foul_rate",
@@ -825,6 +1190,13 @@ def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> di
         "top_action_exact_late_search_rollout_frequency",
         "top_action_mean_exact_late_search_decisions",
         "top_action_mean_exact_late_search_nodes",
+        "top_action_late_search_activation_rate",
+        "top_action_late_search_exact_rate",
+        "top_action_late_search_beam_rate",
+        "top_action_late_search_fallback_rate",
+        "top_action_mean_late_search_nodes",
+        "top_action_mean_late_search_depth",
+        "top_action_mean_late_search_terminal_evaluations",
         "labeled_top1_rate",
         "labeled_top3_rate",
         "elapsed_seconds",
@@ -842,11 +1214,21 @@ def _tag_slice_deltas(
         "continuation_frequency",
         "root_fantasyland_frequency",
         "exact_late_search_rollout_frequency",
+        "late_search_activation_rate",
+        "late_search_exact_rate",
+        "late_search_beam_rate",
+        "late_search_fallback_rate",
+        "mean_late_search_nodes",
         "top_action_root_foul_rate",
         "top_action_both_foul_rate",
         "top_action_continuation_frequency",
         "top_action_root_fantasyland_frequency",
         "top_action_exact_late_search_rollout_frequency",
+        "top_action_late_search_activation_rate",
+        "top_action_late_search_exact_rate",
+        "top_action_late_search_beam_rate",
+        "top_action_late_search_fallback_rate",
+        "top_action_mean_late_search_nodes",
         "labeled_top1_rate",
         "labeled_top3_rate",
     )
@@ -895,6 +1277,11 @@ def _aggregate_tag_slice_cases(cases: tuple[BenchmarkCaseResult, ...]) -> Benchm
             diagnostics,
             "exact_late_search_rollout_frequency",
         ),
+        late_search_activation_rate=_weighted_diagnostic_rate(diagnostics, "late_search_activation_rate"),
+        late_search_exact_rate=_weighted_diagnostic_rate(diagnostics, "late_search_exact_rate"),
+        late_search_beam_rate=_weighted_diagnostic_rate(diagnostics, "late_search_beam_rate"),
+        late_search_fallback_rate=_weighted_diagnostic_rate(diagnostics, "late_search_fallback_rate"),
+        mean_late_search_nodes=_weighted_diagnostic_rate(diagnostics, "mean_late_search_nodes"),
         top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
         top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
         top_action_continuation_frequency=_weighted_diagnostic_rate(top_diagnostics, "continuation_frequency"),
@@ -906,6 +1293,17 @@ def _aggregate_tag_slice_cases(cases: tuple[BenchmarkCaseResult, ...]) -> Benchm
             top_diagnostics,
             "exact_late_search_rollout_frequency",
         ),
+        top_action_late_search_activation_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "late_search_activation_rate",
+        ),
+        top_action_late_search_exact_rate=_weighted_diagnostic_rate(top_diagnostics, "late_search_exact_rate"),
+        top_action_late_search_beam_rate=_weighted_diagnostic_rate(top_diagnostics, "late_search_beam_rate"),
+        top_action_late_search_fallback_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "late_search_fallback_rate",
+        ),
+        top_action_mean_late_search_nodes=_weighted_diagnostic_rate(top_diagnostics, "mean_late_search_nodes"),
         labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
     )
@@ -950,6 +1348,11 @@ def _aggregate_tag_slice_payload_cases(cases: tuple[Mapping[str, Any], ...]) -> 
             diagnostics,
             "exact_late_search_rollout_frequency",
         ),
+        late_search_activation_rate=_weighted_payload_rate(diagnostics, "late_search_activation_rate"),
+        late_search_exact_rate=_weighted_payload_rate(diagnostics, "late_search_exact_rate"),
+        late_search_beam_rate=_weighted_payload_rate(diagnostics, "late_search_beam_rate"),
+        late_search_fallback_rate=_weighted_payload_rate(diagnostics, "late_search_fallback_rate"),
+        mean_late_search_nodes=_weighted_payload_rate(diagnostics, "mean_late_search_nodes"),
         top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
         top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
         top_action_continuation_frequency=_weighted_payload_rate(top_diagnostics, "continuation_frequency"),
@@ -958,6 +1361,17 @@ def _aggregate_tag_slice_payload_cases(cases: tuple[Mapping[str, Any], ...]) -> 
             top_diagnostics,
             "exact_late_search_rollout_frequency",
         ),
+        top_action_late_search_activation_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "late_search_activation_rate",
+        ),
+        top_action_late_search_exact_rate=_weighted_payload_rate(top_diagnostics, "late_search_exact_rate"),
+        top_action_late_search_beam_rate=_weighted_payload_rate(top_diagnostics, "late_search_beam_rate"),
+        top_action_late_search_fallback_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "late_search_fallback_rate",
+        ),
+        top_action_mean_late_search_nodes=_weighted_payload_rate(top_diagnostics, "mean_late_search_nodes"),
         labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
     )
@@ -1159,6 +1573,8 @@ __all__ = [
     "BenchmarkRun",
     "BenchmarkTagSliceAggregate",
     "BenchmarkTagSliceComparison",
+    "EarlySearchBenchmark",
+    "LateSearchBenchmark",
     "RootActionRiskAblationBenchmark",
     "RootActionRiskAblationRun",
     "RootActionRiskBenchmark",
@@ -1168,6 +1584,8 @@ __all__ = [
     "filter_benchmark_manifest",
     "load_benchmark_manifest",
     "load_benchmark_manifest_data",
+    "run_early_search_benchmark",
+    "run_late_search_benchmark",
     "run_benchmark_case",
     "run_benchmark_manifest",
     "run_root_action_risk_ablation_benchmark",

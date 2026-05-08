@@ -12,7 +12,9 @@ from ofc_analysis.render import render_benchmark_run
 from ofc_solver.benchmark import (
     compare_benchmark_runs,
     load_benchmark_manifest,
+    run_early_search_benchmark,
     run_benchmark_manifest,
+    run_late_search_benchmark,
     run_root_action_risk_ablation_benchmark,
 )
 
@@ -115,6 +117,216 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual("", stderr.getvalue())
         payload = json.loads(stdout.getvalue())
         self.assertEqual("heuristic", payload["policy_name"])
+
+    def test_run_benchmark_manifest_can_use_early_search_beam(self) -> None:
+        manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
+
+        run = run_benchmark_manifest(
+            manifest,
+            policy_name="heuristic",
+            early_search=True,
+            beam_size=4,
+            candidate_extra_rollouts=1,
+        )
+        initial_case = run.case_results[0]
+
+        self.assertEqual("heuristic+early-search[beam=4,+1]", run.policy_name)
+        self.assertTrue(run.early_search_enabled)
+        self.assertEqual(232, initial_case.action_count)
+        self.assertEqual(4, initial_case.candidate_count)
+        self.assertEqual(4, len(initial_case.ranked_actions))
+        self.assertEqual(4, len(initial_case.action_diagnostics))
+        self.assertEqual(2, initial_case.ranked_actions[0].sample_count)
+        self.assertNotEqual((), initial_case.ranked_actions[0].pattern_reasons)
+
+    def test_benchmark_solver_cli_accepts_early_search_options(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--early-search",
+                    "--beam-size",
+                    "4",
+                    "--candidate-extra-rollouts",
+                    "1",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("heuristic+early-search[beam=4,+1]", payload["policy_name"])
+        self.assertTrue(payload["early_search_enabled"])
+        self.assertEqual(4, payload["cases"][0]["candidate_count"])
+        self.assertIn("candidate_pruning_ratio", payload["cases"][0])
+        self.assertIn("pattern_score", payload["cases"][0]["ranked_actions"][0])
+
+    def test_benchmark_solver_cli_accepts_safe_draw_candidate_options(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--early-search",
+                    "--beam-size",
+                    "8",
+                    "--draw-safe-candidates",
+                    "--draw-baseline-keep",
+                    "3",
+                    "--draw-safety-keep",
+                    "3",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertTrue(payload["draw_safe_candidates"])
+        self.assertEqual(3, payload["draw_baseline_keep"])
+        self.assertEqual(3, payload["draw_safety_keep"])
+        self.assertIn("selection_reasons", payload["cases"][2]["ranked_actions"][0])
+
+    def test_benchmark_solver_cli_accepts_late_search_options(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--late-search",
+                    "--late-search-mode",
+                    "auto",
+                    "--late-search-max-depth",
+                    "4",
+                    "--late-search-max-nodes",
+                    "500",
+                    "--late-search-beam-size",
+                    "2",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertTrue(payload["late_search_enabled"])
+        self.assertEqual("auto", payload["late_search_mode"])
+        self.assertIn("late_search_activation_rate", payload["cases"][1]["action_diagnostics"][0])
+        self.assertIn("late_search_nodes", payload["cases"][1]["ranked_actions"][0])
+        self.assertIn("top_action_late_search_activation_rate", payload["aggregate"])
+
+    def test_run_late_search_benchmark_builds_comparison(self) -> None:
+        manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
+
+        benchmark = run_late_search_benchmark(
+            manifest,
+            policy_name="heuristic",
+            include_tags=("late_draw",),
+            exclude_tags=(),
+        )
+
+        self.assertEqual(2, benchmark.comparison.case_count)
+        self.assertEqual("heuristic", benchmark.left_run.policy_name)
+        self.assertIn("+late-search[auto", benchmark.right_run.policy_name)
+        self.assertTrue(benchmark.right_run.late_search_enabled)
+        self.assertIn("top_action_late_search_activation_rate", benchmark.comparison.deltas)
+
+    def test_benchmark_late_search_cli_outputs_comparison_json(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-late-search",
+                    str(BENCHMARK_MANIFEST),
+                    "--include-tag",
+                    "late_draw",
+                    "--late-search-mode",
+                    "auto",
+                    "--late-search-max-depth",
+                    "4",
+                    "--late-search-max-nodes",
+                    "500",
+                    "--late-search-beam-size",
+                    "2",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("heuristic", payload["left_policy_name"])
+        self.assertIn("+late-search[auto", payload["right_policy_name"])
+        self.assertTrue(payload["late_search"]["enabled_on_right"])
+        self.assertEqual(2, payload["case_count"])
+        self.assertIn("top_action_late_search_activation_rate", payload["deltas"])
+        self.assertIn("late_search_nodes", payload["cases"][0]["right_ranked_actions"][0])
+
+    def test_run_early_search_benchmark_builds_comparison(self) -> None:
+        manifest = load_benchmark_manifest(BENCHMARK_MANIFEST)
+
+        benchmark = run_early_search_benchmark(
+            manifest,
+            policy_name="heuristic",
+            include_tags=("initial_deal",),
+            exclude_tags=(),
+            beam_size=4,
+            candidate_extra_rollouts=1,
+        )
+
+        self.assertEqual(1, benchmark.comparison.case_count)
+        self.assertEqual("heuristic", benchmark.left_run.policy_name)
+        self.assertEqual("heuristic+early-search[beam=4,+1]", benchmark.right_run.policy_name)
+        self.assertEqual(4, benchmark.right_run.case_results[0].candidate_count)
+        self.assertIn("top_action_root_foul_rate", benchmark.comparison.deltas)
+
+    def test_benchmark_early_search_cli_outputs_comparison_json(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-early-search",
+                    str(BENCHMARK_MANIFEST),
+                    "--include-tag",
+                    "initial_deal",
+                    "--beam-size",
+                    "4",
+                    "--candidate-extra-rollouts",
+                    "1",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("heuristic", payload["left_policy_name"])
+        self.assertEqual("heuristic+early-search[beam=4,+1]", payload["right_policy_name"])
+        self.assertTrue(payload["early_search"]["enabled_on_right"])
+        self.assertEqual(1, payload["case_count"])
+        self.assertEqual(4, payload["cases"][0]["right_candidate_count"])
+        self.assertIn("pattern_score", payload["cases"][0]["right_ranked_actions"][0])
 
     def test_benchmark_root_action_risk_cli_outputs_comparison_json(self) -> None:
         with TemporaryDirectory() as temp_dir:

@@ -4,5 +4,6 @@ __pycache__/
 SOLVER_IMPROVEMENT_ROADMAP.md
 ROOT_RISK_ABLATION_REPORT.md
 ROOT_RISK_CLEANUP_REPORT.md
+reports/
 scenarios/benchmarks/generated/
 scenarios/benchmarks/solver_expansive.json
