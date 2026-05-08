@@ -22,6 +22,14 @@ ROOT_RISK_COMPONENT_KEYS = (
     "top_slots_closed",
 )
 ROOT_RISK_ALL_COMPONENTS = frozenset(ROOT_RISK_COMPONENT_KEYS)
+ROOT_RISK_DEFAULT_COMPONENTS = frozenset(
+    {
+        "unsupported_top_pair",
+        "unsupported_top_trips",
+        "bottom_underbuilt",
+        "top_slots_closed",
+    }
+)
 _ROOT_RISK_REASON_BY_KEY = {
     "unsupported_top_pair": "unsupported-top-pair",
     "unsupported_top_trips": "unsupported-top-trips",
@@ -53,7 +61,7 @@ class RootActionRiskAssessment:
 class RootRiskConfig:
     """Configuration for enabling or disabling root-risk components."""
 
-    enabled_components: frozenset[str] = ROOT_RISK_ALL_COMPONENTS
+    enabled_components: frozenset[str] = ROOT_RISK_DEFAULT_COMPONENTS
 
     def __post_init__(self) -> None:
         unknown = sorted(self.enabled_components - ROOT_RISK_ALL_COMPONENTS)
@@ -63,6 +71,10 @@ class RootRiskConfig:
     @classmethod
     def all_on(cls) -> "RootRiskConfig":
         return cls(enabled_components=ROOT_RISK_ALL_COMPONENTS)
+
+    @classmethod
+    def default(cls) -> "RootRiskConfig":
+        return cls(enabled_components=ROOT_RISK_DEFAULT_COMPONENTS)
 
     @classmethod
     def all_off(cls) -> "RootRiskConfig":
@@ -90,6 +102,8 @@ class RootRiskConfig:
     def label(self) -> str:
         if self.enabled_components == ROOT_RISK_ALL_COMPONENTS:
             return "full"
+        if self.enabled_components == ROOT_RISK_DEFAULT_COMPONENTS:
+            return "default"
         if not self.enabled_components:
             return "off"
         ordered = self.ordered_components()
@@ -114,7 +128,7 @@ def score_root_action(
     Negative contributions reduce the action's root ranking score.
     """
 
-    effective_config = config or RootRiskConfig.all_on()
+    effective_config = config or RootRiskConfig.default()
     if not effective_config.enabled_components:
         return _neutral()
     if state.phase not in {HandPhase.INITIAL_DEAL, HandPhase.DRAW}:
@@ -295,6 +309,7 @@ def _support_rank(cards) -> int:
 __all__ = [
     "ROOT_RISK_ALL_COMPONENTS",
     "ROOT_RISK_COMPONENT_KEYS",
+    "ROOT_RISK_DEFAULT_COMPONENTS",
     "RootActionRiskAssessment",
     "RootRiskComponent",
     "RootRiskConfig",

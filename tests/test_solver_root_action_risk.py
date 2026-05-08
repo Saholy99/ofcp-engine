@@ -6,7 +6,11 @@ from ofc.board import RowName
 from ofc.cards import format_card
 from ofc.transitions import legal_actions
 from ofc_analysis.scenario import load_scenario
-from ofc_solver.root_action_risk import ROOT_RISK_COMPONENT_KEYS, RootRiskConfig, score_root_action
+from ofc_solver.root_action_risk import (
+    ROOT_RISK_COMPONENT_KEYS,
+    RootRiskConfig,
+    score_root_action,
+)
 from tests.helpers import (
     solver_final_draw_state,
     solver_middle_over_bottom_pressure_state,
@@ -16,12 +20,26 @@ from tests.helpers import (
 
 
 class SolverRootActionRiskTest(unittest.TestCase):
-    def test_root_risk_all_on_matches_default_behavior(self) -> None:
+    def test_root_risk_default_config_excludes_middle_over_bottom_pressure(self) -> None:
+        config = RootRiskConfig.default()
+
+        self.assertNotIn("middle_over_bottom_pressure", config.enabled_components)
+        self.assertEqual(
+            (
+                "unsupported_top_pair",
+                "unsupported_top_trips",
+                "bottom_underbuilt",
+                "top_slots_closed",
+            ),
+            config.ordered_components(),
+        )
+
+    def test_root_risk_default_behavior_matches_explicit_default_config(self) -> None:
         state = solver_unsupported_top_pair_state()
         action = _first_action_placing(state, RowName.TOP, "Qd")
 
         default_assessment = score_root_action(state, action)
-        configured_assessment = score_root_action(state, action, config=RootRiskConfig.all_on())
+        configured_assessment = score_root_action(state, action, config=RootRiskConfig.default())
 
         self.assertEqual(default_assessment, configured_assessment)
 
@@ -76,6 +94,17 @@ class SolverRootActionRiskTest(unittest.TestCase):
             ROOT_RISK_COMPONENT_KEYS,
         )
 
+    def test_root_risk_all_on_still_includes_middle_over_bottom_pressure(self) -> None:
+        state = solver_middle_over_bottom_pressure_state()
+        action = _first_action_placing(state, RowName.MIDDLE, "As")
+
+        default_assessment = score_root_action(state, action)
+        full_assessment = score_root_action(state, action, config=RootRiskConfig.all_on())
+
+        self.assertNotIn("middle-over-bottom-pressure", default_assessment.reasons)
+        self.assertIn("middle-over-bottom-pressure", full_assessment.reasons)
+        self.assertLess(full_assessment.contribution, default_assessment.contribution)
+
     def test_penalizes_unsupported_top_qq_pair_at_root(self) -> None:
         state = solver_unsupported_top_pair_state()
         bad_action = _first_action_placing(state, RowName.TOP, "Qd")
@@ -101,7 +130,7 @@ class SolverRootActionRiskTest(unittest.TestCase):
         state = solver_middle_over_bottom_pressure_state()
         pressured_action = _first_action_placing(state, RowName.MIDDLE, "As")
 
-        assessment = score_root_action(state, pressured_action)
+        assessment = score_root_action(state, pressured_action, config=RootRiskConfig.all_on())
 
         self.assertLess(assessment.contribution, 0.0)
         self.assertIn("middle-over-bottom-pressure", assessment.reasons)

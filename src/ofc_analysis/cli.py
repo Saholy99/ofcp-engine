@@ -32,6 +32,7 @@ from ofc_solver.benchmark import (
 )
 from ofc_solver.monte_carlo import rank_actions_from_observation
 from ofc_solver.policy_registry import POLICY_NAMES, policy_from_name
+from ofc_solver.root_action_risk import RootRiskConfig
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -80,6 +81,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 rng_seed=args.seed,
                 policy=policy_from_name(args.policy),
                 root_action_risk=args.root_action_risk,
+                root_action_risk_config=(
+                    _root_action_risk_config_from_name(args.root_action_risk_config)
+                    if args.root_action_risk
+                    else None
+                ),
             )
             output = render_move_analysis(analysis, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
@@ -106,6 +112,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 include_tags=include_tags,
                 exclude_tags=exclude_tags,
                 phases=tuple(HandPhase(phase) for phase in (args.phase or ())),
+                root_action_risk_config=_root_action_risk_config_from_name(args.root_action_risk_config),
             )
             output = render_root_action_risk_benchmark(benchmark, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
@@ -178,6 +185,12 @@ def _build_parser() -> argparse.ArgumentParser:
     solve_move.add_argument("--seed", required=True)
     solve_move.add_argument("--policy", choices=POLICY_NAMES, default="random")
     solve_move.add_argument("--root-action-risk", action="store_true", help="Apply root-only risk scoring.")
+    solve_move.add_argument(
+        "--root-action-risk-config",
+        choices=("default", "full"),
+        default="default",
+        help="Root-risk component set to use when --root-action-risk is enabled.",
+    )
     solve_move.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_solver = subparsers.add_parser("benchmark-solver")
@@ -203,6 +216,12 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         choices=[HandPhase.INITIAL_DEAL.value, HandPhase.DRAW.value],
         help="Restrict to a root engine phase. Repeat to allow multiple phases.",
+    )
+    benchmark_root_risk.add_argument(
+        "--root-action-risk-config",
+        choices=("default", "full"),
+        default="default",
+        help="Compare against the safer default root-risk set or the full experimental set.",
     )
     benchmark_root_risk.add_argument("--non-final", action="store_true", help="Exclude final_draw-tagged cases.")
     benchmark_root_risk.add_argument("--exclude-strategy", action="store_true", help="Exclude strategy stress cases.")
@@ -277,6 +296,14 @@ def _emit(output, *, as_json: bool) -> None:
 def _load_json_payload(path: str):
     with open(path, "r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def _root_action_risk_config_from_name(name: str) -> RootRiskConfig:
+    if name == "default":
+        return RootRiskConfig.default()
+    if name == "full":
+        return RootRiskConfig.all_on()
+    raise ValueError(f"Unsupported root action risk config: {name!r}")
 
 
 def _resolve_play_button(args) -> PlayerId:

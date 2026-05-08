@@ -12,7 +12,7 @@ from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_action
 from ofc_analysis.observation import PlayerObservation
 from ofc_solver.models import SUPPORTED_ROOT_PHASES, MoveAnalysis, MoveEstimate
-from ofc_solver.root_action_risk import RootActionRiskAssessment, score_root_action
+from ofc_solver.root_action_risk import RootActionRiskAssessment, RootRiskConfig, score_root_action
 from ofc_solver.rollout import run_rollout
 from ofc_solver.rollout_policy import RandomRolloutPolicy, RolloutPolicy
 from ofc_solver.sampler import sample_state
@@ -26,6 +26,7 @@ def rank_actions_from_state(
     rng_seed: int | str | None,
     policy: RolloutPolicy | None = None,
     root_action_risk: bool = False,
+    root_action_risk_config: RootRiskConfig | None = None,
 ) -> MoveAnalysis:
     """Rank legal root actions from an exact engine state."""
 
@@ -36,7 +37,7 @@ def rank_actions_from_state(
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts_per_action,
-        root_risk_fn=_root_risk_fn(state) if root_action_risk else None,
+        root_risk_fn=_root_risk_fn(state, root_action_risk_config) if root_action_risk else None,
         rollout_fn=lambda action: run_rollout(
             state,
             root_action=action,
@@ -61,6 +62,7 @@ def rank_actions_from_observation(
     rng_seed: int | str | None,
     policy: RolloutPolicy | None = None,
     root_action_risk: bool = False,
+    root_action_risk_config: RootRiskConfig | None = None,
 ) -> MoveAnalysis:
     """Rank legal root actions from an observer-facing information set."""
 
@@ -72,7 +74,7 @@ def rank_actions_from_observation(
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts_per_action,
-        root_risk_fn=_root_risk_fn(enumeration_state) if root_action_risk else None,
+        root_risk_fn=_root_risk_fn(enumeration_state, root_action_risk_config) if root_action_risk else None,
         rollout_fn=lambda action: run_rollout(
             sample_state(observation, rng=rng).state,
             root_action=action,
@@ -121,8 +123,12 @@ def _rank_actions(
     return tuple(sorted(estimates, key=lambda estimate: (-estimate.mean_value, estimate.action_index)))
 
 
-def _root_risk_fn(state: GameState) -> Callable[[GameAction], RootActionRiskAssessment]:
-    return lambda action: score_root_action(state, action)
+def _root_risk_fn(
+    state: GameState,
+    config: RootRiskConfig | None,
+) -> Callable[[GameAction], RootActionRiskAssessment]:
+    effective_config = config or RootRiskConfig.default()
+    return lambda action: score_root_action(state, action, config=effective_config)
 
 
 def _estimate(

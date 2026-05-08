@@ -679,6 +679,8 @@ def _root_action_risk_benchmark_text(payload: dict[str, Any]) -> str:
         "Root Action Risk Benchmark",
         f"left_policy_name: {payload['left_policy_name']}",
         f"right_policy_name: {payload['right_policy_name']}",
+        f"left_config_label: {payload['root_action_risk']['left_config_label']}",
+        f"right_config_label: {payload['root_action_risk']['right_config_label']}",
         f"case_count: {payload['case_count']}",
         f"include_tags: {json.dumps(payload['root_action_risk']['include_tags'])}",
         f"exclude_tags: {json.dumps(payload['root_action_risk']['exclude_tags'])}",
