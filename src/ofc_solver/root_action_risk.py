@@ -14,6 +14,23 @@ from ofc.state import GameState, HandPhase, get_player
 from ofc.transitions import apply_action
 
 
+ROOT_RISK_COMPONENT_KEYS = (
+    "unsupported_top_pair",
+    "unsupported_top_trips",
+    "middle_over_bottom_pressure",
+    "bottom_underbuilt",
+    "top_slots_closed",
+)
+ROOT_RISK_ALL_COMPONENTS = frozenset(ROOT_RISK_COMPONENT_KEYS)
+_ROOT_RISK_REASON_BY_KEY = {
+    "unsupported_top_pair": "unsupported-top-pair",
+    "unsupported_top_trips": "unsupported-top-trips",
+    "middle_over_bottom_pressure": "middle-over-bottom-pressure",
+    "bottom_underbuilt": "bottom-underbuilt",
+    "top_slots_closed": "top-slots-closed",
+}
+
+
 @dataclass(frozen=True)
 class RootRiskComponent:
     """One interpretable contribution to a root action risk score."""
@@ -32,7 +49,64 @@ class RootActionRiskAssessment:
     components: tuple[RootRiskComponent, ...] = ()
 
 
-def score_root_action(state: GameState, action: GameAction) -> RootActionRiskAssessment:
+@dataclass(frozen=True)
+class RootRiskConfig:
+    """Configuration for enabling or disabling root-risk components."""
+
+    enabled_components: frozenset[str] = ROOT_RISK_ALL_COMPONENTS
+
+    def __post_init__(self) -> None:
+        unknown = sorted(self.enabled_components - ROOT_RISK_ALL_COMPONENTS)
+        if unknown:
+            raise ValueError(f"Unknown root-risk components: {', '.join(unknown)}")
+
+    @classmethod
+    def all_on(cls) -> "RootRiskConfig":
+        return cls(enabled_components=ROOT_RISK_ALL_COMPONENTS)
+
+    @classmethod
+    def all_off(cls) -> "RootRiskConfig":
+        return cls(enabled_components=frozenset())
+
+    @classmethod
+    def only(cls, *components: str) -> "RootRiskConfig":
+        return cls(enabled_components=frozenset(components))
+
+    @classmethod
+    def leave_one_out(cls, component: str) -> "RootRiskConfig":
+        return cls(enabled_components=ROOT_RISK_ALL_COMPONENTS - frozenset({component}))
+
+    @classmethod
+    def custom(cls, components: tuple[str, ...] | list[str] | set[str] | frozenset[str]) -> "RootRiskConfig":
+        return cls(enabled_components=frozenset(components))
+
+    def enabled(self, component: str) -> bool:
+        return component in self.enabled_components
+
+    def ordered_components(self) -> tuple[str, ...]:
+        return tuple(component for component in ROOT_RISK_COMPONENT_KEYS if component in self.enabled_components)
+
+    @property
+    def label(self) -> str:
+        if self.enabled_components == ROOT_RISK_ALL_COMPONENTS:
+            return "full"
+        if not self.enabled_components:
+            return "off"
+        ordered = self.ordered_components()
+        if len(ordered) == 1:
+            return f"only:{ordered[0]}"
+        missing = tuple(component for component in ROOT_RISK_COMPONENT_KEYS if component not in self.enabled_components)
+        if len(missing) == 1 and len(ordered) == len(ROOT_RISK_COMPONENT_KEYS) - 1:
+            return f"without:{missing[0]}"
+        return "custom:" + ",".join(ordered)
+
+
+def score_root_action(
+    state: GameState,
+    action: GameAction,
+    *,
+    config: RootRiskConfig | None = None,
+) -> RootActionRiskAssessment:
     """Return a deterministic root-only risk adjustment for an early action.
 
     The score is intentionally solver-side and heuristic. Engine legality,
@@ -40,6 +114,9 @@ def score_root_action(state: GameState, action: GameAction) -> RootActionRiskAss
     Negative contributions reduce the action's root ranking score.
     """
 
+    effective_config = config or RootRiskConfig.all_on()
+    if not effective_config.enabled_components:
+        return _neutral()
     if state.phase not in {HandPhase.INITIAL_DEAL, HandPhase.DRAW}:
         return _neutral()
     if state.phase == HandPhase.DRAW and _is_final_draw_root(state):
@@ -48,20 +125,25 @@ def score_root_action(state: GameState, action: GameAction) -> RootActionRiskAss
     next_state = apply_action(state, action)
     player_after = get_player(next_state, state.acting_player)
     board = player_after.board
-    components = (
-        _unsupported_top_pressure(board, state.config)
-        + _middle_over_bottom_pressure(board, state.config)
-        + _bottom_underbuilt_pressure(board, state.config)
-        + _top_slot_pressure(board, state.config)
-    )
+
+    components: list[RootRiskComponent] = []
+    if effective_config.enabled("unsupported_top_pair"):
+        components.extend(_unsupported_top_pair_pressure(board, state.config))
+    if effective_config.enabled("unsupported_top_trips"):
+        components.extend(_unsupported_top_trips_pressure(board, state.config))
+    if effective_config.enabled("middle_over_bottom_pressure"):
+        components.extend(_middle_over_bottom_pressure(board, state.config))
+    if effective_config.enabled("bottom_underbuilt"):
+        components.extend(_bottom_underbuilt_pressure(board, state.config))
+    if effective_config.enabled("top_slots_closed"):
+        components.extend(_top_slot_pressure(board, state.config))
+
     if not components:
         return _neutral()
-    contribution = sum(component.contribution for component in components)
-    reasons = tuple(component.name for component in components)
     return RootActionRiskAssessment(
-        contribution=contribution,
-        reasons=reasons,
-        components=components,
+        contribution=sum(component.contribution for component in components),
+        reasons=tuple(component.name for component in components),
+        components=tuple(components),
     )
 
 
@@ -74,29 +156,11 @@ def _is_final_draw_root(state: GameState) -> bool:
     return player.normal_draws_taken >= state.config.normal_draw_turns_per_player - 1
 
 
-def _unsupported_top_pressure(board: Board, config: VariantConfig) -> tuple[RootRiskComponent, ...]:
+def _unsupported_top_pair_pressure(board: Board, config: VariantConfig) -> tuple[RootRiskComponent, ...]:
     if not board.top:
         return ()
 
     counts = Counter(int(card.rank) for card in board.top)
-    middle_support = _support_rank(board.middle)
-    bottom_support = _support_rank(board.bottom)
-
-    trips = [rank for rank, count in counts.items() if count == 3]
-    if trips:
-        trip_rank = max(trips)
-        needed_support = trip_rank + 4
-        support_gap = max(0, needed_support - min(middle_support, bottom_support))
-        if support_gap > 0:
-            return (
-                RootRiskComponent(
-                    name="unsupported-top-trips",
-                    contribution=-(4.0 + 0.22 * support_gap),
-                    detail=f"top trips rank {trip_rank} need lower-row support",
-                ),
-            )
-        return ()
-
     pairs = [rank for rank, count in counts.items() if count == 2]
     if not pairs:
         return ()
@@ -104,6 +168,9 @@ def _unsupported_top_pressure(board: Board, config: VariantConfig) -> tuple[Root
     pair_rank = max(pairs)
     if pair_rank < int(Rank.QUEEN):
         return ()
+
+    middle_support = _support_rank(board.middle)
+    bottom_support = _support_rank(board.bottom)
     if middle_support >= pair_rank and bottom_support >= pair_rank:
         return ()
 
@@ -111,9 +178,35 @@ def _unsupported_top_pressure(board: Board, config: VariantConfig) -> tuple[Root
     full_top_extra = 0.75 if len(board.top) == config.top_row_capacity else 0.0
     return (
         RootRiskComponent(
-            name="unsupported-top-pair",
+            name=_ROOT_RISK_REASON_BY_KEY["unsupported_top_pair"],
             contribution=-(2.6 + full_top_extra + 0.18 * support_gap),
             detail=f"top pair rank {pair_rank} outruns lower-row support",
+        ),
+    )
+
+
+def _unsupported_top_trips_pressure(board: Board, config: VariantConfig) -> tuple[RootRiskComponent, ...]:
+    del config
+    if not board.top:
+        return ()
+
+    counts = Counter(int(card.rank) for card in board.top)
+    trips = [rank for rank, count in counts.items() if count == 3]
+    if not trips:
+        return ()
+
+    middle_support = _support_rank(board.middle)
+    bottom_support = _support_rank(board.bottom)
+    trip_rank = max(trips)
+    needed_support = trip_rank + 4
+    support_gap = max(0, needed_support - min(middle_support, bottom_support))
+    if support_gap <= 0:
+        return ()
+    return (
+        RootRiskComponent(
+            name=_ROOT_RISK_REASON_BY_KEY["unsupported_top_trips"],
+            contribution=-(4.0 + 0.22 * support_gap),
+            detail=f"top trips rank {trip_rank} need lower-row support",
         ),
     )
 
@@ -131,7 +224,7 @@ def _middle_over_bottom_pressure(board: Board, config: VariantConfig) -> tuple[R
         return ()
     return (
         RootRiskComponent(
-            name="middle-over-bottom-pressure",
+            name=_ROOT_RISK_REASON_BY_KEY["middle_over_bottom_pressure"],
             contribution=-(1.4 + 0.18 * support_gap),
             detail=f"middle support {middle_support} exceeds bottom support {bottom_support}",
         ),
@@ -139,6 +232,7 @@ def _middle_over_bottom_pressure(board: Board, config: VariantConfig) -> tuple[R
 
 
 def _bottom_underbuilt_pressure(board: Board, config: VariantConfig) -> tuple[RootRiskComponent, ...]:
+    del config
     cards_on_board = board_card_count(board)
     if cards_on_board > 10:
         return ()
@@ -149,7 +243,7 @@ def _bottom_underbuilt_pressure(board: Board, config: VariantConfig) -> tuple[Ro
     support_gap = max(0, _support_rank(board.middle) - _support_rank(board.bottom))
     return (
         RootRiskComponent(
-            name="bottom-underbuilt",
+            name=_ROOT_RISK_REASON_BY_KEY["bottom_underbuilt"],
             contribution=-(0.7 * row_gap + 0.08 * support_gap),
             detail=f"bottom has {len(board.bottom)} cards behind middle {len(board.middle)}",
         ),
@@ -169,11 +263,10 @@ def _top_slot_pressure(board: Board, config: VariantConfig) -> tuple[RootRiskCom
         return ()
 
     high_cards = sum(1 for card in board.top if card.rank >= Rank.QUEEN)
-    contribution = -(0.9 + 0.25 * high_cards)
     return (
         RootRiskComponent(
-            name="top-slots-closed",
-            contribution=contribution,
+            name=_ROOT_RISK_REASON_BY_KEY["top_slots_closed"],
+            contribution=-(0.9 + 0.25 * high_cards),
             detail="top row filled before lower rows are structurally stable",
         ),
     )
@@ -200,7 +293,10 @@ def _support_rank(cards) -> int:
 
 
 __all__ = [
+    "ROOT_RISK_ALL_COMPONENTS",
+    "ROOT_RISK_COMPONENT_KEYS",
     "RootActionRiskAssessment",
     "RootRiskComponent",
+    "RootRiskConfig",
     "score_root_action",
 ]

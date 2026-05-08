@@ -19,7 +19,12 @@ from ofc_analysis.observation import project_observation
 from ofc_analysis.scenario import load_scenario
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
 from ofc_solver.policy_registry import policy_from_name
-from ofc_solver.root_action_risk import RootActionRiskAssessment, score_root_action
+from ofc_solver.root_action_risk import (
+    ROOT_RISK_COMPONENT_KEYS,
+    RootActionRiskAssessment,
+    RootRiskConfig,
+    score_root_action,
+)
 from ofc_solver.rollout import RolloutResult, run_rollout
 from ofc_solver.rollout_policy import RolloutPolicy
 from ofc_solver.sampler import sample_state
@@ -97,6 +102,7 @@ class BenchmarkRun:
     case_results: tuple[BenchmarkCaseResult, ...]
     elapsed_seconds: float
     root_action_risk_enabled: bool = False
+    root_action_risk_config_label: str | None = None
 
     @property
     def case_count(self) -> int:
@@ -205,6 +211,35 @@ class RootActionRiskBenchmark:
     phases: tuple[HandPhase, ...]
 
 
+@dataclass(frozen=True)
+class RootActionRiskAblationRun:
+    """One ablation run plus comparisons against baseline and full root risk."""
+
+    name: str
+    mode: str
+    component: str | None
+    config: RootRiskConfig
+    run: BenchmarkRun
+    aggregate: BenchmarkAggregate
+    comparison_vs_baseline: BenchmarkComparison
+    comparison_vs_full: BenchmarkComparison
+
+
+@dataclass(frozen=True)
+class RootActionRiskAblationBenchmark:
+    """Full ablation pass for the current root-risk component set."""
+
+    baseline_run: BenchmarkRun
+    baseline_aggregate: BenchmarkAggregate
+    full_run: BenchmarkRun
+    full_aggregate: BenchmarkAggregate
+    ablations: tuple[RootActionRiskAblationRun, ...]
+    include_tags: tuple[str, ...]
+    exclude_tags: tuple[str, ...]
+    phases: tuple[HandPhase, ...]
+    component_order: tuple[str, ...]
+
+
 def load_benchmark_manifest(path: str | Path) -> BenchmarkManifest:
     """Load a solver benchmark manifest from disk."""
 
@@ -243,20 +278,31 @@ def run_benchmark_manifest(
     *,
     policy_name: str = "random",
     root_action_risk: bool = False,
+    root_action_risk_config: RootRiskConfig | None = None,
 ) -> BenchmarkRun:
     """Run all cases in a loaded benchmark manifest."""
 
+    effective_root_risk_config = root_action_risk_config or (
+        RootRiskConfig.all_on() if root_action_risk else RootRiskConfig.all_off()
+    )
+    risk_enabled = bool(effective_root_risk_config.enabled_components)
     policy = policy_from_name(policy_name)
     start = time.perf_counter()
     case_results = tuple(
-        run_benchmark_case(case, policy=policy, root_action_risk=root_action_risk)
+        run_benchmark_case(
+            case,
+            policy=policy,
+            root_action_risk=risk_enabled,
+            root_action_risk_config=effective_root_risk_config,
+        )
         for case in manifest.cases
     )
     return BenchmarkRun(
-        policy_name=f"{policy_name}+root-risk" if root_action_risk else policy_name,
+        policy_name=_policy_name_for_root_risk(policy_name, risk_enabled, effective_root_risk_config),
         case_results=case_results,
         elapsed_seconds=time.perf_counter() - start,
-        root_action_risk_enabled=root_action_risk,
+        root_action_risk_enabled=risk_enabled,
+        root_action_risk_config_label=effective_root_risk_config.label if risk_enabled else "off",
     )
 
 
@@ -265,6 +311,7 @@ def run_benchmark_case(
     *,
     policy: RolloutPolicy,
     root_action_risk: bool = False,
+    root_action_risk_config: RootRiskConfig | None = None,
 ) -> BenchmarkCaseResult:
     """Run one benchmark case and collect ranked actions plus diagnostics."""
 
@@ -297,7 +344,15 @@ def run_benchmark_case(
             )
             for _ in range(case.rollouts_per_action)
         )
-        risk = score_root_action(enumeration_state, action) if root_action_risk else None
+        risk = (
+            score_root_action(
+                enumeration_state,
+                action,
+                config=root_action_risk_config,
+            )
+            if root_action_risk
+            else None
+        )
         estimates.append(_estimate(action_index, action, rollout_results, root_risk=risk))
         diagnostics.append(_diagnostics(action_index, rollout_results))
 
@@ -393,8 +448,18 @@ def run_root_action_risk_benchmark(
         exclude_tags=exclude_tags,
         phases=phases,
     )
-    left = run_benchmark_manifest(filtered, policy_name=policy_name, root_action_risk=False)
-    right = run_benchmark_manifest(filtered, policy_name=policy_name, root_action_risk=True)
+    left = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=False,
+        root_action_risk_config=RootRiskConfig.all_off(),
+    )
+    right = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=True,
+        root_action_risk_config=RootRiskConfig.all_on(),
+    )
     return RootActionRiskBenchmark(
         comparison=compare_benchmark_runs(left, right),
         left_run=left,
@@ -402,6 +467,93 @@ def run_root_action_risk_benchmark(
         include_tags=include_tags,
         exclude_tags=exclude_tags,
         phases=phases,
+    )
+
+
+def run_root_action_risk_ablation_benchmark(
+    manifest: BenchmarkManifest,
+    *,
+    policy_name: str = "heuristic",
+    include_tags: tuple[str, ...] = ("initial_deal", "early_draw"),
+    exclude_tags: tuple[str, ...] = ("final_draw",),
+    phases: tuple[HandPhase, ...] = (),
+) -> RootActionRiskAblationBenchmark:
+    """Run baseline/full plus single-component and leave-one-out ablations."""
+
+    filtered = filter_benchmark_manifest(
+        manifest,
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+    )
+    baseline_run = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=False,
+        root_action_risk_config=RootRiskConfig.all_off(),
+    )
+    full_run = run_benchmark_manifest(
+        filtered,
+        policy_name=policy_name,
+        root_action_risk=True,
+        root_action_risk_config=RootRiskConfig.all_on(),
+    )
+    baseline_aggregate = _aggregate_benchmark_run(baseline_run)
+    full_aggregate = _aggregate_benchmark_run(full_run)
+
+    ablations: list[RootActionRiskAblationRun] = []
+    for component in ROOT_RISK_COMPONENT_KEYS:
+        single_config = RootRiskConfig.only(component)
+        single_run = run_benchmark_manifest(
+            filtered,
+            policy_name=policy_name,
+            root_action_risk=True,
+            root_action_risk_config=single_config,
+        )
+        ablations.append(
+            RootActionRiskAblationRun(
+                name=f"only:{component}",
+                mode="single_component_only",
+                component=component,
+                config=single_config,
+                run=single_run,
+                aggregate=_aggregate_benchmark_run(single_run),
+                comparison_vs_baseline=compare_benchmark_runs(baseline_run, single_run),
+                comparison_vs_full=compare_benchmark_runs(full_run, single_run),
+            )
+        )
+
+    for component in ROOT_RISK_COMPONENT_KEYS:
+        leave_one_out_config = RootRiskConfig.leave_one_out(component)
+        leave_one_out_run = run_benchmark_manifest(
+            filtered,
+            policy_name=policy_name,
+            root_action_risk=True,
+            root_action_risk_config=leave_one_out_config,
+        )
+        ablations.append(
+            RootActionRiskAblationRun(
+                name=f"without:{component}",
+                mode="leave_one_out",
+                component=component,
+                config=leave_one_out_config,
+                run=leave_one_out_run,
+                aggregate=_aggregate_benchmark_run(leave_one_out_run),
+                comparison_vs_baseline=compare_benchmark_runs(baseline_run, leave_one_out_run),
+                comparison_vs_full=compare_benchmark_runs(full_run, leave_one_out_run),
+            )
+        )
+
+    return RootActionRiskAblationBenchmark(
+        baseline_run=baseline_run,
+        baseline_aggregate=baseline_aggregate,
+        full_run=full_run,
+        full_aggregate=full_aggregate,
+        ablations=tuple(ablations),
+        include_tags=include_tags,
+        exclude_tags=exclude_tags,
+        phases=phases,
+        component_order=ROOT_RISK_COMPONENT_KEYS,
     )
 
 
@@ -429,6 +581,18 @@ def compare_benchmark_payloads(
         top_action_changes=_top_action_changes_from_payloads(left_cases, right_cases),
         tag_slices=_tag_slice_comparisons_from_payloads(left_cases, right_cases),
     )
+
+
+def _policy_name_for_root_risk(
+    policy_name: str,
+    root_action_risk_enabled: bool,
+    root_action_risk_config: RootRiskConfig,
+) -> str:
+    if not root_action_risk_enabled:
+        return policy_name
+    if root_action_risk_config == RootRiskConfig.all_on():
+        return f"{policy_name}+root-risk"
+    return f"{policy_name}+root-risk[{root_action_risk_config.label}]"
 
 
 def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
@@ -991,6 +1155,8 @@ __all__ = [
     "BenchmarkRun",
     "BenchmarkTagSliceAggregate",
     "BenchmarkTagSliceComparison",
+    "RootActionRiskAblationBenchmark",
+    "RootActionRiskAblationRun",
     "RootActionRiskBenchmark",
     "TopActionChange",
     "compare_benchmark_payloads",
@@ -1000,5 +1166,6 @@ __all__ = [
     "load_benchmark_manifest_data",
     "run_benchmark_case",
     "run_benchmark_manifest",
+    "run_root_action_risk_ablation_benchmark",
     "run_root_action_risk_benchmark",
 ]

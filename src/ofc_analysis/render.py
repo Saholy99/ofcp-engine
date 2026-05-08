@@ -14,7 +14,13 @@ from ofc_analysis.observation import PlayerObservation
 from ofc_solver.models import MoveAnalysis
 
 if TYPE_CHECKING:
-    from ofc_solver.benchmark import BenchmarkAggregate, BenchmarkComparison, BenchmarkRun, RootActionRiskBenchmark
+    from ofc_solver.benchmark import (
+        BenchmarkAggregate,
+        BenchmarkComparison,
+        BenchmarkRun,
+        RootActionRiskAblationBenchmark,
+        RootActionRiskBenchmark,
+    )
 
 
 def render_state(state: GameState, *, as_json: bool = False) -> RenderedOutput:
@@ -85,6 +91,19 @@ def render_root_action_risk_benchmark(
     if as_json:
         return RenderedOutput(payload=payload)
     return RenderedOutput(text=_root_action_risk_benchmark_text(payload), payload=payload)
+
+
+def render_root_action_risk_ablation_benchmark(
+    benchmark: RootActionRiskAblationBenchmark,
+    *,
+    as_json: bool = False,
+) -> RenderedOutput:
+    """Render the root-risk ablation pass."""
+
+    payload = _root_action_risk_ablation_benchmark_payload(benchmark)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_root_action_risk_ablation_benchmark_text(payload), payload=payload)
 
 
 def _cards_payload(cards: tuple[Card, ...]) -> list[str]:
@@ -195,6 +214,7 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
     return {
         "policy_name": run.policy_name,
         "root_action_risk_enabled": run.root_action_risk_enabled,
+        "root_action_risk_config_label": run.root_action_risk_config_label,
         "case_count": run.case_count,
         "elapsed_seconds": run.elapsed_seconds,
         "cases": [
@@ -346,6 +366,8 @@ def _root_action_risk_benchmark_payload(benchmark) -> dict[str, Any]:
     comparison_payload["root_action_risk"] = {
         "enabled_on_left": benchmark.left_run.root_action_risk_enabled,
         "enabled_on_right": benchmark.right_run.root_action_risk_enabled,
+        "left_config_label": benchmark.left_run.root_action_risk_config_label,
+        "right_config_label": benchmark.right_run.root_action_risk_config_label,
         "include_tags": list(benchmark.include_tags),
         "exclude_tags": list(benchmark.exclude_tags),
         "phases": [phase.value for phase in benchmark.phases],
@@ -370,6 +392,64 @@ def _root_action_risk_benchmark_payload(benchmark) -> dict[str, Any]:
         )
     ]
     return comparison_payload
+
+
+def _root_action_risk_ablation_benchmark_payload(benchmark) -> dict[str, Any]:
+    return {
+        "policy_name": benchmark.baseline_run.policy_name,
+        "case_count": benchmark.baseline_run.case_count,
+        "include_tags": list(benchmark.include_tags),
+        "exclude_tags": list(benchmark.exclude_tags),
+        "phases": [phase.value for phase in benchmark.phases],
+        "component_order": list(benchmark.component_order),
+        "baseline": _ablation_summary_payload(
+            benchmark.baseline_run,
+            benchmark.baseline_aggregate,
+            enabled_components=(),
+        ),
+        "full": _ablation_summary_payload(
+            benchmark.full_run,
+            benchmark.full_aggregate,
+            enabled_components=benchmark.component_order,
+        ),
+        "ablations": [
+            {
+                **_ablation_summary_payload(
+                    result.run,
+                    result.aggregate,
+                    enabled_components=result.config.ordered_components(),
+                ),
+                "name": result.name,
+                "mode": result.mode,
+                "component": result.component,
+                "top_action_changes_vs_baseline": len(result.comparison_vs_baseline.top_action_changes),
+                "top_action_changes_vs_full": len(result.comparison_vs_full.top_action_changes),
+                "delta_vs_baseline": _ablation_delta_payload(result.comparison_vs_baseline),
+                "delta_vs_full": _ablation_delta_payload(result.comparison_vs_full),
+            }
+            for result in benchmark.ablations
+        ],
+    }
+
+
+def _ablation_summary_payload(run, aggregate, *, enabled_components) -> dict[str, Any]:
+    return {
+        "policy_name": run.policy_name,
+        "root_action_risk_enabled": run.root_action_risk_enabled,
+        "root_action_risk_config_label": run.root_action_risk_config_label,
+        "case_count": run.case_count,
+        "enabled_components": list(enabled_components),
+        "aggregate": _benchmark_aggregate_payload(aggregate),
+    }
+
+
+def _ablation_delta_payload(comparison) -> dict[str, Any]:
+    return {
+        "top_action_root_foul_rate": comparison.deltas["top_action_root_foul_rate"],
+        "top_action_both_foul_rate": comparison.deltas["top_action_both_foul_rate"],
+        "top_action_continuation_frequency": comparison.deltas["top_action_continuation_frequency"],
+        "elapsed_seconds": comparison.deltas["elapsed_seconds"],
+    }
 
 
 def _ranked_action_payloads(ranked_actions) -> list[dict[str, Any]]:
@@ -630,6 +710,37 @@ def _root_action_risk_benchmark_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _root_action_risk_ablation_benchmark_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Root Action Risk Ablation",
+        f"case_count: {payload['case_count']}",
+        f"include_tags: {json.dumps(payload['include_tags'])}",
+        f"exclude_tags: {json.dumps(payload['exclude_tags'])}",
+        f"phases: {json.dumps(payload['phases'])}",
+        "runs:",
+    ]
+    lines.append(_ablation_text_row("baseline", payload["baseline"]))
+    lines.append(_ablation_text_row("full", payload["full"]))
+    for ablation in payload["ablations"]:
+        lines.append(_ablation_text_row(ablation["name"], ablation))
+    return "\n".join(lines)
+
+
+def _ablation_text_row(label: str, payload: dict[str, Any]) -> str:
+    aggregate = payload["aggregate"]
+    changes_vs_baseline = payload.get("top_action_changes_vs_baseline")
+    changes_vs_full = payload.get("top_action_changes_vs_full")
+    suffix = ""
+    if changes_vs_baseline is not None and changes_vs_full is not None:
+        suffix = f" changes_vs_baseline={changes_vs_baseline} changes_vs_full={changes_vs_full}"
+    return (
+        f"  {label}: top_root={aggregate['top_action_root_foul_rate']:.6f} "
+        f"top_both={aggregate['top_action_both_foul_rate']:.6f} "
+        f"top_cont={aggregate['top_action_continuation_frequency']:.6f} "
+        f"runtime={aggregate['elapsed_seconds']:.6f}{suffix}"
+    )
+
+
 def _format_optional_float(value: float | None, *, signed: bool = False) -> str:
     if value is None:
         return "n/a"
@@ -644,6 +755,7 @@ __all__ = [
     "render_benchmark_run",
     "render_move_analysis",
     "render_observation",
+    "render_root_action_risk_ablation_benchmark",
     "render_root_action_risk_benchmark",
     "render_state",
 ]
