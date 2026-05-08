@@ -1,0 +1,112 @@
+{
+  "state": {
+    "acting_player": "player_0",
+    "button": "player_0",
+    "deck": {
+      "undealt_cards": [
+        "4d",
+        "2s",
+        "7c",
+        "7s",
+        "7h",
+        "6s",
+        "2c",
+        "9s",
+        "6c",
+        "Kc",
+        "3s",
+        "8s",
+        "5h",
+        "8h",
+        "Ks",
+        "8c",
+        "Ad",
+        "Kh",
+        "Ts",
+        "5c",
+        "Qh",
+        "5d",
+        "Qc",
+        "6d"
+      ]
+    },
+    "hand_number": 1,
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "phase": "draw",
+    "players": [
+      {
+        "board": {
+          "bottom": [
+            "Qs",
+            "Jc",
+            "9c",
+            "3c",
+            "Jh"
+          ],
+          "middle": [
+            "Th",
+            "Kd",
+            "Jd",
+            "3d"
+          ],
+          "top": []
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [
+          "Tc",
+          "Ah",
+          "7d"
+        ],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "5s",
+          "6h"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 2,
+        "player_id": "player_0"
+      },
+      {
+        "board": {
+          "bottom": [
+            "Td",
+            "4c",
+            "9h",
+            "2d",
+            "4h"
+          ],
+          "middle": [
+            "9d",
+            "As",
+            "8d",
+            "Ac"
+          ],
+          "top": [
+            "4s",
+            "2h"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "Qd",
+          "3h",
+          "Js"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "player_id": "player_1"
+      }
+    ]
+  },
+  "version": "1"
+}

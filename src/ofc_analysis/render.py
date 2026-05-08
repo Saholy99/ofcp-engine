@@ -18,8 +18,10 @@ if TYPE_CHECKING:
         BenchmarkAggregate,
         BenchmarkComparison,
         BenchmarkRun,
+        LateSearchBenchmark,
         RootActionRiskAblationBenchmark,
         RootActionRiskBenchmark,
+        EarlySearchBenchmark,
     )
 
 
@@ -91,6 +93,32 @@ def render_root_action_risk_benchmark(
     if as_json:
         return RenderedOutput(payload=payload)
     return RenderedOutput(text=_root_action_risk_benchmark_text(payload), payload=payload)
+
+
+def render_early_search_benchmark(
+    benchmark: EarlySearchBenchmark,
+    *,
+    as_json: bool = False,
+) -> RenderedOutput:
+    """Render the focused early-search benchmark comparison."""
+
+    payload = _early_search_benchmark_payload(benchmark)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_early_search_benchmark_text(payload), payload=payload)
+
+
+def render_late_search_benchmark(
+    benchmark: LateSearchBenchmark,
+    *,
+    as_json: bool = False,
+) -> RenderedOutput:
+    """Render the focused late-search benchmark comparison."""
+
+    payload = _late_search_benchmark_payload(benchmark)
+    if as_json:
+        return RenderedOutput(payload=payload)
+    return RenderedOutput(text=_late_search_benchmark_text(payload), payload=payload)
 
 
 def render_root_action_risk_ablation_benchmark(
@@ -191,6 +219,22 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
         "rollouts_per_action": analysis.rollouts_per_action,
         "rng_seed": analysis.rng_seed,
         "action_count": len(analysis.ranked_actions),
+        "early_search_enabled": analysis.early_search_enabled,
+        "total_legal_actions": analysis.total_legal_actions,
+        "candidate_count": analysis.candidate_count,
+        "beam_size": analysis.beam_size,
+        "candidate_extra_rollouts": analysis.candidate_extra_rollouts,
+        "draw_safe_candidates": analysis.draw_safe_candidates,
+        "draw_baseline_keep": analysis.draw_baseline_keep,
+        "draw_safety_keep": analysis.draw_safety_keep,
+        "late_search_enabled": analysis.late_search_enabled,
+        "late_search_mode": analysis.late_search_mode,
+        "late_search_max_depth": analysis.late_search_max_depth,
+        "late_search_max_nodes": analysis.late_search_max_nodes,
+        "late_search_beam_size": analysis.late_search_beam_size,
+        "final_draw_auto_search_enabled": analysis.final_draw_auto_search_enabled,
+        "final_draw_auto_max_depth": analysis.final_draw_auto_max_depth,
+        "final_draw_auto_max_nodes": analysis.final_draw_auto_max_nodes,
         "ranked_actions": [
             {
                 "rank": rank,
@@ -204,6 +248,23 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
                 "max_value": estimate.max_value,
                 "root_risk_score": estimate.root_risk_score,
                 "root_risk_reasons": list(estimate.root_risk_reasons),
+                "pattern_score": estimate.pattern_score,
+                "pattern_reasons": list(estimate.pattern_reasons),
+                "selection_reasons": list(estimate.selection_reasons),
+                "candidate_rank": estimate.candidate_rank,
+                "final_score": estimate.final_score if estimate.final_score is not None else estimate.mean_value,
+                "late_search_activated": estimate.late_search_activated,
+                "late_search_mode": estimate.late_search_mode,
+                "late_search_nodes": estimate.late_search_nodes,
+                "late_search_depth": estimate.late_search_depth,
+                "late_search_candidate_count": estimate.late_search_candidate_count,
+                "late_search_terminal_evaluations": estimate.late_search_terminal_evaluations,
+                "late_search_fallback_reason": estimate.late_search_fallback_reason,
+                "phase_auto_search_activated": estimate.phase_auto_search_activated,
+                "phase_auto_search_reason": estimate.phase_auto_search_reason,
+                "phase_auto_search_tree_nodes": estimate.phase_auto_search_tree_nodes,
+                "phase_auto_search_depth": estimate.phase_auto_search_depth,
+                "late_search_runtime_seconds": estimate.late_search_runtime_seconds,
             }
             for rank, estimate in enumerate(analysis.ranked_actions, start=1)
         ],
@@ -211,12 +272,29 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
 
 
 def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
+    from ofc_solver.benchmark import _aggregate_benchmark_run
+
     return {
         "policy_name": run.policy_name,
         "root_action_risk_enabled": run.root_action_risk_enabled,
         "root_action_risk_config_label": run.root_action_risk_config_label,
+        "early_search_enabled": run.early_search_enabled,
+        "beam_size": run.beam_size,
+        "candidate_extra_rollouts": run.candidate_extra_rollouts,
+        "draw_safe_candidates": run.draw_safe_candidates,
+        "draw_baseline_keep": run.draw_baseline_keep,
+        "draw_safety_keep": run.draw_safety_keep,
+        "late_search_enabled": run.late_search_enabled,
+        "late_search_mode": run.late_search_mode,
+        "late_search_max_depth": run.late_search_max_depth,
+        "late_search_max_nodes": run.late_search_max_nodes,
+        "late_search_beam_size": run.late_search_beam_size,
+        "final_draw_auto_search_enabled": run.final_draw_auto_search_enabled,
+        "final_draw_auto_max_depth": run.final_draw_auto_max_depth,
+        "final_draw_auto_max_nodes": run.final_draw_auto_max_nodes,
         "case_count": run.case_count,
         "elapsed_seconds": run.elapsed_seconds,
+        "aggregate": _benchmark_aggregate_payload(_aggregate_benchmark_run(run)),
         "cases": [
             {
                 "name": case.name,
@@ -231,6 +309,8 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                 "top1_agreement": case.top1_agreement,
                 "top3_agreement": case.top3_agreement,
                 "action_count": case.action_count,
+                "candidate_count": case.candidate_count,
+                "candidate_pruning_ratio": case.candidate_pruning_ratio,
                 "elapsed_seconds": case.elapsed_seconds,
                 "ranked_actions": [
                     {
@@ -244,6 +324,23 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                         "max_value": estimate.max_value,
                         "root_risk_score": estimate.root_risk_score,
                         "root_risk_reasons": list(estimate.root_risk_reasons),
+                        "pattern_score": estimate.pattern_score,
+                        "pattern_reasons": list(estimate.pattern_reasons),
+                        "selection_reasons": list(estimate.selection_reasons),
+                        "candidate_rank": estimate.candidate_rank,
+                        "final_score": estimate.final_score if estimate.final_score is not None else estimate.mean_value,
+                        "late_search_activated": estimate.late_search_activated,
+                        "late_search_mode": estimate.late_search_mode,
+                        "late_search_nodes": estimate.late_search_nodes,
+                        "late_search_depth": estimate.late_search_depth,
+                        "late_search_candidate_count": estimate.late_search_candidate_count,
+                        "late_search_terminal_evaluations": estimate.late_search_terminal_evaluations,
+                        "late_search_fallback_reason": estimate.late_search_fallback_reason,
+                        "phase_auto_search_activated": estimate.phase_auto_search_activated,
+                        "phase_auto_search_reason": estimate.phase_auto_search_reason,
+                        "phase_auto_search_tree_nodes": estimate.phase_auto_search_tree_nodes,
+                        "phase_auto_search_depth": estimate.phase_auto_search_depth,
+                        "late_search_runtime_seconds": estimate.late_search_runtime_seconds,
                         "action": estimate.action.as_dict(),
                     }
                     for rank, estimate in enumerate(case.ranked_actions, start=1)
@@ -265,6 +362,16 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                         "exact_late_search_rollout_frequency": diagnostic.exact_late_search_rollout_frequency,
                         "mean_exact_late_search_decisions": diagnostic.mean_exact_late_search_decisions,
                         "mean_exact_late_search_nodes": diagnostic.mean_exact_late_search_nodes,
+                        "late_search_activation_rate": diagnostic.late_search_activation_rate,
+                        "late_search_exact_rate": diagnostic.late_search_exact_rate,
+                        "late_search_beam_rate": diagnostic.late_search_beam_rate,
+                        "late_search_fallback_rate": diagnostic.late_search_fallback_rate,
+                        "mean_late_search_nodes": diagnostic.mean_late_search_nodes,
+                        "mean_late_search_depth": diagnostic.mean_late_search_depth,
+                        "mean_late_search_terminal_evaluations": diagnostic.mean_late_search_terminal_evaluations,
+                        "phase_auto_search_activation_rate": diagnostic.phase_auto_search_activation_rate,
+                        "mean_phase_auto_search_tree_nodes": diagnostic.mean_phase_auto_search_tree_nodes,
+                        "mean_phase_auto_search_depth": diagnostic.mean_phase_auto_search_depth,
                     }
                     for diagnostic in case.action_diagnostics
                 ],
@@ -290,6 +397,16 @@ def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> dict[str, Any
         "exact_late_search_rollout_frequency": aggregate.exact_late_search_rollout_frequency,
         "mean_exact_late_search_decisions": aggregate.mean_exact_late_search_decisions,
         "mean_exact_late_search_nodes": aggregate.mean_exact_late_search_nodes,
+        "late_search_activation_rate": aggregate.late_search_activation_rate,
+        "late_search_exact_rate": aggregate.late_search_exact_rate,
+        "late_search_beam_rate": aggregate.late_search_beam_rate,
+        "late_search_fallback_rate": aggregate.late_search_fallback_rate,
+        "mean_late_search_nodes": aggregate.mean_late_search_nodes,
+        "mean_late_search_depth": aggregate.mean_late_search_depth,
+        "mean_late_search_terminal_evaluations": aggregate.mean_late_search_terminal_evaluations,
+        "phase_auto_search_activation_rate": aggregate.phase_auto_search_activation_rate,
+        "mean_phase_auto_search_tree_nodes": aggregate.mean_phase_auto_search_tree_nodes,
+        "mean_phase_auto_search_depth": aggregate.mean_phase_auto_search_depth,
         "top_action_root_foul_rate": aggregate.top_action_root_foul_rate,
         "top_action_opponent_foul_rate": aggregate.top_action_opponent_foul_rate,
         "top_action_both_foul_rate": aggregate.top_action_both_foul_rate,
@@ -302,6 +419,18 @@ def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> dict[str, Any
         ),
         "top_action_mean_exact_late_search_decisions": aggregate.top_action_mean_exact_late_search_decisions,
         "top_action_mean_exact_late_search_nodes": aggregate.top_action_mean_exact_late_search_nodes,
+        "top_action_late_search_activation_rate": aggregate.top_action_late_search_activation_rate,
+        "top_action_late_search_exact_rate": aggregate.top_action_late_search_exact_rate,
+        "top_action_late_search_beam_rate": aggregate.top_action_late_search_beam_rate,
+        "top_action_late_search_fallback_rate": aggregate.top_action_late_search_fallback_rate,
+        "top_action_mean_late_search_nodes": aggregate.top_action_mean_late_search_nodes,
+        "top_action_mean_late_search_depth": aggregate.top_action_mean_late_search_depth,
+        "top_action_mean_late_search_terminal_evaluations": (
+            aggregate.top_action_mean_late_search_terminal_evaluations
+        ),
+        "top_action_phase_auto_search_activation_rate": aggregate.top_action_phase_auto_search_activation_rate,
+        "top_action_mean_phase_auto_search_tree_nodes": aggregate.top_action_mean_phase_auto_search_tree_nodes,
+        "top_action_mean_phase_auto_search_depth": aggregate.top_action_mean_phase_auto_search_depth,
         "labeled_top1_rate": aggregate.labeled_top1_rate,
         "labeled_top3_rate": aggregate.labeled_top3_rate,
         "elapsed_seconds": aggregate.elapsed_seconds,
@@ -318,6 +447,13 @@ def _benchmark_tag_slice_aggregate_payload(aggregate) -> dict[str, Any]:
         "continuation_frequency": aggregate.continuation_frequency,
         "root_fantasyland_frequency": aggregate.root_fantasyland_frequency,
         "exact_late_search_rollout_frequency": aggregate.exact_late_search_rollout_frequency,
+        "late_search_activation_rate": aggregate.late_search_activation_rate,
+        "late_search_exact_rate": aggregate.late_search_exact_rate,
+        "late_search_beam_rate": aggregate.late_search_beam_rate,
+        "late_search_fallback_rate": aggregate.late_search_fallback_rate,
+        "mean_late_search_nodes": aggregate.mean_late_search_nodes,
+        "phase_auto_search_activation_rate": aggregate.phase_auto_search_activation_rate,
+        "mean_phase_auto_search_tree_nodes": aggregate.mean_phase_auto_search_tree_nodes,
         "top_action_root_foul_rate": aggregate.top_action_root_foul_rate,
         "top_action_both_foul_rate": aggregate.top_action_both_foul_rate,
         "top_action_continuation_frequency": aggregate.top_action_continuation_frequency,
@@ -325,6 +461,13 @@ def _benchmark_tag_slice_aggregate_payload(aggregate) -> dict[str, Any]:
         "top_action_exact_late_search_rollout_frequency": (
             aggregate.top_action_exact_late_search_rollout_frequency
         ),
+        "top_action_late_search_activation_rate": aggregate.top_action_late_search_activation_rate,
+        "top_action_late_search_exact_rate": aggregate.top_action_late_search_exact_rate,
+        "top_action_late_search_beam_rate": aggregate.top_action_late_search_beam_rate,
+        "top_action_late_search_fallback_rate": aggregate.top_action_late_search_fallback_rate,
+        "top_action_mean_late_search_nodes": aggregate.top_action_mean_late_search_nodes,
+        "top_action_phase_auto_search_activation_rate": aggregate.top_action_phase_auto_search_activation_rate,
+        "top_action_mean_phase_auto_search_tree_nodes": aggregate.top_action_mean_phase_auto_search_tree_nodes,
         "labeled_top1_rate": aggregate.labeled_top1_rate,
         "labeled_top3_rate": aggregate.labeled_top3_rate,
     }
@@ -384,6 +527,92 @@ def _root_action_risk_benchmark_payload(benchmark) -> dict[str, Any]:
             "right_elapsed_seconds": right_case.elapsed_seconds,
             "left_ranked_actions": _ranked_action_payloads(left_case.ranked_actions[:5]),
             "right_ranked_actions": _ranked_action_payloads(right_case.ranked_actions[:5]),
+        }
+        for left_case, right_case in zip(
+            benchmark.left_run.case_results,
+            benchmark.right_run.case_results,
+            strict=True,
+        )
+    ]
+    return comparison_payload
+
+
+def _early_search_benchmark_payload(benchmark) -> dict[str, Any]:
+    comparison_payload = _benchmark_comparison_payload(benchmark.comparison)
+    comparison_payload["early_search"] = {
+        "enabled_on_left": benchmark.left_run.early_search_enabled,
+        "enabled_on_right": benchmark.right_run.early_search_enabled,
+        "beam_size": benchmark.right_run.beam_size,
+        "candidate_extra_rollouts": benchmark.right_run.candidate_extra_rollouts,
+        "draw_safe_candidates": benchmark.right_run.draw_safe_candidates,
+        "draw_baseline_keep": benchmark.right_run.draw_baseline_keep,
+        "draw_safety_keep": benchmark.right_run.draw_safety_keep,
+        "root_action_risk_enabled": benchmark.right_run.root_action_risk_enabled,
+        "include_tags": list(benchmark.include_tags),
+        "exclude_tags": list(benchmark.exclude_tags),
+        "phases": [phase.value for phase in benchmark.phases],
+    }
+    comparison_payload["cases"] = [
+        {
+            "name": left_case.name,
+            "scenario_path": str(left_case.scenario_path),
+            "tags": list(left_case.tags),
+            "phase": left_case.phase.value,
+            "left_top_action_index": left_case.top_action_index,
+            "right_top_action_index": right_case.top_action_index,
+            "left_action_count": left_case.action_count,
+            "right_action_count": right_case.action_count,
+            "left_candidate_count": left_case.candidate_count,
+            "right_candidate_count": right_case.candidate_count,
+            "right_candidate_pruning_ratio": right_case.candidate_pruning_ratio,
+            "left_elapsed_seconds": left_case.elapsed_seconds,
+            "right_elapsed_seconds": right_case.elapsed_seconds,
+            "left_ranked_actions": _ranked_action_payloads(left_case.ranked_actions[:5]),
+            "right_ranked_actions": _ranked_action_payloads(right_case.ranked_actions[:5]),
+        }
+        for left_case, right_case in zip(
+            benchmark.left_run.case_results,
+            benchmark.right_run.case_results,
+            strict=True,
+        )
+    ]
+    return comparison_payload
+
+
+def _late_search_benchmark_payload(benchmark) -> dict[str, Any]:
+    comparison_payload = _benchmark_comparison_payload(benchmark.comparison)
+    comparison_payload["late_search"] = {
+        "enabled_on_left": benchmark.left_run.late_search_enabled,
+        "enabled_on_right": benchmark.right_run.late_search_enabled,
+        "mode": benchmark.right_run.late_search_mode,
+        "max_depth": benchmark.right_run.late_search_max_depth,
+        "max_nodes": benchmark.right_run.late_search_max_nodes,
+        "beam_size": benchmark.right_run.late_search_beam_size,
+        "root_action_risk_enabled": benchmark.right_run.root_action_risk_enabled,
+        "include_tags": list(benchmark.include_tags),
+        "exclude_tags": list(benchmark.exclude_tags),
+        "phases": [phase.value for phase in benchmark.phases],
+    }
+    comparison_payload["cases"] = [
+        {
+            "name": left_case.name,
+            "scenario_path": str(left_case.scenario_path),
+            "tags": list(left_case.tags),
+            "phase": left_case.phase.value,
+            "left_top_action_index": left_case.top_action_index,
+            "right_top_action_index": right_case.top_action_index,
+            "left_action_count": left_case.action_count,
+            "right_action_count": right_case.action_count,
+            "left_elapsed_seconds": left_case.elapsed_seconds,
+            "right_elapsed_seconds": right_case.elapsed_seconds,
+            "left_ranked_actions": _ranked_action_payloads(left_case.ranked_actions[:5]),
+            "right_ranked_actions": _ranked_action_payloads(right_case.ranked_actions[:5]),
+            "right_action_diagnostics": [
+                diagnostic
+                for diagnostic in _benchmark_run_payload(benchmark.right_run)["cases"][
+                    benchmark.right_run.case_results.index(right_case)
+                ]["action_diagnostics"]
+            ],
         }
         for left_case, right_case in zip(
             benchmark.left_run.case_results,
@@ -461,6 +690,23 @@ def _ranked_action_payloads(ranked_actions) -> list[dict[str, Any]]:
             "rollout_mean_value": estimate.rollout_mean_value,
             "root_risk_score": estimate.root_risk_score,
             "root_risk_reasons": list(estimate.root_risk_reasons),
+            "pattern_score": estimate.pattern_score,
+            "pattern_reasons": list(estimate.pattern_reasons),
+            "selection_reasons": list(estimate.selection_reasons),
+            "candidate_rank": estimate.candidate_rank,
+            "final_score": estimate.final_score if estimate.final_score is not None else estimate.mean_value,
+            "late_search_activated": estimate.late_search_activated,
+            "late_search_mode": estimate.late_search_mode,
+            "late_search_nodes": estimate.late_search_nodes,
+            "late_search_depth": estimate.late_search_depth,
+            "late_search_candidate_count": estimate.late_search_candidate_count,
+            "late_search_terminal_evaluations": estimate.late_search_terminal_evaluations,
+            "late_search_fallback_reason": estimate.late_search_fallback_reason,
+            "phase_auto_search_activated": estimate.phase_auto_search_activated,
+            "phase_auto_search_reason": estimate.phase_auto_search_reason,
+            "phase_auto_search_tree_nodes": estimate.phase_auto_search_tree_nodes,
+            "phase_auto_search_depth": estimate.phase_auto_search_depth,
+            "late_search_runtime_seconds": estimate.late_search_runtime_seconds,
             "sample_count": estimate.sample_count,
             "action": estimate.action.as_dict(),
         }
@@ -561,6 +807,29 @@ def _move_analysis_text(payload: dict[str, Any]) -> str:
         f"rng_seed: {json.dumps(payload['rng_seed'])}",
         f"action_count: {payload['action_count']}",
     ]
+    if payload["early_search_enabled"]:
+        lines.extend(
+            [
+                f"early_search_enabled: true",
+                f"total_legal_actions: {payload['total_legal_actions']}",
+                f"candidate_count: {payload['candidate_count']}",
+                f"beam_size: {payload['beam_size']}",
+                f"candidate_extra_rollouts: {payload['candidate_extra_rollouts']}",
+                f"draw_safe_candidates: {json.dumps(payload['draw_safe_candidates'])}",
+                f"draw_baseline_keep: {payload['draw_baseline_keep']}",
+                f"draw_safety_keep: {payload['draw_safety_keep']}",
+            ]
+        )
+    if payload["late_search_enabled"]:
+        lines.extend(
+            [
+                "late_search_enabled: true",
+                f"late_search_mode: {payload['late_search_mode']}",
+                f"late_search_max_depth: {payload['late_search_max_depth']}",
+                f"late_search_max_nodes: {payload['late_search_max_nodes']}",
+                f"late_search_beam_size: {payload['late_search_beam_size']}",
+            ]
+        )
     for estimate in payload["ranked_actions"]:
         action = estimate["action"]
         placements = ", ".join(
@@ -571,6 +840,8 @@ def _move_analysis_text(payload: dict[str, Any]) -> str:
             f"[{estimate['rank']}] action_index={estimate['action_index']} "
             f"mean={estimate['mean_value']:.6f} rollout_mean={_format_optional_float(estimate['rollout_mean_value'])} "
             f"root_risk={estimate['root_risk_score']:.6f} stddev={estimate['stddev']:.6f} "
+            f"pattern={estimate['pattern_score']:.6f} "
+            f"late={json.dumps(estimate['late_search_activated'])}:{estimate['late_search_mode']} "
             f"samples={estimate['sample_count']} min={estimate['min_value']:.6f} "
             f"max={estimate['max_value']:.6f} {action['action_type']} "
             f"{action['payload']['player_id']} placements=[{placements}]{suffix}"
@@ -582,6 +853,9 @@ def _benchmark_run_text(payload: dict[str, Any]) -> str:
     lines = [
         "Solver Benchmark",
         f"policy_name: {payload['policy_name']}",
+        f"early_search_enabled: {json.dumps(payload['early_search_enabled'])}",
+        f"draw_safe_candidates: {json.dumps(payload['draw_safe_candidates'])}",
+        f"late_search_enabled: {json.dumps(payload['late_search_enabled'])}",
         f"case_count: {payload['case_count']}",
         f"elapsed_seconds: {payload['elapsed_seconds']:.6f}",
     ]
@@ -596,6 +870,8 @@ def _benchmark_run_text(payload: dict[str, Any]) -> str:
                 f"  phase: {case['phase']}",
                 f"  tags: {json.dumps(case['tags'])}",
                 f"  action_count: {case['action_count']}",
+                f"  candidate_count: {case['candidate_count']}",
+                f"  candidate_pruning_ratio: {case['candidate_pruning_ratio']:.6f}",
                 f"  rollouts_per_action: {case['rollouts_per_action']}",
                 f"  top_action_index: {case['top_action_index']}",
                 f"  expected_top_action_indices: {json.dumps(case['expected_top_action_indices'])}",
@@ -609,6 +885,7 @@ def _benchmark_run_text(payload: dict[str, Any]) -> str:
                 f"  rank {estimate['rank']}: action_index={estimate['action_index']} "
                 f"mean={estimate['mean_value']:.6f} "
                 f"root_risk={estimate['root_risk_score']:.6f} stddev={estimate['stddev']:.6f} "
+                f"pattern={estimate['pattern_score']:.6f} "
                 f"samples={estimate['sample_count']}"
             )
     return "\n".join(lines)
@@ -632,6 +909,16 @@ def _benchmark_comparison_text(payload: dict[str, Any]) -> str:
         "exact_late_search_rollout_frequency",
         "mean_exact_late_search_decisions",
         "mean_exact_late_search_nodes",
+        "late_search_activation_rate",
+        "late_search_exact_rate",
+        "late_search_beam_rate",
+        "late_search_fallback_rate",
+        "mean_late_search_nodes",
+        "mean_late_search_depth",
+        "mean_late_search_terminal_evaluations",
+        "phase_auto_search_activation_rate",
+        "mean_phase_auto_search_tree_nodes",
+        "mean_phase_auto_search_depth",
         "top_action_root_foul_rate",
         "top_action_opponent_foul_rate",
         "top_action_both_foul_rate",
@@ -642,6 +929,16 @@ def _benchmark_comparison_text(payload: dict[str, Any]) -> str:
         "top_action_exact_late_search_rollout_frequency",
         "top_action_mean_exact_late_search_decisions",
         "top_action_mean_exact_late_search_nodes",
+        "top_action_late_search_activation_rate",
+        "top_action_late_search_exact_rate",
+        "top_action_late_search_beam_rate",
+        "top_action_late_search_fallback_rate",
+        "top_action_mean_late_search_nodes",
+        "top_action_mean_late_search_depth",
+        "top_action_mean_late_search_terminal_evaluations",
+        "top_action_phase_auto_search_activation_rate",
+        "top_action_mean_phase_auto_search_tree_nodes",
+        "top_action_mean_phase_auto_search_depth",
         "labeled_top1_rate",
         "labeled_top3_rate",
         "elapsed_seconds",
@@ -712,6 +1009,94 @@ def _root_action_risk_benchmark_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _early_search_benchmark_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Early Search Benchmark",
+        f"left_policy_name: {payload['left_policy_name']}",
+        f"right_policy_name: {payload['right_policy_name']}",
+        f"case_count: {payload['case_count']}",
+        f"include_tags: {json.dumps(payload['early_search']['include_tags'])}",
+        f"exclude_tags: {json.dumps(payload['early_search']['exclude_tags'])}",
+        f"beam_size: {payload['early_search']['beam_size']}",
+        f"candidate_extra_rollouts: {payload['early_search']['candidate_extra_rollouts']}",
+        f"draw_safe_candidates: {json.dumps(payload['early_search']['draw_safe_candidates'])}",
+        f"draw_baseline_keep: {payload['early_search']['draw_baseline_keep']}",
+        f"draw_safety_keep: {payload['early_search']['draw_safety_keep']}",
+    ]
+    for field in (
+        "top_action_root_foul_rate",
+        "top_action_both_foul_rate",
+        "top_action_continuation_frequency",
+        "labeled_top1_rate",
+        "labeled_top3_rate",
+        "elapsed_seconds",
+    ):
+        left_value = _format_optional_float(payload["left"][field])
+        right_value = _format_optional_float(payload["right"][field])
+        delta_value = _format_optional_float(payload["deltas"][field], signed=True)
+        lines.append(f"{field}: left={left_value} right={right_value} delta={delta_value}")
+    for case in payload["cases"]:
+        lines.append(
+            f"case: {case['name']} left_top={case['left_top_action_index']} "
+            f"right_top={case['right_top_action_index']} candidates="
+            f"{case['right_candidate_count']}/{case['right_action_count']}"
+        )
+        for estimate in case["right_ranked_actions"][:3]:
+            reasons = ",".join(estimate["selection_reasons"]) or "none"
+            lines.append(
+                f"  right rank {estimate['rank']}: action_index={estimate['action_index']} "
+                f"mean={estimate['mean_value']:.6f} pattern={estimate['pattern_score']:.6f} "
+                f"selection={reasons}"
+            )
+    return "\n".join(lines)
+
+
+def _late_search_benchmark_text(payload: dict[str, Any]) -> str:
+    lines = [
+        "Late Search Benchmark",
+        f"left_policy_name: {payload['left_policy_name']}",
+        f"right_policy_name: {payload['right_policy_name']}",
+        f"case_count: {payload['case_count']}",
+        f"include_tags: {json.dumps(payload['late_search']['include_tags'])}",
+        f"exclude_tags: {json.dumps(payload['late_search']['exclude_tags'])}",
+        f"mode: {payload['late_search']['mode']}",
+        f"max_depth: {payload['late_search']['max_depth']}",
+        f"max_nodes: {payload['late_search']['max_nodes']}",
+        f"beam_size: {payload['late_search']['beam_size']}",
+    ]
+    for field in (
+        "top_action_root_foul_rate",
+        "top_action_both_foul_rate",
+        "top_action_continuation_frequency",
+        "top_action_late_search_activation_rate",
+        "top_action_late_search_exact_rate",
+        "top_action_late_search_beam_rate",
+        "top_action_late_search_fallback_rate",
+        "top_action_mean_late_search_nodes",
+        "labeled_top1_rate",
+        "labeled_top3_rate",
+        "elapsed_seconds",
+    ):
+        left_value = _format_optional_float(payload["left"][field])
+        right_value = _format_optional_float(payload["right"][field])
+        delta_value = _format_optional_float(payload["deltas"][field], signed=True)
+        lines.append(f"{field}: left={left_value} right={right_value} delta={delta_value}")
+    lines.append(f"top_action_changes: {len(payload['top_action_changes'])}")
+    for case in payload["cases"]:
+        lines.append(
+            f"case: {case['name']} left_top={case['left_top_action_index']} "
+            f"right_top={case['right_top_action_index']}"
+        )
+        for estimate in case["right_ranked_actions"][:3]:
+            lines.append(
+                f"  right rank {estimate['rank']}: action_index={estimate['action_index']} "
+                f"mean={estimate['mean_value']:.6f} late={estimate['late_search_activated']}:"
+                f"{estimate['late_search_mode']} nodes={estimate['late_search_nodes']} "
+                f"terminals={estimate['late_search_terminal_evaluations']}"
+            )
+    return "\n".join(lines)
+
+
 def _root_action_risk_ablation_benchmark_text(payload: dict[str, Any]) -> str:
     lines = [
         "Root Action Risk Ablation",
@@ -757,6 +1142,8 @@ __all__ = [
     "render_benchmark_run",
     "render_move_analysis",
     "render_observation",
+    "render_early_search_benchmark",
+    "render_late_search_benchmark",
     "render_root_action_risk_ablation_benchmark",
     "render_root_action_risk_benchmark",
     "render_state",

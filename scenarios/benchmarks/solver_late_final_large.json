@@ -1,0 +1,3524 @@
+{
+  "cases": [
+    {
+      "name": "generated-final-draw-000",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-000.json",
+      "seed": "generated-final-draw-000",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-001",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-001.json",
+      "seed": "generated-final-draw-001",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-002",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-002.json",
+      "seed": "generated-final-draw-002",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-003",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-003.json",
+      "seed": "generated-final-draw-003",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-004",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-004.json",
+      "seed": "generated-final-draw-004",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-005",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-005.json",
+      "seed": "generated-final-draw-005",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-006",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-006.json",
+      "seed": "generated-final-draw-006",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-007",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-007.json",
+      "seed": "generated-final-draw-007",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-008",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-008.json",
+      "seed": "generated-final-draw-008",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-009",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-009.json",
+      "seed": "generated-final-draw-009",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-010",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-010.json",
+      "seed": "generated-final-draw-010",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-011",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-011.json",
+      "seed": "generated-final-draw-011",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-012",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-012.json",
+      "seed": "generated-final-draw-012",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-013",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-013.json",
+      "seed": "generated-final-draw-013",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-014",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-014.json",
+      "seed": "generated-final-draw-014",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-015",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-015.json",
+      "seed": "generated-final-draw-015",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-016",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-016.json",
+      "seed": "generated-final-draw-016",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-017",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-017.json",
+      "seed": "generated-final-draw-017",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-018",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-018.json",
+      "seed": "generated-final-draw-018",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-019",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-019.json",
+      "seed": "generated-final-draw-019",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-020",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-020.json",
+      "seed": "generated-final-draw-020",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-021",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-021.json",
+      "seed": "generated-final-draw-021",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-022",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-022.json",
+      "seed": "generated-final-draw-022",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-023",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-023.json",
+      "seed": "generated-final-draw-023",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-024",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-024.json",
+      "seed": "generated-final-draw-024",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-025",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-025.json",
+      "seed": "generated-final-draw-025",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-026",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-026.json",
+      "seed": "generated-final-draw-026",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-027",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-027.json",
+      "seed": "generated-final-draw-027",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-028",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-028.json",
+      "seed": "generated-final-draw-028",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-029",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-029.json",
+      "seed": "generated-final-draw-029",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-030",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-030.json",
+      "seed": "generated-final-draw-030",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-031",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-031.json",
+      "seed": "generated-final-draw-031",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-032",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-032.json",
+      "seed": "generated-final-draw-032",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-033",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-033.json",
+      "seed": "generated-final-draw-033",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-034",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-034.json",
+      "seed": "generated-final-draw-034",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-035",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-035.json",
+      "seed": "generated-final-draw-035",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-036",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-036.json",
+      "seed": "generated-final-draw-036",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-037",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-037.json",
+      "seed": "generated-final-draw-037",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-038",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-038.json",
+      "seed": "generated-final-draw-038",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-039",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-039.json",
+      "seed": "generated-final-draw-039",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-040",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-040.json",
+      "seed": "generated-final-draw-040",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-041",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-041.json",
+      "seed": "generated-final-draw-041",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-042",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-042.json",
+      "seed": "generated-final-draw-042",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-043",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-043.json",
+      "seed": "generated-final-draw-043",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-044",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-044.json",
+      "seed": "generated-final-draw-044",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-045",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-045.json",
+      "seed": "generated-final-draw-045",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-046",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-046.json",
+      "seed": "generated-final-draw-046",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-047",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-047.json",
+      "seed": "generated-final-draw-047",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-048",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-048.json",
+      "seed": "generated-final-draw-048",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-049",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-049.json",
+      "seed": "generated-final-draw-049",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-050",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-050.json",
+      "seed": "generated-final-draw-050",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-051",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-051.json",
+      "seed": "generated-final-draw-051",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-052",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-052.json",
+      "seed": "generated-final-draw-052",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-053",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-053.json",
+      "seed": "generated-final-draw-053",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-054",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-054.json",
+      "seed": "generated-final-draw-054",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-055",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-055.json",
+      "seed": "generated-final-draw-055",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-056",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-056.json",
+      "seed": "generated-final-draw-056",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-057",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-057.json",
+      "seed": "generated-final-draw-057",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-058",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-058.json",
+      "seed": "generated-final-draw-058",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-059",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-059.json",
+      "seed": "generated-final-draw-059",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-060",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-060.json",
+      "seed": "generated-final-draw-060",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-061",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-061.json",
+      "seed": "generated-final-draw-061",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-062",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-062.json",
+      "seed": "generated-final-draw-062",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-063",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-063.json",
+      "seed": "generated-final-draw-063",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-064",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-064.json",
+      "seed": "generated-final-draw-064",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-065",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-065.json",
+      "seed": "generated-final-draw-065",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-066",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-066.json",
+      "seed": "generated-final-draw-066",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-067",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-067.json",
+      "seed": "generated-final-draw-067",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-068",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-068.json",
+      "seed": "generated-final-draw-068",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-069",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-069.json",
+      "seed": "generated-final-draw-069",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-070",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-070.json",
+      "seed": "generated-final-draw-070",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-071",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-071.json",
+      "seed": "generated-final-draw-071",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-072",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-072.json",
+      "seed": "generated-final-draw-072",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-073",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-073.json",
+      "seed": "generated-final-draw-073",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-074",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-074.json",
+      "seed": "generated-final-draw-074",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-075",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-075.json",
+      "seed": "generated-final-draw-075",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-076",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-076.json",
+      "seed": "generated-final-draw-076",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-077",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-077.json",
+      "seed": "generated-final-draw-077",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-078",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-078.json",
+      "seed": "generated-final-draw-078",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-079",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-079.json",
+      "seed": "generated-final-draw-079",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-080",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-080.json",
+      "seed": "generated-final-draw-080",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-081",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-081.json",
+      "seed": "generated-final-draw-081",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-082",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-082.json",
+      "seed": "generated-final-draw-082",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-083",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-083.json",
+      "seed": "generated-final-draw-083",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-084",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-084.json",
+      "seed": "generated-final-draw-084",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-085",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-085.json",
+      "seed": "generated-final-draw-085",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-086",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-086.json",
+      "seed": "generated-final-draw-086",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-087",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-087.json",
+      "seed": "generated-final-draw-087",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-088",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-088.json",
+      "seed": "generated-final-draw-088",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-089",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-089.json",
+      "seed": "generated-final-draw-089",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-090",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-090.json",
+      "seed": "generated-final-draw-090",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-091",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-091.json",
+      "seed": "generated-final-draw-091",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-092",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-092.json",
+      "seed": "generated-final-draw-092",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-093",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-093.json",
+      "seed": "generated-final-draw-093",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-094",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-094.json",
+      "seed": "generated-final-draw-094",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-095",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-095.json",
+      "seed": "generated-final-draw-095",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-096",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-096.json",
+      "seed": "generated-final-draw-096",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-final-draw-097",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-097.json",
+      "seed": "generated-final-draw-097",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-098",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-098.json",
+      "seed": "generated-final-draw-098",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-final-draw-099",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-final-draw-099.json",
+      "seed": "generated-final-draw-099",
+      "tags": [
+        "final_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "doomed"
+      ]
+    },
+    {
+      "name": "generated-late-draw-000",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-000.json",
+      "seed": "generated-late-draw-000",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-001",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-001.json",
+      "seed": "generated-late-draw-001",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-002",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-002.json",
+      "seed": "generated-late-draw-002",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-003",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-003.json",
+      "seed": "generated-late-draw-003",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-004",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-004.json",
+      "seed": "generated-late-draw-004",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-005",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-005.json",
+      "seed": "generated-late-draw-005",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-006",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-006.json",
+      "seed": "generated-late-draw-006",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-007",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-007.json",
+      "seed": "generated-late-draw-007",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-008",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-008.json",
+      "seed": "generated-late-draw-008",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-009",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-009.json",
+      "seed": "generated-late-draw-009",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-010",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-010.json",
+      "seed": "generated-late-draw-010",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-011",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-011.json",
+      "seed": "generated-late-draw-011",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-012",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-012.json",
+      "seed": "generated-late-draw-012",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-013",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-013.json",
+      "seed": "generated-late-draw-013",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-014",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-014.json",
+      "seed": "generated-late-draw-014",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-015",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-015.json",
+      "seed": "generated-late-draw-015",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-016",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-016.json",
+      "seed": "generated-late-draw-016",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-017",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-017.json",
+      "seed": "generated-late-draw-017",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-018",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-018.json",
+      "seed": "generated-late-draw-018",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-019",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-019.json",
+      "seed": "generated-late-draw-019",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-020",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-020.json",
+      "seed": "generated-late-draw-020",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-021",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-021.json",
+      "seed": "generated-late-draw-021",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-022",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-022.json",
+      "seed": "generated-late-draw-022",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-023",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-023.json",
+      "seed": "generated-late-draw-023",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-024",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-024.json",
+      "seed": "generated-late-draw-024",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-025",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-025.json",
+      "seed": "generated-late-draw-025",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-026",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-026.json",
+      "seed": "generated-late-draw-026",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-027",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-027.json",
+      "seed": "generated-late-draw-027",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-028",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-028.json",
+      "seed": "generated-late-draw-028",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-029",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-029.json",
+      "seed": "generated-late-draw-029",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-030",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-030.json",
+      "seed": "generated-late-draw-030",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-031",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-031.json",
+      "seed": "generated-late-draw-031",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-032",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-032.json",
+      "seed": "generated-late-draw-032",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-033",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-033.json",
+      "seed": "generated-late-draw-033",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-034",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-034.json",
+      "seed": "generated-late-draw-034",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-035",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-035.json",
+      "seed": "generated-late-draw-035",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-036",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-036.json",
+      "seed": "generated-late-draw-036",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-037",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-037.json",
+      "seed": "generated-late-draw-037",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-038",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-038.json",
+      "seed": "generated-late-draw-038",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-039",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-039.json",
+      "seed": "generated-late-draw-039",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-040",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-040.json",
+      "seed": "generated-late-draw-040",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-041",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-041.json",
+      "seed": "generated-late-draw-041",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-042",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-042.json",
+      "seed": "generated-late-draw-042",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-043",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-043.json",
+      "seed": "generated-late-draw-043",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-044",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-044.json",
+      "seed": "generated-late-draw-044",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-045",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-045.json",
+      "seed": "generated-late-draw-045",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-046",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-046.json",
+      "seed": "generated-late-draw-046",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-047",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-047.json",
+      "seed": "generated-late-draw-047",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-048",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-048.json",
+      "seed": "generated-late-draw-048",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-049",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-049.json",
+      "seed": "generated-late-draw-049",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-050",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-050.json",
+      "seed": "generated-late-draw-050",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-051",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-051.json",
+      "seed": "generated-late-draw-051",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-052",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-052.json",
+      "seed": "generated-late-draw-052",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-053",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-053.json",
+      "seed": "generated-late-draw-053",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-054",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-054.json",
+      "seed": "generated-late-draw-054",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-055",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-055.json",
+      "seed": "generated-late-draw-055",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-056",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-056.json",
+      "seed": "generated-late-draw-056",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-057",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-057.json",
+      "seed": "generated-late-draw-057",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-058",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-058.json",
+      "seed": "generated-late-draw-058",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-059",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-059.json",
+      "seed": "generated-late-draw-059",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-060",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-060.json",
+      "seed": "generated-late-draw-060",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-061",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-061.json",
+      "seed": "generated-late-draw-061",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-062",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-062.json",
+      "seed": "generated-late-draw-062",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-063",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-063.json",
+      "seed": "generated-late-draw-063",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-064",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-064.json",
+      "seed": "generated-late-draw-064",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-065",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-065.json",
+      "seed": "generated-late-draw-065",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-066",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-066.json",
+      "seed": "generated-late-draw-066",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-067",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-067.json",
+      "seed": "generated-late-draw-067",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-068",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-068.json",
+      "seed": "generated-late-draw-068",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-069",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-069.json",
+      "seed": "generated-late-draw-069",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-070",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-070.json",
+      "seed": "generated-late-draw-070",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-071",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-071.json",
+      "seed": "generated-late-draw-071",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-072",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-072.json",
+      "seed": "generated-late-draw-072",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-073",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-073.json",
+      "seed": "generated-late-draw-073",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-074",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-074.json",
+      "seed": "generated-late-draw-074",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-075",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-075.json",
+      "seed": "generated-late-draw-075",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-076",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-076.json",
+      "seed": "generated-late-draw-076",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-077",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-077.json",
+      "seed": "generated-late-draw-077",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-078",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-078.json",
+      "seed": "generated-late-draw-078",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-079",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-079.json",
+      "seed": "generated-late-draw-079",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-080",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-080.json",
+      "seed": "generated-late-draw-080",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-081",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-081.json",
+      "seed": "generated-late-draw-081",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-082",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-082.json",
+      "seed": "generated-late-draw-082",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-083",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-083.json",
+      "seed": "generated-late-draw-083",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-084",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-084.json",
+      "seed": "generated-late-draw-084",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-085",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-085.json",
+      "seed": "generated-late-draw-085",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-086",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-086.json",
+      "seed": "generated-late-draw-086",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-087",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-087.json",
+      "seed": "generated-late-draw-087",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-088",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-088.json",
+      "seed": "generated-late-draw-088",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-089",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-089.json",
+      "seed": "generated-late-draw-089",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-090",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-090.json",
+      "seed": "generated-late-draw-090",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-091",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-091.json",
+      "seed": "generated-late-draw-091",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-092",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-092.json",
+      "seed": "generated-late-draw-092",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-093",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-093.json",
+      "seed": "generated-late-draw-093",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-094",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-094.json",
+      "seed": "generated-late-draw-094",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-095",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-095.json",
+      "seed": "generated-late-draw-095",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-096",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-096.json",
+      "seed": "generated-late-draw-096",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-097",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-097.json",
+      "seed": "generated-late-draw-097",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-098",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-098.json",
+      "seed": "generated-late-draw-098",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-late-draw-099",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-late-draw-099.json",
+      "seed": "generated-late-draw-099",
+      "tags": [
+        "late_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-000",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-000.json",
+      "seed": "generated-mid-draw-000",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-001",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-001.json",
+      "seed": "generated-mid-draw-001",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-002",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-002.json",
+      "seed": "generated-mid-draw-002",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-003",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-003.json",
+      "seed": "generated-mid-draw-003",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-004",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-004.json",
+      "seed": "generated-mid-draw-004",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-005",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-005.json",
+      "seed": "generated-mid-draw-005",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-006",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-006.json",
+      "seed": "generated-mid-draw-006",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-007",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-007.json",
+      "seed": "generated-mid-draw-007",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-008",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-008.json",
+      "seed": "generated-mid-draw-008",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-009",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-009.json",
+      "seed": "generated-mid-draw-009",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-010",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-010.json",
+      "seed": "generated-mid-draw-010",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-011",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-011.json",
+      "seed": "generated-mid-draw-011",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-012",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-012.json",
+      "seed": "generated-mid-draw-012",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-013",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-013.json",
+      "seed": "generated-mid-draw-013",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-014",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-014.json",
+      "seed": "generated-mid-draw-014",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-015",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-015.json",
+      "seed": "generated-mid-draw-015",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-016",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-016.json",
+      "seed": "generated-mid-draw-016",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-017",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-017.json",
+      "seed": "generated-mid-draw-017",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-018",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-018.json",
+      "seed": "generated-mid-draw-018",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-019",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-019.json",
+      "seed": "generated-mid-draw-019",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-020",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-020.json",
+      "seed": "generated-mid-draw-020",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-021",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-021.json",
+      "seed": "generated-mid-draw-021",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-022",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-022.json",
+      "seed": "generated-mid-draw-022",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-023",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-023.json",
+      "seed": "generated-mid-draw-023",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-024",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-024.json",
+      "seed": "generated-mid-draw-024",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-025",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-025.json",
+      "seed": "generated-mid-draw-025",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-026",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-026.json",
+      "seed": "generated-mid-draw-026",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-027",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-027.json",
+      "seed": "generated-mid-draw-027",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-028",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-028.json",
+      "seed": "generated-mid-draw-028",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-029",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-029.json",
+      "seed": "generated-mid-draw-029",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-030",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-030.json",
+      "seed": "generated-mid-draw-030",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-031",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-031.json",
+      "seed": "generated-mid-draw-031",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-032",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-032.json",
+      "seed": "generated-mid-draw-032",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-033",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-033.json",
+      "seed": "generated-mid-draw-033",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-034",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-034.json",
+      "seed": "generated-mid-draw-034",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-035",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-035.json",
+      "seed": "generated-mid-draw-035",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-036",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-036.json",
+      "seed": "generated-mid-draw-036",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-037",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-037.json",
+      "seed": "generated-mid-draw-037",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-038",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-038.json",
+      "seed": "generated-mid-draw-038",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-039",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-039.json",
+      "seed": "generated-mid-draw-039",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "fantasyland",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-040",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-040.json",
+      "seed": "generated-mid-draw-040",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-041",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-041.json",
+      "seed": "generated-mid-draw-041",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-042",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-042.json",
+      "seed": "generated-mid-draw-042",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-043",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-043.json",
+      "seed": "generated-mid-draw-043",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-044",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-044.json",
+      "seed": "generated-mid-draw-044",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-045",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-045.json",
+      "seed": "generated-mid-draw-045",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-046",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-046.json",
+      "seed": "generated-mid-draw-046",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-047",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-047.json",
+      "seed": "generated-mid-draw-047",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-048",
+      "observer": "player_0",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-048.json",
+      "seed": "generated-mid-draw-048",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_0",
+        "hidden_discards",
+        "survivable"
+      ]
+    },
+    {
+      "name": "generated-mid-draw-049",
+      "observer": "player_1",
+      "rollouts": 3,
+      "scenario": "late_final_large/generated-mid-draw-049.json",
+      "seed": "generated-mid-draw-049",
+      "tags": [
+        "mid_draw",
+        "generated",
+        "player_1",
+        "hidden_discards",
+        "survivable"
+      ]
+    }
+  ],
+  "version": "1"
+}

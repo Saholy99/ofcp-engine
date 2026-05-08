@@ -2,6 +2,9 @@
 
 __all__ = [
     "BenchmarkRun",
+    "EarlySearchConfig",
+    "FinalDrawAutoSearchConfig",
+    "LateSearchConfig",
     "MoveAnalysis",
     "MoveEstimate",
     "RootActionRiskAssessment",
@@ -9,10 +12,13 @@ __all__ = [
     "load_benchmark_manifest",
     "rank_actions_from_observation",
     "rank_actions_from_state",
+    "run_early_search_benchmark",
+    "run_late_search_benchmark",
     "run_benchmark_manifest",
     "run_root_action_risk_ablation_benchmark",
     "run_root_action_risk_benchmark",
     "score_root_action",
+    "select_early_search_candidates",
 ]
 
 
@@ -38,9 +44,25 @@ def __getattr__(name: str):
             "RootRiskConfig": RootRiskConfig,
             "score_root_action": score_root_action,
         }[name]
+    if name in {"EarlySearchConfig", "select_early_search_candidates"}:
+        from ofc_solver.early_search import EarlySearchConfig, select_early_search_candidates
+
+        return {
+            "EarlySearchConfig": EarlySearchConfig,
+            "select_early_search_candidates": select_early_search_candidates,
+        }[name]
+    if name in {"FinalDrawAutoSearchConfig", "LateSearchConfig"}:
+        from ofc_solver.late_search import FinalDrawAutoSearchConfig, LateSearchConfig
+
+        return {
+            "FinalDrawAutoSearchConfig": FinalDrawAutoSearchConfig,
+            "LateSearchConfig": LateSearchConfig,
+        }[name]
     if name in {
         "BenchmarkRun",
         "load_benchmark_manifest",
+        "run_early_search_benchmark",
+        "run_late_search_benchmark",
         "run_benchmark_manifest",
         "run_root_action_risk_ablation_benchmark",
         "run_root_action_risk_benchmark",
@@ -48,6 +70,8 @@ def __getattr__(name: str):
         from ofc_solver.benchmark import (
             BenchmarkRun,
             load_benchmark_manifest,
+            run_early_search_benchmark,
+            run_late_search_benchmark,
             run_benchmark_manifest,
             run_root_action_risk_ablation_benchmark,
             run_root_action_risk_benchmark,
@@ -56,6 +80,8 @@ def __getattr__(name: str):
         return {
             "BenchmarkRun": BenchmarkRun,
             "load_benchmark_manifest": load_benchmark_manifest,
+            "run_early_search_benchmark": run_early_search_benchmark,
+            "run_late_search_benchmark": run_late_search_benchmark,
             "run_benchmark_manifest": run_benchmark_manifest,
             "run_root_action_risk_ablation_benchmark": run_root_action_risk_ablation_benchmark,
             "run_root_action_risk_benchmark": run_root_action_risk_benchmark,

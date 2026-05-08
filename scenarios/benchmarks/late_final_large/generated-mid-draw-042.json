@@ -1,0 +1,112 @@
+{
+  "state": {
+    "acting_player": "player_0",
+    "button": "player_0",
+    "deck": {
+      "undealt_cards": [
+        "9h",
+        "5d",
+        "5c",
+        "8h",
+        "Kh",
+        "Qd",
+        "7h",
+        "Jh",
+        "Th",
+        "8c",
+        "Jd",
+        "Ts",
+        "2d",
+        "Jc",
+        "3c",
+        "Qs",
+        "8s",
+        "4c",
+        "Kc",
+        "Ks",
+        "6d",
+        "3d",
+        "Ah",
+        "4h"
+      ]
+    },
+    "hand_number": 1,
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "phase": "draw",
+    "players": [
+      {
+        "board": {
+          "bottom": [
+            "8d",
+            "6s",
+            "7s",
+            "Kd",
+            "6h"
+          ],
+          "middle": [
+            "3h",
+            "As",
+            "9s",
+            "9d"
+          ],
+          "top": []
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [
+          "3s",
+          "4d",
+          "5h"
+        ],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "2c",
+          "5s"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 2,
+        "player_id": "player_0"
+      },
+      {
+        "board": {
+          "bottom": [
+            "2s",
+            "9c",
+            "2h",
+            "Td",
+            "4s"
+          ],
+          "middle": [
+            "Qc",
+            "Js",
+            "Ad",
+            "Ac"
+          ],
+          "top": [
+            "7d",
+            "Qh"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "7c",
+          "Tc",
+          "6c"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "player_id": "player_1"
+      }
+    ]
+  },
+  "version": "1"
+}

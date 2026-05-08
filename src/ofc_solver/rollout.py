@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import replace
 import random
 from typing import Any, Callable, cast
 
@@ -33,6 +34,62 @@ class RolloutResult:
     policy_decision_count: int = 0
     exact_late_search_decision_count: int = 0
     exact_late_search_node_count: int = 0
+    late_search_activated: bool = False
+    late_search_mode: str | None = None
+    late_search_nodes: int = 0
+    late_search_depth: int = 0
+    late_search_candidate_count: int = 0
+    late_search_terminal_evaluations: int = 0
+    late_search_fallback_reason: str | None = None
+    phase_auto_search_activated: bool = False
+    phase_auto_search_reason: str | None = None
+    phase_auto_search_tree_nodes: int = 0
+    phase_auto_search_depth: int = 0
+    late_search_runtime_seconds: float = 0.0
+
+    def with_late_search(
+        self,
+        *,
+        activated: bool,
+        mode: str,
+        nodes: int,
+        depth: int,
+        candidate_count: int,
+        terminal_evaluations: int,
+        fallback_reason: str | None = None,
+        runtime_seconds: float = 0.0,
+    ) -> "RolloutResult":
+        """Return a copy annotated with root late-search diagnostics."""
+
+        return replace(
+            self,
+            late_search_activated=activated,
+            late_search_mode=mode,
+            late_search_nodes=nodes,
+            late_search_depth=depth,
+            late_search_candidate_count=candidate_count,
+            late_search_terminal_evaluations=terminal_evaluations,
+            late_search_fallback_reason=fallback_reason,
+            late_search_runtime_seconds=runtime_seconds,
+        )
+
+    def with_phase_auto_search(
+        self,
+        *,
+        activated: bool,
+        reason: str | None,
+        tree_nodes: int,
+        depth: int,
+    ) -> "RolloutResult":
+        """Return a copy annotated with final-draw auto gate diagnostics."""
+
+        return replace(
+            self,
+            phase_auto_search_activated=activated,
+            phase_auto_search_reason=reason,
+            phase_auto_search_tree_nodes=tree_nodes,
+            phase_auto_search_depth=depth,
+        )
 
 
 @dataclass(frozen=True)
