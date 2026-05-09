@@ -235,6 +235,8 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
         "final_draw_auto_search_enabled": analysis.final_draw_auto_search_enabled,
         "final_draw_auto_max_depth": analysis.final_draw_auto_max_depth,
         "final_draw_auto_max_nodes": analysis.final_draw_auto_max_nodes,
+        "final_draw_auto_include_continuation": analysis.final_draw_auto_include_continuation,
+        "final_draw_continuation_rollouts": analysis.final_draw_continuation_rollouts,
         "ranked_actions": [
             {
                 "rank": rank,
@@ -265,6 +267,14 @@ def _move_analysis_payload(analysis: MoveAnalysis) -> dict[str, Any]:
                 "phase_auto_search_tree_nodes": estimate.phase_auto_search_tree_nodes,
                 "phase_auto_search_depth": estimate.phase_auto_search_depth,
                 "late_search_runtime_seconds": estimate.late_search_runtime_seconds,
+                "final_draw_continuation_aware": estimate.final_draw_continuation_aware,
+                "final_draw_continuation_triggered": estimate.final_draw_continuation_triggered,
+                "final_draw_continuation_rollouts": estimate.final_draw_continuation_rollouts,
+                "final_draw_current_hand_value": estimate.final_draw_current_hand_value,
+                "final_draw_continuation_value": estimate.final_draw_continuation_value,
+                "final_draw_total_value": estimate.final_draw_total_value,
+                "final_draw_continuation_reason": estimate.final_draw_continuation_reason,
+                "final_draw_continuation_runtime_seconds": estimate.final_draw_continuation_runtime_seconds,
             }
             for rank, estimate in enumerate(analysis.ranked_actions, start=1)
         ],
@@ -292,6 +302,8 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
         "final_draw_auto_search_enabled": run.final_draw_auto_search_enabled,
         "final_draw_auto_max_depth": run.final_draw_auto_max_depth,
         "final_draw_auto_max_nodes": run.final_draw_auto_max_nodes,
+        "final_draw_auto_include_continuation": run.final_draw_auto_include_continuation,
+        "final_draw_continuation_rollouts": run.final_draw_continuation_rollouts,
         "case_count": run.case_count,
         "elapsed_seconds": run.elapsed_seconds,
         "aggregate": _benchmark_aggregate_payload(_aggregate_benchmark_run(run)),
@@ -341,6 +353,14 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                         "phase_auto_search_tree_nodes": estimate.phase_auto_search_tree_nodes,
                         "phase_auto_search_depth": estimate.phase_auto_search_depth,
                         "late_search_runtime_seconds": estimate.late_search_runtime_seconds,
+                        "final_draw_continuation_aware": estimate.final_draw_continuation_aware,
+                        "final_draw_continuation_triggered": estimate.final_draw_continuation_triggered,
+                        "final_draw_continuation_rollouts": estimate.final_draw_continuation_rollouts,
+                        "final_draw_current_hand_value": estimate.final_draw_current_hand_value,
+                        "final_draw_continuation_value": estimate.final_draw_continuation_value,
+                        "final_draw_total_value": estimate.final_draw_total_value,
+                        "final_draw_continuation_reason": estimate.final_draw_continuation_reason,
+                        "final_draw_continuation_runtime_seconds": estimate.final_draw_continuation_runtime_seconds,
                         "action": estimate.action.as_dict(),
                     }
                     for rank, estimate in enumerate(case.ranked_actions, start=1)
@@ -372,6 +392,15 @@ def _benchmark_run_payload(run: BenchmarkRun) -> dict[str, Any]:
                         "phase_auto_search_activation_rate": diagnostic.phase_auto_search_activation_rate,
                         "mean_phase_auto_search_tree_nodes": diagnostic.mean_phase_auto_search_tree_nodes,
                         "mean_phase_auto_search_depth": diagnostic.mean_phase_auto_search_depth,
+                        "final_draw_continuation_aware_rate": diagnostic.final_draw_continuation_aware_rate,
+                        "final_draw_continuation_trigger_rate": diagnostic.final_draw_continuation_trigger_rate,
+                        "mean_final_draw_continuation_rollouts": diagnostic.mean_final_draw_continuation_rollouts,
+                        "mean_final_draw_current_hand_value": diagnostic.mean_final_draw_current_hand_value,
+                        "mean_final_draw_continuation_value": diagnostic.mean_final_draw_continuation_value,
+                        "mean_final_draw_total_value": diagnostic.mean_final_draw_total_value,
+                        "mean_final_draw_continuation_runtime_seconds": (
+                            diagnostic.mean_final_draw_continuation_runtime_seconds
+                        ),
                     }
                     for diagnostic in case.action_diagnostics
                 ],
@@ -407,6 +436,13 @@ def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> dict[str, Any
         "phase_auto_search_activation_rate": aggregate.phase_auto_search_activation_rate,
         "mean_phase_auto_search_tree_nodes": aggregate.mean_phase_auto_search_tree_nodes,
         "mean_phase_auto_search_depth": aggregate.mean_phase_auto_search_depth,
+        "final_draw_continuation_aware_rate": aggregate.final_draw_continuation_aware_rate,
+        "final_draw_continuation_trigger_rate": aggregate.final_draw_continuation_trigger_rate,
+        "mean_final_draw_continuation_rollouts": aggregate.mean_final_draw_continuation_rollouts,
+        "mean_final_draw_current_hand_value": aggregate.mean_final_draw_current_hand_value,
+        "mean_final_draw_continuation_value": aggregate.mean_final_draw_continuation_value,
+        "mean_final_draw_total_value": aggregate.mean_final_draw_total_value,
+        "mean_final_draw_continuation_runtime_seconds": aggregate.mean_final_draw_continuation_runtime_seconds,
         "top_action_root_foul_rate": aggregate.top_action_root_foul_rate,
         "top_action_opponent_foul_rate": aggregate.top_action_opponent_foul_rate,
         "top_action_both_foul_rate": aggregate.top_action_both_foul_rate,
@@ -431,6 +467,23 @@ def _benchmark_aggregate_payload(aggregate: BenchmarkAggregate) -> dict[str, Any
         "top_action_phase_auto_search_activation_rate": aggregate.top_action_phase_auto_search_activation_rate,
         "top_action_mean_phase_auto_search_tree_nodes": aggregate.top_action_mean_phase_auto_search_tree_nodes,
         "top_action_mean_phase_auto_search_depth": aggregate.top_action_mean_phase_auto_search_depth,
+        "top_action_final_draw_continuation_aware_rate": (
+            aggregate.top_action_final_draw_continuation_aware_rate
+        ),
+        "top_action_final_draw_continuation_trigger_rate": (
+            aggregate.top_action_final_draw_continuation_trigger_rate
+        ),
+        "top_action_mean_final_draw_continuation_rollouts": (
+            aggregate.top_action_mean_final_draw_continuation_rollouts
+        ),
+        "top_action_mean_final_draw_current_hand_value": aggregate.top_action_mean_final_draw_current_hand_value,
+        "top_action_mean_final_draw_continuation_value": (
+            aggregate.top_action_mean_final_draw_continuation_value
+        ),
+        "top_action_mean_final_draw_total_value": aggregate.top_action_mean_final_draw_total_value,
+        "top_action_mean_final_draw_continuation_runtime_seconds": (
+            aggregate.top_action_mean_final_draw_continuation_runtime_seconds
+        ),
         "labeled_top1_rate": aggregate.labeled_top1_rate,
         "labeled_top3_rate": aggregate.labeled_top3_rate,
         "elapsed_seconds": aggregate.elapsed_seconds,
@@ -707,6 +760,14 @@ def _ranked_action_payloads(ranked_actions) -> list[dict[str, Any]]:
             "phase_auto_search_tree_nodes": estimate.phase_auto_search_tree_nodes,
             "phase_auto_search_depth": estimate.phase_auto_search_depth,
             "late_search_runtime_seconds": estimate.late_search_runtime_seconds,
+            "final_draw_continuation_aware": estimate.final_draw_continuation_aware,
+            "final_draw_continuation_triggered": estimate.final_draw_continuation_triggered,
+            "final_draw_continuation_rollouts": estimate.final_draw_continuation_rollouts,
+            "final_draw_current_hand_value": estimate.final_draw_current_hand_value,
+            "final_draw_continuation_value": estimate.final_draw_continuation_value,
+            "final_draw_total_value": estimate.final_draw_total_value,
+            "final_draw_continuation_reason": estimate.final_draw_continuation_reason,
+            "final_draw_continuation_runtime_seconds": estimate.final_draw_continuation_runtime_seconds,
             "sample_count": estimate.sample_count,
             "action": estimate.action.as_dict(),
         }

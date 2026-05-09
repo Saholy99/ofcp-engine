@@ -42,6 +42,14 @@ class MoveEstimate:
     phase_auto_search_tree_nodes: int = 0
     phase_auto_search_depth: int = 0
     late_search_runtime_seconds: float = 0.0
+    final_draw_continuation_aware: bool = False
+    final_draw_continuation_triggered: bool = False
+    final_draw_continuation_rollouts: int = 0
+    final_draw_current_hand_value: float = 0.0
+    final_draw_continuation_value: float = 0.0
+    final_draw_total_value: float = 0.0
+    final_draw_continuation_reason: str | None = None
+    final_draw_continuation_runtime_seconds: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -69,6 +77,8 @@ class MoveAnalysis:
     final_draw_auto_search_enabled: bool = False
     final_draw_auto_max_depth: int | None = None
     final_draw_auto_max_nodes: int | None = None
+    final_draw_auto_include_continuation: bool = False
+    final_draw_continuation_rollouts: int = 0
 
 
 SUPPORTED_ROOT_PHASES = frozenset({HandPhase.INITIAL_DEAL, HandPhase.DRAW})

@@ -1,0 +1,2811 @@
+{
+  "cases": [
+    {
+      "name": "generated-final-draw-fl-000",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-000.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-000",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-001",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-001.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-001",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-002",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-002.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-002",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-003",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-003.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-003",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-004",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-004.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-004",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-005",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-005.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-005",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-006",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-006.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-006",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-007",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-007.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-007",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-008",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-008.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-008",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-009",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-009.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-009",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-010",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-010.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-010",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-011",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-011.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-011",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-012",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-012.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-012",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-013",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-013.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-013",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-014",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-014.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-014",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-015",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-015.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-015",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-016",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-016.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-016",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-017",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-017.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-017",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-018",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-018.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-018",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-019",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-019.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-019",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-020",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-020.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-020",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-021",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-021.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-021",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-022",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-022.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-022",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-023",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-023.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-023",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-024",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-024.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-024",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-025",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-025.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-025",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-026",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-026.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-026",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-027",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-027.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-027",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-028",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-028.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-028",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-029",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-029.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-029",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-030",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-030.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-030",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-031",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-031.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-031",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-032",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-032.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-032",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-033",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-033.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-033",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-034",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-034.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-034",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-035",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-035.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-035",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-036",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-036.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-036",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-037",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-037.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-037",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-038",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-038.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-038",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-039",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-039.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-039",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-040",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-040.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-040",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-041",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-041.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-041",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-042",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-042.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-042",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-043",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-043.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-043",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-044",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-044.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-044",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-045",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-045.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-045",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-046",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-046.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-046",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-047",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-047.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-047",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-048",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-048.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-048",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-049",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-049.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-049",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-050",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-050.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-050",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-051",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-051.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-051",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-052",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-052.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-052",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-053",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-053.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-053",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-054",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-054.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-054",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-055",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-055.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-055",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-056",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-056.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-056",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-057",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-057.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-057",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-058",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-058.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-058",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-059",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-059.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-059",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-060",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-060.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-060",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-061",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-061.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-061",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-062",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-062.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-062",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-063",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-063.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-063",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-064",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-064.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-064",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-065",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-065.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-065",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-066",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-066.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-066",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-067",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-067.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-067",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-068",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-068.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-068",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-069",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-069.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-069",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-070",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-070.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-070",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-071",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-071.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-071",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-072",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-072.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-072",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-073",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-073.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-073",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-074",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-074.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-074",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-075",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-075.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-075",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-076",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-076.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-076",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-077",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-077.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-077",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-078",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-078.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-078",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-079",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-079.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-079",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-080",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-080.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-080",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-081",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-081.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-081",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-082",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-082.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-082",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-083",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-083.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-083",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-084",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-084.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-084",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-085",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-085.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-085",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-086",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-086.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-086",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-087",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-087.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-087",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-088",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-088.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-088",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-089",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-089.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-089",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-090",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-090.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-090",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-091",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-091.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-091",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-092",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-092.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-092",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-093",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-093.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-093",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-094",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-094.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-094",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-095",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-095.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-095",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-096",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-096.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-096",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-097",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-097.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-097",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-098",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-098.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-098",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-099",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-099.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-099",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-100",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-100.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-100",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-101",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-101.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-101",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-102",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-102.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-102",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-103",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-103.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-103",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-104",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-104.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-104",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-105",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-105.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-105",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-106",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-106.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-106",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-107",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-107.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-107",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-108",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-108.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-108",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-109",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-109.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-109",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-110",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-110.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-110",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-111",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-111.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-111",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-112",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-112.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-112",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-113",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-113.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-113",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-114",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-114.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-114",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-115",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-115.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-115",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-116",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-116.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-116",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-117",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-117.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-117",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-118",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-118.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-118",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-119",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-119.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-119",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-120",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-120.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-120",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-121",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-121.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-121",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-122",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-122.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-122",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-123",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-123.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-123",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-124",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-124.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-124",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-125",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-125.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-125",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-126",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-126.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-126",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-127",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-127.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-127",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-128",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-128.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-128",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-129",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-129.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-129",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-130",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-130.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-130",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-131",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-131.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-131",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-132",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-132.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-132",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-133",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-133.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-133",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-134",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-134.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-134",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-135",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-135.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-135",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-136",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-136.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-136",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-137",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-137.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-137",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-138",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-138.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-138",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-139",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-139.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-139",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-140",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-140.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-140",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-141",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-141.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-141",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-142",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-142.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-142",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-143",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-143.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-143",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-144",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-144.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-144",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-145",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-145.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-145",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-146",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-146.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-146",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "safe_value",
+        "hidden_discards",
+        "both_foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-147",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-147.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-147",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "safe_value",
+        "hidden_discards"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-148",
+      "observer": "player_0",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-148.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-148",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_0",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "foul_pressure"
+      ]
+    },
+    {
+      "name": "generated-final-draw-fl-149",
+      "observer": "player_1",
+      "rollouts": 2,
+      "scenario": "final_draw_fantasyland_targeted/generated-final-draw-fl-149.json",
+      "seed": "final-draw-fantasyland-targeted-v1:generated-final-draw-fl-149",
+      "tags": [
+        "final_draw",
+        "fantasyland_targeted",
+        "fantasyland_entry",
+        "generated",
+        "player_1",
+        "fantasyland_miss",
+        "foul_risk",
+        "hidden_discards",
+        "top_trips",
+        "both_foul_pressure"
+      ]
+    }
+  ],
+  "version": "1"
+}

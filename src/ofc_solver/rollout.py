@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from dataclasses import replace
 import random
+import time
 from typing import Any, Callable, cast
 
 from ofc.actions import GameAction
@@ -46,6 +47,14 @@ class RolloutResult:
     phase_auto_search_tree_nodes: int = 0
     phase_auto_search_depth: int = 0
     late_search_runtime_seconds: float = 0.0
+    final_draw_continuation_enabled: bool = False
+    final_draw_continuation_triggered: bool = False
+    final_draw_continuation_rollouts: int = 0
+    final_draw_continuation_value: float = 0.0
+    final_draw_current_hand_value: float = 0.0
+    final_draw_total_value: float = 0.0
+    final_draw_continuation_runtime_seconds: float = 0.0
+    final_draw_continuation_reason: str | None = None
 
     def with_late_search(
         self,
@@ -91,6 +100,48 @@ class RolloutResult:
             phase_auto_search_depth=depth,
         )
 
+    def with_final_draw_continuation(
+        self,
+        *,
+        enabled: bool,
+        triggered: bool,
+        rollouts: int,
+        continuation_value: float,
+        current_hand_value: float,
+        total_value: float,
+        runtime_seconds: float = 0.0,
+        reason: str | None = None,
+    ) -> "RolloutResult":
+        """Return a copy annotated with final-draw continuation diagnostics."""
+
+        return replace(
+            self,
+            total_value=total_value,
+            current_hand_value=current_hand_value,
+            continuation_value=continuation_value,
+            continuation_hands_simulated=rollouts if triggered else 0,
+            final_draw_continuation_enabled=enabled,
+            final_draw_continuation_triggered=triggered,
+            final_draw_continuation_rollouts=rollouts if triggered else 0,
+            final_draw_continuation_value=continuation_value,
+            final_draw_current_hand_value=current_hand_value,
+            final_draw_total_value=total_value,
+            final_draw_continuation_runtime_seconds=runtime_seconds,
+            final_draw_continuation_reason=reason,
+        )
+
+
+@dataclass(frozen=True)
+class ContinuationSimulationResult:
+    """One immediate Fantasyland continuation simulation result."""
+
+    value: float
+    hands_simulated: int
+    policy_trace: RolloutPolicyTrace
+    triggered: bool
+    reason: str | None = None
+    runtime_seconds: float = 0.0
+
 
 @dataclass(frozen=True)
 class RolloutPolicyTrace:
@@ -131,14 +182,16 @@ def run_rollout(
     current_value = _value_for_player(current_result, root_player)
     root_breakdown, opponent_breakdown = _breakdowns_for_player(current_result, root_player)
 
-    continuation_value = 0.0
-    continuation_hands_simulated = 0
-    continuation_trace = RolloutPolicyTrace()
-    if any(terminal_state.next_hand_fantasyland):
-        next_state = advance_after_showdown(terminal_state, current_result, sample_next_deck(rng=rng))
-        _, continuation_result, continuation_trace = _simulate_to_terminal(next_state, rng=rng, policy=policy)
-        continuation_value = _value_for_player(continuation_result, root_player)
-        continuation_hands_simulated = 1
+    continuation = simulate_one_fantasyland_continuation(
+        terminal_state,
+        current_result,
+        root_player=root_player,
+        rng=rng,
+        policy=policy,
+    )
+    continuation_value = continuation.value
+    continuation_hands_simulated = continuation.hands_simulated
+    continuation_trace = continuation.policy_trace
     combined_trace = current_trace.combine(continuation_trace)
 
     return RolloutResult(
@@ -155,6 +208,47 @@ def run_rollout(
         policy_decision_count=combined_trace.policy_decision_count,
         exact_late_search_decision_count=combined_trace.exact_late_search_decision_count,
         exact_late_search_node_count=combined_trace.exact_late_search_node_count,
+    )
+
+
+def simulate_one_fantasyland_continuation(
+    terminal_state: GameState,
+    current_result: TerminalResult,
+    *,
+    root_player: PlayerId,
+    rng: random.Random,
+    policy: RolloutPolicy,
+) -> ContinuationSimulationResult:
+    """Simulate the rollout convention's single immediate Fantasyland hand.
+
+    The baseline solver advances exactly one hand when the current showdown creates
+    any next-hand Fantasyland flag.  The next deck is sampled through
+    :func:`sample_next_deck`, the continuation is played by the rollout policy, and
+    its zero-sum terminal value is added from the original root player's
+    perspective.  This helper intentionally does not recurse if that continuation
+    hand creates another Fantasyland entry or stay.
+    """
+
+    start = time.perf_counter()
+    if not any(terminal_state.next_hand_fantasyland):
+        return ContinuationSimulationResult(
+            value=0.0,
+            hands_simulated=0,
+            policy_trace=RolloutPolicyTrace(),
+            triggered=False,
+            reason="no-fantasyland-continuation",
+            runtime_seconds=time.perf_counter() - start,
+        )
+
+    next_state = advance_after_showdown(terminal_state, current_result, sample_next_deck(rng=rng))
+    _, continuation_result, continuation_trace = _simulate_to_terminal(next_state, rng=rng, policy=policy)
+    return ContinuationSimulationResult(
+        value=_value_for_player(continuation_result, root_player),
+        hands_simulated=1,
+        policy_trace=continuation_trace,
+        triggered=True,
+        reason="simulated",
+        runtime_seconds=time.perf_counter() - start,
     )
 
 
@@ -206,4 +300,10 @@ def _breakdowns_for_player(result: TerminalResult, player_id: PlayerId):
     raise ValueError(f"Terminal result does not contain player {player_id.value}")
 
 
-__all__ = ["RolloutPolicyTrace", "RolloutResult", "run_rollout"]
+__all__ = [
+    "ContinuationSimulationResult",
+    "RolloutPolicyTrace",
+    "RolloutResult",
+    "run_rollout",
+    "simulate_one_fantasyland_continuation",
+]

@@ -12,6 +12,7 @@ from ofc.state import PlayerId
 from ofc_analysis.cli import main
 from tests.helpers import (
     scenario_payload_from_state,
+    solver_final_draw_state,
     solver_middle_over_bottom_pressure_state,
     stacked_deck_tokens,
 )
@@ -334,6 +335,46 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertIn("phase_auto_search_tree_nodes", payload["ranked_actions"][0])
         self.assertTrue(any(action["phase_auto_search_activated"] for action in payload["ranked_actions"]))
 
+    def test_solve_move_final_draw_auto_continuation_outputs_diagnostics(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            scenario_path = self._write_scenario(
+                temp_dir,
+                scenario_payload_from_state(solver_final_draw_state(enters_fantasyland=True)),
+            )
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "solve-move",
+                    str(scenario_path),
+                    "--observer",
+                    "player_0",
+                    "--rollouts",
+                    "1",
+                    "--seed",
+                    "final-continuation-cli",
+                    "--policy",
+                    "heuristic",
+                    "--final-draw-auto-search",
+                    "--final-draw-auto-max-depth",
+                    "1",
+                    "--final-draw-auto-max-nodes",
+                    "16",
+                    "--final-draw-auto-continuation",
+                    "--final-draw-continuation-rollouts",
+                    "1",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["final_draw_auto_search_enabled"])
+        self.assertTrue(payload["final_draw_auto_include_continuation"])
+        self.assertEqual(1, payload["final_draw_continuation_rollouts"])
+        self.assertIn("final_draw_continuation_triggered", payload["ranked_actions"][0])
+        self.assertTrue(any(action["final_draw_continuation_triggered"] for action in payload["ranked_actions"]))
+
     def test_solve_move_rejects_non_acting_observer(self) -> None:
         scenario_path = Path("scenarios/regression/immediate_scoring.json")
 
@@ -357,6 +398,34 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertIn("--hero", stdout.getvalue())
         self.assertIn("--rollouts", stdout.getvalue())
         self.assertIn("--policy", stdout.getvalue())
+
+    def test_generate_final_draw_fantasyland_benchmark_cli_outputs_summary(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            manifest_path = Path(temp_dir) / "targeted.json"
+            scenario_dir = Path(temp_dir) / "cases"
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "generate-final-draw-fantasyland-benchmark",
+                    str(manifest_path),
+                    "--scenario-dir",
+                    str(scenario_dir),
+                    "--seed",
+                    "targeted-cli",
+                    "--count",
+                    "8",
+                    "--rollouts",
+                    "1",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertEqual(8, payload["case_count"])
+        self.assertGreater(payload["fantasyland_trigger_case_count"], 0)
+        self.assertGreater(payload["fantasyland_trigger_action_count"], 0)
 
 
 if __name__ == "__main__":
