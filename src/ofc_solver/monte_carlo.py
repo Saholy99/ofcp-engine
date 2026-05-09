@@ -20,6 +20,11 @@ from ofc_solver.late_search import (
     evaluate_late_root_action,
 )
 from ofc_solver.models import SUPPORTED_ROOT_PHASES, MoveAnalysis, MoveEstimate
+from ofc_solver.recommended import (
+    RecommendedSolverConfig,
+    RecommendedSolverDecision,
+    choose_recommended_solver_policy,
+)
 from ofc_solver.root_action_risk import RootActionRiskAssessment, RootRiskConfig, score_root_action
 from ofc_solver.rollout import run_rollout
 from ofc_solver.rollout_policy import RandomRolloutPolicy, RolloutPolicy
@@ -46,6 +51,10 @@ def rank_actions_from_state(
     late_search_config: LateSearchConfig | None = None,
     final_draw_auto_search: bool = False,
     final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
+    solver_mode: str = "manual",
+    recommended_root_risk: bool = True,
+    recommended_initial_early_search: bool = True,
+    recommended_final_draw_auto: bool = True,
 ) -> MoveAnalysis:
     """Rank legal root actions from an exact engine state."""
 
@@ -53,24 +62,35 @@ def rank_actions_from_state(
     rng = random.Random(rng_seed)
     rollout_policy = policy or RandomRolloutPolicy()
     effective_early_search_config = early_search_config or EarlySearchConfig()
+    effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
+    recommended_decision = _recommended_decision(
+        state,
+        solver_mode=solver_mode,
+        final_draw_auto_config=effective_final_draw_auto_config,
+        recommended_root_risk=recommended_root_risk,
+        recommended_initial_early_search=recommended_initial_early_search,
+        recommended_final_draw_auto=recommended_final_draw_auto,
+    )
+    effective_early_search = early_search or recommended_decision.early_search
+    effective_root_action_risk = root_action_risk or recommended_decision.root_action_risk
+    effective_final_draw_auto_search = final_draw_auto_search or recommended_decision.final_draw_auto_search
     candidate_set = (
         select_early_search_candidates(state, config=effective_early_search_config)
-        if early_search
+        if effective_early_search
         else None
     )
     root_actions = tuple(candidate.action for candidate in candidate_set.candidates) if candidate_set else tuple(legal_actions(state))
     action_indices = tuple(candidate.action_index for candidate in candidate_set.candidates) if candidate_set else None
     rollouts = (
         rollouts_per_action + effective_early_search_config.candidate_extra_rollouts
-        if early_search
+        if effective_early_search
         else rollouts_per_action
     )
-    effective_late_search_config = late_search_config or LateSearchConfig()
-    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts,
-        root_risk_fn=_root_risk_fn(state, root_action_risk_config) if root_action_risk else None,
+        root_risk_fn=_root_risk_fn(state, root_action_risk_config) if effective_root_action_risk else None,
         action_indices=action_indices,
         candidates=candidate_set.candidates if candidate_set else None,
         evaluate_fn=lambda action: _evaluate_root_action(
@@ -81,7 +101,7 @@ def rank_actions_from_state(
             policy=rollout_policy,
             late_search=late_search,
             late_search_config=effective_late_search_config,
-            final_draw_auto_search=final_draw_auto_search,
+            final_draw_auto_search=effective_final_draw_auto_search,
             final_draw_auto_search_config=effective_final_draw_auto_config,
         ),
     )
@@ -91,27 +111,35 @@ def rank_actions_from_state(
         rollouts_per_action=rollouts,
         rng_seed=rng_seed,
         ranked_actions=estimates,
-        early_search_enabled=early_search,
+        solver_mode=solver_mode,
+        recommended_solver_enabled=recommended_decision.enabled,
+        recommended_sub_policy=recommended_decision.sub_policy,
+        recommended_root_risk_enabled=recommended_decision.root_action_risk,
+        recommended_initial_early_search_enabled=recommended_decision.early_search,
+        recommended_final_draw_auto_enabled=recommended_decision.final_draw_auto_search,
+        recommended_final_draw_auto_candidate_count=recommended_decision.final_draw_auto_candidate_count,
+        root_action_risk_enabled=effective_root_action_risk,
+        early_search_enabled=effective_early_search,
         total_legal_actions=candidate_set.total_legal_actions if candidate_set else len(root_actions),
         candidate_count=len(root_actions),
-        beam_size=effective_early_search_config.beam_size if early_search else None,
-        candidate_extra_rollouts=effective_early_search_config.candidate_extra_rollouts if early_search else 0,
-        draw_safe_candidates=effective_early_search_config.draw_safe_candidates if early_search else False,
-        draw_baseline_keep=effective_early_search_config.draw_baseline_keep if early_search else 0,
-        draw_safety_keep=effective_early_search_config.draw_safety_keep if early_search else 0,
+        beam_size=effective_early_search_config.beam_size if effective_early_search else None,
+        candidate_extra_rollouts=effective_early_search_config.candidate_extra_rollouts if effective_early_search else 0,
+        draw_safe_candidates=effective_early_search_config.draw_safe_candidates if effective_early_search else False,
+        draw_baseline_keep=effective_early_search_config.draw_baseline_keep if effective_early_search else 0,
+        draw_safety_keep=effective_early_search_config.draw_safety_keep if effective_early_search else 0,
         late_search_enabled=late_search,
         late_search_mode=effective_late_search_config.mode if late_search else None,
         late_search_max_depth=effective_late_search_config.max_depth if late_search else None,
         late_search_max_nodes=effective_late_search_config.max_nodes if late_search else None,
         late_search_beam_size=effective_late_search_config.beam_size if late_search else None,
-        final_draw_auto_search_enabled=final_draw_auto_search,
-        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
-        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
+        final_draw_auto_search_enabled=effective_final_draw_auto_search,
+        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if effective_final_draw_auto_search else None,
+        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if effective_final_draw_auto_search else None,
         final_draw_auto_include_continuation=(
-            effective_final_draw_auto_config.include_continuation if final_draw_auto_search else False
+            effective_final_draw_auto_config.include_continuation if effective_final_draw_auto_search else False
         ),
         final_draw_continuation_rollouts=(
-            effective_final_draw_auto_config.continuation_rollouts if final_draw_auto_search else 0
+            effective_final_draw_auto_config.continuation_rollouts if effective_final_draw_auto_search else 0
         ),
     )
 
@@ -130,6 +158,10 @@ def rank_actions_from_observation(
     late_search_config: LateSearchConfig | None = None,
     final_draw_auto_search: bool = False,
     final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
+    solver_mode: str = "manual",
+    recommended_root_risk: bool = True,
+    recommended_initial_early_search: bool = True,
+    recommended_final_draw_auto: bool = True,
 ) -> MoveAnalysis:
     """Rank legal root actions from an observer-facing information set."""
 
@@ -138,24 +170,35 @@ def rank_actions_from_observation(
     rollout_policy = policy or RandomRolloutPolicy()
     enumeration_state = sample_state(observation, rng=random.Random(rng_seed)).state
     effective_early_search_config = early_search_config or EarlySearchConfig()
+    effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
+    recommended_decision = _recommended_decision(
+        enumeration_state,
+        solver_mode=solver_mode,
+        final_draw_auto_config=effective_final_draw_auto_config,
+        recommended_root_risk=recommended_root_risk,
+        recommended_initial_early_search=recommended_initial_early_search,
+        recommended_final_draw_auto=recommended_final_draw_auto,
+    )
+    effective_early_search = early_search or recommended_decision.early_search
+    effective_root_action_risk = root_action_risk or recommended_decision.root_action_risk
+    effective_final_draw_auto_search = final_draw_auto_search or recommended_decision.final_draw_auto_search
     candidate_set = (
         select_early_search_candidates(enumeration_state, config=effective_early_search_config)
-        if early_search
+        if effective_early_search
         else None
     )
     root_actions = tuple(candidate.action for candidate in candidate_set.candidates) if candidate_set else tuple(legal_actions(enumeration_state))
     action_indices = tuple(candidate.action_index for candidate in candidate_set.candidates) if candidate_set else None
     rollouts = (
         rollouts_per_action + effective_early_search_config.candidate_extra_rollouts
-        if early_search
+        if effective_early_search
         else rollouts_per_action
     )
-    effective_late_search_config = late_search_config or LateSearchConfig()
-    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
     estimates = _rank_actions(
         root_actions,
         rollouts_per_action=rollouts,
-        root_risk_fn=_root_risk_fn(enumeration_state, root_action_risk_config) if root_action_risk else None,
+        root_risk_fn=_root_risk_fn(enumeration_state, root_action_risk_config) if effective_root_action_risk else None,
         action_indices=action_indices,
         candidates=candidate_set.candidates if candidate_set else None,
         evaluate_fn=lambda action: _evaluate_root_action(
@@ -166,7 +209,7 @@ def rank_actions_from_observation(
             policy=rollout_policy,
             late_search=late_search,
             late_search_config=effective_late_search_config,
-            final_draw_auto_search=final_draw_auto_search,
+            final_draw_auto_search=effective_final_draw_auto_search,
             final_draw_auto_search_config=effective_final_draw_auto_config,
         ),
     )
@@ -176,27 +219,35 @@ def rank_actions_from_observation(
         rollouts_per_action=rollouts,
         rng_seed=rng_seed,
         ranked_actions=estimates,
-        early_search_enabled=early_search,
+        solver_mode=solver_mode,
+        recommended_solver_enabled=recommended_decision.enabled,
+        recommended_sub_policy=recommended_decision.sub_policy,
+        recommended_root_risk_enabled=recommended_decision.root_action_risk,
+        recommended_initial_early_search_enabled=recommended_decision.early_search,
+        recommended_final_draw_auto_enabled=recommended_decision.final_draw_auto_search,
+        recommended_final_draw_auto_candidate_count=recommended_decision.final_draw_auto_candidate_count,
+        root_action_risk_enabled=effective_root_action_risk,
+        early_search_enabled=effective_early_search,
         total_legal_actions=candidate_set.total_legal_actions if candidate_set else len(root_actions),
         candidate_count=len(root_actions),
-        beam_size=effective_early_search_config.beam_size if early_search else None,
-        candidate_extra_rollouts=effective_early_search_config.candidate_extra_rollouts if early_search else 0,
-        draw_safe_candidates=effective_early_search_config.draw_safe_candidates if early_search else False,
-        draw_baseline_keep=effective_early_search_config.draw_baseline_keep if early_search else 0,
-        draw_safety_keep=effective_early_search_config.draw_safety_keep if early_search else 0,
+        beam_size=effective_early_search_config.beam_size if effective_early_search else None,
+        candidate_extra_rollouts=effective_early_search_config.candidate_extra_rollouts if effective_early_search else 0,
+        draw_safe_candidates=effective_early_search_config.draw_safe_candidates if effective_early_search else False,
+        draw_baseline_keep=effective_early_search_config.draw_baseline_keep if effective_early_search else 0,
+        draw_safety_keep=effective_early_search_config.draw_safety_keep if effective_early_search else 0,
         late_search_enabled=late_search,
         late_search_mode=effective_late_search_config.mode if late_search else None,
         late_search_max_depth=effective_late_search_config.max_depth if late_search else None,
         late_search_max_nodes=effective_late_search_config.max_nodes if late_search else None,
         late_search_beam_size=effective_late_search_config.beam_size if late_search else None,
-        final_draw_auto_search_enabled=final_draw_auto_search,
-        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
-        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
+        final_draw_auto_search_enabled=effective_final_draw_auto_search,
+        final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if effective_final_draw_auto_search else None,
+        final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if effective_final_draw_auto_search else None,
         final_draw_auto_include_continuation=(
-            effective_final_draw_auto_config.include_continuation if final_draw_auto_search else False
+            effective_final_draw_auto_config.include_continuation if effective_final_draw_auto_search else False
         ),
         final_draw_continuation_rollouts=(
-            effective_final_draw_auto_config.continuation_rollouts if final_draw_auto_search else 0
+            effective_final_draw_auto_config.continuation_rollouts if effective_final_draw_auto_search else 0
         ),
     )
 
@@ -215,6 +266,30 @@ def _validate_rank_request(
         raise ValueError("Solver MVP can only rank moves for the acting player")
     if rollouts_per_action <= 0:
         raise ValueError("rollouts_per_action must be positive")
+
+
+def _recommended_decision(
+    state: GameState,
+    *,
+    solver_mode: str,
+    final_draw_auto_config: FinalDrawAutoSearchConfig,
+    recommended_root_risk: bool,
+    recommended_initial_early_search: bool,
+    recommended_final_draw_auto: bool,
+):
+    if solver_mode not in {"manual", "recommended"}:
+        raise ValueError("solver_mode must be one of: manual, recommended")
+    if solver_mode != "recommended":
+        return RecommendedSolverDecision(enabled=False, sub_policy=None)
+    return choose_recommended_solver_policy(
+        state,
+        config=RecommendedSolverConfig(
+            use_initial_early_search=recommended_initial_early_search,
+            use_root_risk=recommended_root_risk,
+            use_final_draw_auto=recommended_final_draw_auto,
+        ),
+        final_draw_auto_config=final_draw_auto_config,
+    )
 
 
 def _rank_actions(

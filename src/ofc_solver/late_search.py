@@ -48,7 +48,7 @@ class FinalDrawAutoSearchConfig:
 
     max_depth: int = 0
     max_nodes: int = 64
-    include_continuation: bool = False
+    include_continuation: bool = True
     continuation_rollouts: int = 1
 
     def __post_init__(self) -> None:

@@ -76,6 +76,74 @@ class SolverMonteCarloTest(unittest.TestCase):
         self.assertTrue(any(estimate.root_risk_reasons for estimate in analysis.ranked_actions))
         self.assertTrue(all(estimate.rollout_mean_value is not None for estimate in analysis.ranked_actions))
 
+    def test_recommended_mode_uses_initial_deal_early_search_and_root_risk(self) -> None:
+        state = new_match(button=PlayerId.PLAYER_0, seed=1)
+
+        analysis = rank_actions_from_state(
+            state,
+            observer=PlayerId.PLAYER_1,
+            rollouts_per_action=1,
+            rng_seed=38,
+            solver_mode="recommended",
+        )
+
+        self.assertEqual("recommended", analysis.solver_mode)
+        self.assertEqual("initial_deal_early_search", analysis.recommended_sub_policy)
+        self.assertTrue(analysis.recommended_solver_enabled)
+        self.assertTrue(analysis.early_search_enabled)
+        self.assertTrue(analysis.root_action_risk_enabled)
+        self.assertLess(analysis.candidate_count, analysis.total_legal_actions)
+
+    def test_recommended_mode_uses_baseline_on_nonterminal_draw(self) -> None:
+        state = load_scenario("scenarios/regression/draw_root.json").state
+
+        analysis = rank_actions_from_state(
+            state,
+            observer=state.acting_player,
+            rollouts_per_action=1,
+            rng_seed=39,
+            solver_mode="recommended",
+        )
+
+        self.assertEqual("recommended", analysis.solver_mode)
+        self.assertEqual("baseline_draw", analysis.recommended_sub_policy)
+        self.assertFalse(analysis.early_search_enabled)
+        self.assertFalse(analysis.root_action_risk_enabled)
+        self.assertFalse(analysis.final_draw_auto_search_enabled)
+
+    def test_recommended_mode_uses_final_draw_auto_continuation_on_terminal_draw(self) -> None:
+        state = solver_final_draw_state(enters_fantasyland=True)
+
+        analysis = rank_actions_from_state(
+            state,
+            observer=PlayerId.PLAYER_0,
+            rollouts_per_action=1,
+            rng_seed=40,
+            solver_mode="recommended",
+        )
+
+        self.assertEqual("recommended", analysis.solver_mode)
+        self.assertEqual("final_draw_auto", analysis.recommended_sub_policy)
+        self.assertTrue(analysis.final_draw_auto_search_enabled)
+        self.assertTrue(analysis.final_draw_auto_include_continuation)
+        self.assertEqual(1, analysis.final_draw_continuation_rollouts)
+        self.assertTrue(any(estimate.final_draw_continuation_aware for estimate in analysis.ranked_actions))
+
+    def test_recommended_mode_can_disable_final_draw_auto_for_ablation(self) -> None:
+        state = solver_final_draw_state(enters_fantasyland=True)
+
+        analysis = rank_actions_from_state(
+            state,
+            observer=PlayerId.PLAYER_0,
+            rollouts_per_action=1,
+            rng_seed=41,
+            solver_mode="recommended",
+            recommended_final_draw_auto=False,
+        )
+
+        self.assertEqual("baseline_draw", analysis.recommended_sub_policy)
+        self.assertFalse(analysis.final_draw_auto_search_enabled)
+
     def test_rank_actions_rejects_unsupported_root_phase(self) -> None:
         state = new_hand(
             button=PlayerId.PLAYER_0,

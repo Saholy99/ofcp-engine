@@ -61,6 +61,14 @@ class MoveAnalysis:
     rollouts_per_action: int
     rng_seed: int | str | None
     ranked_actions: tuple[MoveEstimate, ...]
+    solver_mode: str = "manual"
+    recommended_solver_enabled: bool = False
+    recommended_sub_policy: str | None = None
+    recommended_root_risk_enabled: bool = False
+    recommended_initial_early_search_enabled: bool = False
+    recommended_final_draw_auto_enabled: bool = False
+    recommended_final_draw_auto_candidate_count: int = 0
+    root_action_risk_enabled: bool = False
     early_search_enabled: bool = False
     total_legal_actions: int | None = None
     candidate_count: int | None = None

@@ -229,7 +229,7 @@ class SolverLateSearchTest(unittest.TestCase):
             action,
             perspective=PlayerId.PLAYER_0,
             rng=random.Random(62),
-            config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16),
+            config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16, include_continuation=False),
         )
 
         self.assertTrue(result.activated)
@@ -238,6 +238,22 @@ class SolverLateSearchTest(unittest.TestCase):
         self.assertEqual(0.0, result.continuation_value)
         self.assertEqual(result.current_hand_value, result.value)
         self.assertEqual(0, result.rollout_result.continuation_hands_simulated)
+
+    def test_final_draw_auto_default_is_continuation_aware(self) -> None:
+        state = solver_final_draw_state(enters_fantasyland=True)
+        action = tuple(legal_actions(state))[1]
+
+        result = evaluate_final_draw_auto_root_action(
+            state,
+            action,
+            perspective=PlayerId.PLAYER_0,
+            rng=random.Random(63),
+            config=FinalDrawAutoSearchConfig(max_depth=1, max_nodes=16),
+        )
+
+        self.assertTrue(result.activated)
+        self.assertTrue(result.continuation_aware)
+        self.assertEqual(1, result.continuation_rollouts)
 
     def test_final_draw_auto_continuation_adds_one_immediate_fantasyland_hand(self) -> None:
         state = solver_final_draw_state(enters_fantasyland=True)

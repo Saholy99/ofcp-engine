@@ -18,6 +18,7 @@ from ofc_solver.benchmark import (
     run_late_search_benchmark,
     run_root_action_risk_ablation_benchmark,
 )
+from ofc_solver.full_hand_benchmark import run_full_hand_benchmark
 
 
 FIXTURE_DIR = Path("scenarios/regression")
@@ -276,7 +277,6 @@ class SolverBenchmarkTest(unittest.TestCase):
                     "1",
                     "--final-draw-auto-max-nodes",
                     "16",
-                    "--final-draw-auto-continuation",
                     "--final-draw-continuation-rollouts",
                     "1",
                     "--json",
@@ -291,6 +291,54 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual(1, payload["final_draw_continuation_rollouts"])
         self.assertIn("final_draw_continuation_trigger_rate", payload["cases"][1]["action_diagnostics"][0])
         self.assertIn("top_action_final_draw_continuation_trigger_rate", payload["aggregate"])
+
+    def test_benchmark_solver_cli_accepts_current_hand_only_final_draw_auto(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--final-draw-auto-search",
+                    "--no-final-draw-auto-continuation",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertTrue(payload["final_draw_auto_search_enabled"])
+        self.assertFalse(payload["final_draw_auto_include_continuation"])
+
+    def test_benchmark_solver_cli_accepts_recommended_mode(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--solver-mode",
+                    "recommended",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual("recommended", payload["solver_mode"])
+        self.assertTrue(payload["recommended_solver_enabled"])
+        self.assertIn("recommended_sub_policy", payload["cases"][0])
+        self.assertIn("recommended_phase_counts", payload)
 
     def test_benchmark_solver_cli_runs_targeted_final_draw_fantasyland_manifest(self) -> None:
         with TemporaryDirectory() as temp_dir:
@@ -327,6 +375,101 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertTrue(payload["final_draw_auto_include_continuation"])
         self.assertGreater(payload["aggregate"]["final_draw_continuation_trigger_rate"], 0.0)
         self.assertIn("mean_final_draw_continuation_value", payload["aggregate"])
+
+    def test_full_hand_benchmark_is_deterministic_under_fixed_seed(self) -> None:
+        first = run_full_hand_benchmark(
+            player_0_policy="baseline",
+            player_1_policy="recommended",
+            hand_count=2,
+            seed="full-hand-unit",
+            rollouts_per_action=1,
+        )
+        second = run_full_hand_benchmark(
+            player_0_policy="baseline",
+            player_1_policy="recommended",
+            hand_count=2,
+            seed="full-hand-unit",
+            rollouts_per_action=1,
+        )
+
+        self.assertEqual(first.deterministic_payload(), second.deterministic_payload())
+        self.assertEqual(2, first.hand_count)
+        self.assertTrue(first.zero_sum_consistent)
+        self.assertIn("standard_error_player_0_points", first.as_dict())
+
+    def test_full_hand_parallel_matches_serial_under_fixed_seed(self) -> None:
+        serial = run_full_hand_benchmark(
+            player_0_policy="baseline",
+            player_1_policy="recommended",
+            hand_count=2,
+            seed="full-hand-parallel-unit",
+            rollouts_per_action=1,
+            jobs=1,
+        )
+        parallel = run_full_hand_benchmark(
+            player_0_policy="baseline",
+            player_1_policy="recommended",
+            hand_count=2,
+            seed="full-hand-parallel-unit",
+            rollouts_per_action=1,
+            jobs=2,
+        )
+
+        self.assertEqual(serial.deterministic_payload(), parallel.deterministic_payload())
+
+    def test_full_hand_trace_output_writes_per_hand_json(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            benchmark = run_full_hand_benchmark(
+                player_0_policy="baseline",
+                player_1_policy="recommended",
+                hand_count=1,
+                seed="full-hand-trace-unit",
+                rollouts_per_action=1,
+                save_traces=True,
+                trace_dir=Path(temp_dir),
+            )
+            traces = list(Path(temp_dir).glob("*.json"))
+            payload = json.loads(traces[0].read_text(encoding="utf-8"))
+
+        self.assertEqual(1, benchmark.hand_count)
+        self.assertEqual(1, len(traces))
+        self.assertIn("initial_early_search_activations", payload)
+        self.assertIn("final_draw_auto_activations", payload)
+        self.assertIn("continuation_aware_final_draw_activations", payload)
+
+    def test_benchmark_full_hands_cli_outputs_json(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-full-hands",
+                    "--player-0-policy",
+                    "baseline",
+                    "--player-1-policy",
+                    "recommended",
+                    "--hands",
+                    "1",
+                    "--seed",
+                    "full-hand-cli",
+                    "--rollouts",
+                    "1",
+                    "--jobs",
+                    "1",
+                    "--summary-only",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(1, payload["hand_count"])
+        self.assertTrue(payload["zero_sum_consistent"])
+        self.assertEqual("recommended", payload["player_1_policy"])
+        self.assertNotIn("hands", payload)
+        self.assertIn("standard_error_player_0_points", payload)
 
     def test_benchmark_solver_cli_can_filter_by_tag(self) -> None:
         stdout = io.StringIO()

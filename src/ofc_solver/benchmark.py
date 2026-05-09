@@ -27,6 +27,7 @@ from ofc_solver.late_search import (
 )
 from ofc_solver.models import MoveEstimate, SUPPORTED_ROOT_PHASES
 from ofc_solver.policy_registry import policy_from_name
+from ofc_solver.recommended import RecommendedSolverConfig, choose_recommended_solver_policy
 from ofc_solver.root_action_risk import (
     ROOT_RISK_COMPONENT_KEYS,
     RootActionRiskAssessment,
@@ -119,6 +120,8 @@ class BenchmarkCaseResult:
     elapsed_seconds: float
     ranked_actions: tuple[MoveEstimate, ...]
     action_diagnostics: tuple[BenchmarkActionDiagnostics, ...]
+    recommended_sub_policy: str | None = None
+    recommended_final_draw_auto_candidate_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -128,6 +131,11 @@ class BenchmarkRun:
     policy_name: str
     case_results: tuple[BenchmarkCaseResult, ...]
     elapsed_seconds: float
+    solver_mode: str = "manual"
+    recommended_solver_enabled: bool = False
+    recommended_root_risk_enabled: bool = False
+    recommended_initial_early_search_enabled: bool = False
+    recommended_final_draw_auto_enabled: bool = False
     root_action_risk_enabled: bool = False
     root_action_risk_config_label: str | None = None
     early_search_enabled: bool = False
@@ -150,6 +158,15 @@ class BenchmarkRun:
     @property
     def case_count(self) -> int:
         return len(self.case_results)
+
+    @property
+    def recommended_phase_counts(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for case in self.case_results:
+            if case.recommended_sub_policy is None:
+                continue
+            counts[case.recommended_sub_policy] = counts.get(case.recommended_sub_policy, 0) + 1
+        return counts
 
 
 @dataclass(frozen=True)
@@ -404,6 +421,10 @@ def run_benchmark_manifest(
     late_search_config: LateSearchConfig | None = None,
     final_draw_auto_search: bool = False,
     final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
+    solver_mode: str = "manual",
+    recommended_root_risk: bool = True,
+    recommended_initial_early_search: bool = True,
+    recommended_final_draw_auto: bool = True,
 ) -> BenchmarkRun:
     """Run all cases in a loaded benchmark manifest."""
 
@@ -434,6 +455,10 @@ def run_benchmark_manifest(
             late_search_config=effective_late_search_config,
             final_draw_auto_search=final_draw_auto_search,
             final_draw_auto_search_config=effective_final_draw_auto_config,
+            solver_mode=solver_mode,
+            recommended_root_risk=recommended_root_risk,
+            recommended_initial_early_search=recommended_initial_early_search,
+            recommended_final_draw_auto=recommended_final_draw_auto,
         )
         for case in manifest.cases
     )
@@ -453,10 +478,18 @@ def run_benchmark_manifest(
         final_draw_auto_search,
         effective_final_draw_auto_config,
     )
+    effective_name = _policy_name_for_solver_mode(effective_name, solver_mode)
     return BenchmarkRun(
         policy_name=effective_name,
         case_results=case_results,
         elapsed_seconds=time.perf_counter() - start,
+        solver_mode=solver_mode,
+        recommended_solver_enabled=solver_mode == "recommended",
+        recommended_root_risk_enabled=recommended_root_risk if solver_mode == "recommended" else False,
+        recommended_initial_early_search_enabled=(
+            recommended_initial_early_search if solver_mode == "recommended" else False
+        ),
+        recommended_final_draw_auto_enabled=recommended_final_draw_auto if solver_mode == "recommended" else False,
         root_action_risk_enabled=risk_enabled,
         root_action_risk_config_label=effective_root_risk_config.label if risk_enabled else "off",
         early_search_enabled=early_search,
@@ -494,6 +527,10 @@ def run_benchmark_case(
     late_search_config: LateSearchConfig | None = None,
     final_draw_auto_search: bool = False,
     final_draw_auto_search_config: FinalDrawAutoSearchConfig | None = None,
+    solver_mode: str = "manual",
+    recommended_root_risk: bool = True,
+    recommended_initial_early_search: bool = True,
+    recommended_final_draw_auto: bool = True,
 ) -> BenchmarkCaseResult:
     """Run one benchmark case and collect ranked actions plus diagnostics."""
 
@@ -508,19 +545,35 @@ def run_benchmark_case(
 
     observation = project_observation(exact_state, case.observer)
     enumeration_state = sample_state(observation, rng=random.Random(case.rng_seed)).state
+    effective_early_search_config = early_search_config or EarlySearchConfig()
+    effective_late_search_config = late_search_config or LateSearchConfig()
+    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
+    recommended_decision = _recommended_decision(
+        enumeration_state,
+        solver_mode=solver_mode,
+        final_draw_auto_config=effective_final_draw_auto_config,
+        recommended_root_risk=recommended_root_risk,
+        recommended_initial_early_search=recommended_initial_early_search,
+        recommended_final_draw_auto=recommended_final_draw_auto,
+    )
+    effective_early_search = early_search or recommended_decision.early_search
+    effective_root_action_risk = root_action_risk or recommended_decision.root_action_risk
+    effective_final_draw_auto_search = final_draw_auto_search or recommended_decision.final_draw_auto_search
+    effective_root_risk_config = root_action_risk_config or RootRiskConfig.default()
+    if effective_root_action_risk and not effective_root_risk_config.enabled_components:
+        effective_root_risk_config = RootRiskConfig.default()
+
     candidate_set = (
-        select_early_search_candidates(enumeration_state, config=early_search_config)
-        if early_search
+        select_early_search_candidates(enumeration_state, config=effective_early_search_config)
+        if effective_early_search
         else None
     )
     root_actions = tuple(candidate.action for candidate in candidate_set.candidates) if candidate_set else tuple(legal_actions(enumeration_state))
     action_indices = tuple(candidate.action_index for candidate in candidate_set.candidates) if candidate_set else tuple(range(len(root_actions)))
     candidate_by_index = {} if candidate_set is None else {candidate.action_index: candidate for candidate in candidate_set.candidates}
     rollouts_per_candidate = case.rollouts_per_action + (
-        early_search_config.candidate_extra_rollouts if early_search and early_search_config is not None else 0
+        effective_early_search_config.candidate_extra_rollouts if effective_early_search else 0
     )
-    effective_late_search_config = late_search_config or LateSearchConfig()
-    effective_final_draw_auto_config = final_draw_auto_search_config or FinalDrawAutoSearchConfig()
 
     rng = random.Random(case.rng_seed)
     estimates: list[MoveEstimate] = []
@@ -542,7 +595,7 @@ def run_benchmark_case(
                 for _ in range(rollouts_per_candidate)
             )
             rollout_results = tuple(result.rollout_result for result in late_results)
-        elif final_draw_auto_search:
+        elif effective_final_draw_auto_search:
             late_results = tuple(
                 evaluate_final_draw_auto_root_action(
                     sample_state(observation, rng=rng).state,
@@ -570,9 +623,9 @@ def run_benchmark_case(
             score_root_action(
                 enumeration_state,
                 action,
-                config=root_action_risk_config,
+                config=effective_root_risk_config,
             )
-            if root_action_risk
+            if effective_root_action_risk
             else None
         )
         estimates.append(
@@ -612,6 +665,8 @@ def run_benchmark_case(
         elapsed_seconds=time.perf_counter() - start,
         ranked_actions=ranked_actions,
         action_diagnostics=tuple(diagnostics),
+        recommended_sub_policy=recommended_decision.sub_policy,
+        recommended_final_draw_auto_candidate_count=recommended_decision.final_draw_auto_candidate_count,
     )
 
 
@@ -962,6 +1017,38 @@ def _policy_name_for_final_draw_auto_search(
         return policy_name
     continuation = f",cont={config.continuation_rollouts}" if config.include_continuation else ""
     return f"{policy_name}+final-draw-auto[d={config.max_depth},n={config.max_nodes}{continuation}]"
+
+
+def _policy_name_for_solver_mode(policy_name: str, solver_mode: str) -> str:
+    if solver_mode == "manual":
+        return policy_name
+    return f"{policy_name}+{solver_mode}"
+
+
+def _recommended_decision(
+    state,
+    *,
+    solver_mode: str,
+    final_draw_auto_config: FinalDrawAutoSearchConfig,
+    recommended_root_risk: bool,
+    recommended_initial_early_search: bool,
+    recommended_final_draw_auto: bool,
+):
+    if solver_mode not in {"manual", "recommended"}:
+        raise ValueError("solver_mode must be one of: manual, recommended")
+    if solver_mode != "recommended":
+        from ofc_solver.recommended import RecommendedSolverDecision
+
+        return RecommendedSolverDecision(enabled=False, sub_policy=None)
+    return choose_recommended_solver_policy(
+        state,
+        config=RecommendedSolverConfig(
+            use_initial_early_search=recommended_initial_early_search,
+            use_root_risk=recommended_root_risk,
+            use_final_draw_auto=recommended_final_draw_auto,
+        ),
+        final_draw_auto_config=final_draw_auto_config,
+    )
 
 
 def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
