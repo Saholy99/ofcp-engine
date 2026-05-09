@@ -48,12 +48,16 @@ class FinalDrawAutoSearchConfig:
 
     max_depth: int = 0
     max_nodes: int = 64
+    include_continuation: bool = False
+    continuation_rollouts: int = 1
 
     def __post_init__(self) -> None:
         if self.max_depth < 0:
             raise ValueError("final_draw_auto_search max_depth must be non-negative")
         if self.max_nodes <= 0:
             raise ValueError("final_draw_auto_search max_nodes must be positive")
+        if self.continuation_rollouts <= 0:
+            raise ValueError("final_draw_auto_search continuation_rollouts must be positive")
 
 
 @dataclass(frozen=True)
@@ -85,6 +89,15 @@ class LateSearchResult:
     phase_auto_search_reason: str | None = None
     phase_auto_search_tree_nodes: int = 0
     phase_auto_search_depth: int = 0
+    current_hand_value: float = 0.0
+    continuation_aware: bool = False
+    continuation_triggered: bool = False
+    continuation_rollouts: int = 0
+    continuation_value: float = 0.0
+    continuation_reason: str | None = None
+    continuation_runtime_seconds: float = 0.0
+    terminal_state: GameState | None = field(default=None, compare=False, repr=False)
+    terminal_result: TerminalResult | None = field(default=None, compare=False, repr=False)
     runtime_seconds: float = field(default=0.0, compare=False)
 
 
@@ -388,6 +401,14 @@ def evaluate_final_draw_auto_root_action(
             ),
             policy=policy,
         )
+        if effective_config.include_continuation and result.activated:
+            result = _include_final_draw_continuation(
+                result,
+                perspective=perspective,
+                rng=rng,
+                policy=policy,
+                continuation_rollouts=effective_config.continuation_rollouts,
+            )
         return _annotate_phase_auto_result(result, assessment=assessment, activated=result.activated)
 
     start = time.perf_counter()
@@ -544,8 +565,85 @@ def _searched_result(
         depth_reached=stats.depth_reached,
         candidate_count=stats.candidate_count,
         terminal_evaluations=stats.terminal_evaluations,
+        current_hand_value=outcome.value,
+        terminal_state=outcome.terminal_state,
+        terminal_result=outcome.terminal_result,
         runtime_seconds=time.perf_counter() - runtime_start,
     )
+
+
+def _include_final_draw_continuation(
+    result: LateSearchResult,
+    *,
+    perspective: PlayerId,
+    rng: random.Random,
+    policy: RolloutPolicy | None,
+    continuation_rollouts: int,
+) -> LateSearchResult:
+    from ofc_solver.rollout import simulate_one_fantasyland_continuation
+
+    if result.terminal_state is None or result.terminal_result is None:
+        return replace(
+            result,
+            continuation_aware=True,
+            continuation_reason="missing-terminal-outcome",
+            rollout_result=result.rollout_result.with_final_draw_continuation(
+                enabled=True,
+                triggered=False,
+                rollouts=0,
+                continuation_value=0.0,
+                current_hand_value=result.current_hand_value,
+                total_value=result.current_hand_value,
+                reason="missing-terminal-outcome",
+            ),
+        )
+
+    fallback_policy = policy or HeuristicRolloutPolicy()
+    continuation_results = tuple(
+        simulate_one_fantasyland_continuation(
+            result.terminal_state,
+            result.terminal_result,
+            root_player=perspective,
+            rng=rng,
+            policy=fallback_policy,
+        )
+        for _ in range(continuation_rollouts)
+    )
+    triggered_count = sum(1 for item in continuation_results if item.triggered)
+    continuation_value = _mean(item.value for item in continuation_results)
+    continuation_runtime = sum(item.runtime_seconds for item in continuation_results)
+    reason = _continuation_reason(continuation_results)
+    current_hand_value = result.current_hand_value
+    total_value = current_hand_value + continuation_value
+    return replace(
+        result,
+        value=total_value,
+        rollout_result=result.rollout_result.with_final_draw_continuation(
+            enabled=True,
+            triggered=triggered_count > 0,
+            rollouts=triggered_count,
+            continuation_value=continuation_value,
+            current_hand_value=current_hand_value,
+            total_value=total_value,
+            runtime_seconds=continuation_runtime,
+            reason=reason,
+        ),
+        current_hand_value=current_hand_value,
+        continuation_aware=True,
+        continuation_triggered=triggered_count > 0,
+        continuation_rollouts=triggered_count,
+        continuation_value=continuation_value,
+        continuation_reason=reason,
+        continuation_runtime_seconds=continuation_runtime,
+        runtime_seconds=result.runtime_seconds + continuation_runtime,
+    )
+
+
+def _continuation_reason(results) -> str | None:
+    reasons = tuple(item.reason for item in results if item.reason is not None)
+    if not reasons:
+        return None
+    return ";".join(dict.fromkeys(reasons))
 
 
 def _fallback_result(
@@ -590,6 +688,10 @@ def _fallback_result(
         candidate_count=0 if stats is None else stats.candidate_count,
         terminal_evaluations=0 if stats is None else stats.terminal_evaluations,
         fallback_reason=reason,
+        current_hand_value=rollout_result.current_hand_value,
+        continuation_value=rollout_result.continuation_value,
+        continuation_triggered=rollout_result.continuation_hands_simulated > 0,
+        continuation_rollouts=rollout_result.continuation_hands_simulated,
         runtime_seconds=time.perf_counter() - runtime_start,
     )
 
@@ -618,6 +720,8 @@ def _rollout_result_from_terminal(
         both_players_fouled=root_breakdown.fouled and opponent_breakdown.fouled,
         root_player_next_fantasyland=terminal_state.next_hand_fantasyland[player_index(perspective)],
         opponent_next_fantasyland=terminal_state.next_hand_fantasyland[1 - player_index(perspective)],
+        final_draw_current_hand_value=value,
+        final_draw_total_value=value,
         late_search_activated=activated,
         late_search_mode=late_search_mode,
         late_search_nodes=stats.nodes,
@@ -638,6 +742,11 @@ def _breakdowns_for_player(result: TerminalResult, player_id: PlayerId):
     if PlayerId(result.right.player_id) == player_id:
         return result.right, result.left
     raise ValueError(f"Terminal result does not contain player {player_id.value}")
+
+
+def _mean(values) -> float:
+    values = tuple(float(value) for value in values)
+    return sum(values) / len(values)
 
 
 __all__ = [

@@ -1,0 +1,113 @@
+{
+  "state": {
+    "acting_player": "player_0",
+    "button": "player_1",
+    "deck": {
+      "undealt_cards": [
+        "8d",
+        "Qd",
+        "Ad",
+        "2h",
+        "3h",
+        "5h",
+        "6h",
+        "Qh",
+        "Ah",
+        "2s",
+        "3s",
+        "4s",
+        "5s",
+        "6s",
+        "8s",
+        "Ts",
+        "Qs",
+        "As"
+      ]
+    },
+    "hand_number": 5,
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "phase": "draw",
+    "players": [
+      {
+        "board": {
+          "bottom": [
+            "9h",
+            "9d",
+            "9s",
+            "6d"
+          ],
+          "middle": [
+            "Jh",
+            "Jd",
+            "Js",
+            "4h",
+            "4d"
+          ],
+          "top": [
+            "Kh",
+            "Kd"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [
+          "Ks",
+          "9c",
+          "7h"
+        ],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "2c",
+          "3c",
+          "4c"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "player_id": "player_0"
+      },
+      {
+        "board": {
+          "bottom": [
+            "7d",
+            "7s",
+            "Jc",
+            "Qc",
+            "Kc"
+          ],
+          "middle": [
+            "Th",
+            "Td",
+            "7c",
+            "8c",
+            "Tc"
+          ],
+          "top": [
+            "8h",
+            "5c",
+            "6c"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "Ac",
+          "2d",
+          "3d",
+          "5d"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 4,
+        "player_id": "player_1"
+      }
+    ]
+  },
+  "version": "1"
+}

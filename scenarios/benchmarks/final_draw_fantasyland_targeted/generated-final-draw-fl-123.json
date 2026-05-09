@@ -1,0 +1,113 @@
+{
+  "state": {
+    "acting_player": "player_1",
+    "button": "player_0",
+    "deck": {
+      "undealt_cards": [
+        "Qd",
+        "Kd",
+        "2h",
+        "3h",
+        "6h",
+        "Jh",
+        "Qh",
+        "Kh",
+        "2s",
+        "3s",
+        "4s",
+        "5s",
+        "6s",
+        "7s",
+        "9s",
+        "Js",
+        "Qs",
+        "Ks"
+      ]
+    },
+    "hand_number": 124,
+    "is_continuation_hand": false,
+    "next_hand_fantasyland": [
+      false,
+      false
+    ],
+    "phase": "draw",
+    "players": [
+      {
+        "board": {
+          "bottom": [
+            "7h",
+            "7d",
+            "Qc",
+            "Kc",
+            "Ac"
+          ],
+          "middle": [
+            "9h",
+            "9d",
+            "7c",
+            "9c",
+            "Jc"
+          ],
+          "top": [
+            "8c",
+            "5c",
+            "6c"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "3d",
+          "4d",
+          "6d",
+          "Jd"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 4,
+        "player_id": "player_0"
+      },
+      {
+        "board": {
+          "bottom": [
+            "Th",
+            "Td",
+            "Ts",
+            "2d"
+          ],
+          "middle": [
+            "8h",
+            "8d",
+            "8s",
+            "5h",
+            "5d"
+          ],
+          "top": [
+            "Ah",
+            "Ad"
+          ]
+        },
+        "concealed_fantasyland_board": null,
+        "concealed_fantasyland_discard": null,
+        "current_private_draw": [
+          "As",
+          "Tc",
+          "4h"
+        ],
+        "fantasyland_active": false,
+        "fantasyland_set_done": false,
+        "hidden_discards": [
+          "2c",
+          "3c",
+          "4c"
+        ],
+        "initial_placement_done": true,
+        "normal_draws_taken": 3,
+        "player_id": "player_1"
+      }
+    ]
+  },
+  "version": "1"
+}

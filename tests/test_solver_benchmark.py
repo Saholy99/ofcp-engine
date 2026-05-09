@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from ofc_analysis.cli import main
+from ofc_analysis.benchmark_generation import generate_final_draw_fantasyland_benchmark
 from ofc_analysis.render import render_benchmark_run
 from ofc_solver.benchmark import (
     compare_benchmark_runs,
@@ -258,6 +259,74 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertTrue(payload["final_draw_auto_search_enabled"])
         self.assertIn("phase_auto_search_activation_rate", payload["cases"][1]["action_diagnostics"][0])
         self.assertIn("top_action_phase_auto_search_activation_rate", payload["aggregate"])
+
+    def test_benchmark_solver_cli_accepts_final_draw_auto_continuation_options(self) -> None:
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exit_code = main(
+                [
+                    "benchmark-solver",
+                    str(BENCHMARK_MANIFEST),
+                    "--policy",
+                    "heuristic",
+                    "--final-draw-auto-search",
+                    "--final-draw-auto-max-depth",
+                    "1",
+                    "--final-draw-auto-max-nodes",
+                    "16",
+                    "--final-draw-auto-continuation",
+                    "--final-draw-continuation-rollouts",
+                    "1",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertTrue(payload["final_draw_auto_search_enabled"])
+        self.assertTrue(payload["final_draw_auto_include_continuation"])
+        self.assertEqual(1, payload["final_draw_continuation_rollouts"])
+        self.assertIn("final_draw_continuation_trigger_rate", payload["cases"][1]["action_diagnostics"][0])
+        self.assertIn("top_action_final_draw_continuation_trigger_rate", payload["aggregate"])
+
+    def test_benchmark_solver_cli_runs_targeted_final_draw_fantasyland_manifest(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            manifest_path = Path(temp_dir) / "manifest.json"
+            generate_final_draw_fantasyland_benchmark(
+                manifest_path=manifest_path,
+                scenario_dir=Path(temp_dir) / "cases",
+                seed="unit-final-fl-benchmark",
+                count=8,
+                rollouts=1,
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                exit_code = main(
+                    [
+                        "benchmark-solver",
+                        str(manifest_path),
+                        "--policy",
+                        "heuristic",
+                        "--final-draw-auto-search",
+                        "--final-draw-auto-continuation",
+                        "--final-draw-continuation-rollouts",
+                        "1",
+                        "--json",
+                    ]
+                )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr.getvalue())
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(8, payload["case_count"])
+        self.assertTrue(payload["final_draw_auto_include_continuation"])
+        self.assertGreater(payload["aggregate"]["final_draw_continuation_trigger_rate"], 0.0)
+        self.assertIn("mean_final_draw_continuation_value", payload["aggregate"])
 
     def test_benchmark_solver_cli_can_filter_by_tag(self) -> None:
         stdout = io.StringIO()

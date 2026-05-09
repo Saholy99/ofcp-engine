@@ -89,6 +89,13 @@ class BenchmarkActionDiagnostics:
     phase_auto_search_activation_rate: float
     mean_phase_auto_search_tree_nodes: float
     mean_phase_auto_search_depth: float
+    final_draw_continuation_aware_rate: float
+    final_draw_continuation_trigger_rate: float
+    mean_final_draw_continuation_rollouts: float
+    mean_final_draw_current_hand_value: float
+    mean_final_draw_continuation_value: float
+    mean_final_draw_total_value: float
+    mean_final_draw_continuation_runtime_seconds: float
 
 
 @dataclass(frozen=True)
@@ -137,6 +144,8 @@ class BenchmarkRun:
     final_draw_auto_search_enabled: bool = False
     final_draw_auto_max_depth: int | None = None
     final_draw_auto_max_nodes: int | None = None
+    final_draw_auto_include_continuation: bool = False
+    final_draw_continuation_rollouts: int = 0
 
     @property
     def case_count(self) -> int:
@@ -171,6 +180,13 @@ class BenchmarkAggregate:
     phase_auto_search_activation_rate: float
     mean_phase_auto_search_tree_nodes: float
     mean_phase_auto_search_depth: float
+    final_draw_continuation_aware_rate: float
+    final_draw_continuation_trigger_rate: float
+    mean_final_draw_continuation_rollouts: float
+    mean_final_draw_current_hand_value: float
+    mean_final_draw_continuation_value: float
+    mean_final_draw_total_value: float
+    mean_final_draw_continuation_runtime_seconds: float
     top_action_root_foul_rate: float
     top_action_opponent_foul_rate: float
     top_action_both_foul_rate: float
@@ -191,6 +207,13 @@ class BenchmarkAggregate:
     top_action_phase_auto_search_activation_rate: float
     top_action_mean_phase_auto_search_tree_nodes: float
     top_action_mean_phase_auto_search_depth: float
+    top_action_final_draw_continuation_aware_rate: float
+    top_action_final_draw_continuation_trigger_rate: float
+    top_action_mean_final_draw_continuation_rollouts: float
+    top_action_mean_final_draw_current_hand_value: float
+    top_action_mean_final_draw_continuation_value: float
+    top_action_mean_final_draw_total_value: float
+    top_action_mean_final_draw_continuation_runtime_seconds: float
     labeled_top1_rate: float | None
     labeled_top3_rate: float | None
     elapsed_seconds: float
@@ -450,6 +473,12 @@ def run_benchmark_manifest(
         final_draw_auto_search_enabled=final_draw_auto_search,
         final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
         final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
+        final_draw_auto_include_continuation=(
+            effective_final_draw_auto_config.include_continuation if final_draw_auto_search else False
+        ),
+        final_draw_continuation_rollouts=(
+            effective_final_draw_auto_config.continuation_rollouts if final_draw_auto_search else 0
+        ),
     )
 
 
@@ -931,7 +960,8 @@ def _policy_name_for_final_draw_auto_search(
 ) -> str:
     if not enabled:
         return policy_name
-    return f"{policy_name}+final-draw-auto[d={config.max_depth},n={config.max_nodes}]"
+    continuation = f",cont={config.continuation_rollouts}" if config.include_continuation else ""
+    return f"{policy_name}+final-draw-auto[d={config.max_depth},n={config.max_nodes}{continuation}]"
 
 
 def _parse_case(value: Mapping[str, Any], base_path: Path) -> BenchmarkCase:
@@ -989,6 +1019,11 @@ def _estimate(
         for reason in (result.phase_auto_search_reason for result in late_search_results)
         if reason is not None
     )
+    continuation_reasons = tuple(
+        reason
+        for reason in (result.continuation_reason for result in late_search_results)
+        if reason is not None
+    )
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
@@ -1017,6 +1052,18 @@ def _estimate(
         phase_auto_search_tree_nodes=sum(result.phase_auto_search_tree_nodes for result in late_search_results),
         phase_auto_search_depth=max((result.phase_auto_search_depth for result in late_search_results), default=0),
         late_search_runtime_seconds=sum(result.runtime_seconds for result in late_search_results),
+        final_draw_continuation_aware=any(result.continuation_aware for result in late_search_results),
+        final_draw_continuation_triggered=any(result.continuation_triggered for result in late_search_results),
+        final_draw_continuation_rollouts=sum(result.continuation_rollouts for result in late_search_results),
+        final_draw_current_hand_value=_mean_or_zero(result.current_hand_value for result in late_search_results),
+        final_draw_continuation_value=_mean_or_zero(result.continuation_value for result in late_search_results),
+        final_draw_total_value=_mean_or_zero(result.value for result in late_search_results),
+        final_draw_continuation_reason=(
+            ";".join(dict.fromkeys(continuation_reasons)) if continuation_reasons else None
+        ),
+        final_draw_continuation_runtime_seconds=sum(
+            result.continuation_runtime_seconds for result in late_search_results
+        ),
     )
 
 
@@ -1057,7 +1104,33 @@ def _diagnostics(
         phase_auto_search_activation_rate=_rate(result.phase_auto_search_activated for result in rollout_results),
         mean_phase_auto_search_tree_nodes=_mean(result.phase_auto_search_tree_nodes for result in rollout_results),
         mean_phase_auto_search_depth=_mean(result.phase_auto_search_depth for result in rollout_results),
+        final_draw_continuation_aware_rate=_rate(
+            result.final_draw_continuation_enabled for result in rollout_results
+        ),
+        final_draw_continuation_trigger_rate=_rate(
+            result.final_draw_continuation_triggered for result in rollout_results
+        ),
+        mean_final_draw_continuation_rollouts=_mean(
+            result.final_draw_continuation_rollouts for result in rollout_results
+        ),
+        mean_final_draw_current_hand_value=_mean(
+            result.final_draw_current_hand_value for result in rollout_results
+        ),
+        mean_final_draw_continuation_value=_mean(
+            result.final_draw_continuation_value for result in rollout_results
+        ),
+        mean_final_draw_total_value=_mean(result.final_draw_total_value for result in rollout_results),
+        mean_final_draw_continuation_runtime_seconds=_mean(
+            result.final_draw_continuation_runtime_seconds for result in rollout_results
+        ),
     )
+
+
+def _mean_or_zero(values) -> float:
+    values = tuple(float(value) for value in values)
+    if not values:
+        return 0.0
+    return sum(values) / len(values)
 
 
 def _mean(values) -> float:
@@ -1115,6 +1188,31 @@ def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
             "mean_phase_auto_search_tree_nodes",
         ),
         mean_phase_auto_search_depth=_weighted_diagnostic_rate(diagnostics, "mean_phase_auto_search_depth"),
+        final_draw_continuation_aware_rate=_weighted_diagnostic_rate(
+            diagnostics,
+            "final_draw_continuation_aware_rate",
+        ),
+        final_draw_continuation_trigger_rate=_weighted_diagnostic_rate(
+            diagnostics,
+            "final_draw_continuation_trigger_rate",
+        ),
+        mean_final_draw_continuation_rollouts=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_final_draw_continuation_rollouts",
+        ),
+        mean_final_draw_current_hand_value=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_final_draw_current_hand_value",
+        ),
+        mean_final_draw_continuation_value=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_final_draw_continuation_value",
+        ),
+        mean_final_draw_total_value=_weighted_diagnostic_rate(diagnostics, "mean_final_draw_total_value"),
+        mean_final_draw_continuation_runtime_seconds=_weighted_diagnostic_rate(
+            diagnostics,
+            "mean_final_draw_continuation_runtime_seconds",
+        ),
         top_action_root_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "root_foul_rate"),
         top_action_opponent_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "opponent_foul_rate"),
         top_action_both_foul_rate=_weighted_diagnostic_rate(top_diagnostics, "both_foul_rate"),
@@ -1168,6 +1266,34 @@ def _aggregate_benchmark_run(run: BenchmarkRun) -> BenchmarkAggregate:
             top_diagnostics,
             "mean_phase_auto_search_depth",
         ),
+        top_action_final_draw_continuation_aware_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "final_draw_continuation_aware_rate",
+        ),
+        top_action_final_draw_continuation_trigger_rate=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "final_draw_continuation_trigger_rate",
+        ),
+        top_action_mean_final_draw_continuation_rollouts=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_final_draw_continuation_rollouts",
+        ),
+        top_action_mean_final_draw_current_hand_value=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_final_draw_current_hand_value",
+        ),
+        top_action_mean_final_draw_continuation_value=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_final_draw_continuation_value",
+        ),
+        top_action_mean_final_draw_total_value=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_final_draw_total_value",
+        ),
+        top_action_mean_final_draw_continuation_runtime_seconds=_weighted_diagnostic_rate(
+            top_diagnostics,
+            "mean_final_draw_continuation_runtime_seconds",
+        ),
         labeled_top1_rate=_optional_boolean_rate(case.top1_agreement for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(case.top3_agreement for case in labeled_cases),
         elapsed_seconds=run.elapsed_seconds,
@@ -1214,6 +1340,31 @@ def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggrega
         phase_auto_search_activation_rate=_weighted_payload_rate(diagnostics, "phase_auto_search_activation_rate"),
         mean_phase_auto_search_tree_nodes=_weighted_payload_rate(diagnostics, "mean_phase_auto_search_tree_nodes"),
         mean_phase_auto_search_depth=_weighted_payload_rate(diagnostics, "mean_phase_auto_search_depth"),
+        final_draw_continuation_aware_rate=_weighted_payload_rate(
+            diagnostics,
+            "final_draw_continuation_aware_rate",
+        ),
+        final_draw_continuation_trigger_rate=_weighted_payload_rate(
+            diagnostics,
+            "final_draw_continuation_trigger_rate",
+        ),
+        mean_final_draw_continuation_rollouts=_weighted_payload_rate(
+            diagnostics,
+            "mean_final_draw_continuation_rollouts",
+        ),
+        mean_final_draw_current_hand_value=_weighted_payload_rate(
+            diagnostics,
+            "mean_final_draw_current_hand_value",
+        ),
+        mean_final_draw_continuation_value=_weighted_payload_rate(
+            diagnostics,
+            "mean_final_draw_continuation_value",
+        ),
+        mean_final_draw_total_value=_weighted_payload_rate(diagnostics, "mean_final_draw_total_value"),
+        mean_final_draw_continuation_runtime_seconds=_weighted_payload_rate(
+            diagnostics,
+            "mean_final_draw_continuation_runtime_seconds",
+        ),
         top_action_root_foul_rate=_weighted_payload_rate(top_diagnostics, "root_foul_rate"),
         top_action_opponent_foul_rate=_weighted_payload_rate(top_diagnostics, "opponent_foul_rate"),
         top_action_both_foul_rate=_weighted_payload_rate(top_diagnostics, "both_foul_rate"),
@@ -1264,6 +1415,34 @@ def _aggregate_benchmark_payload(payload: Mapping[str, Any]) -> BenchmarkAggrega
             top_diagnostics,
             "mean_phase_auto_search_depth",
         ),
+        top_action_final_draw_continuation_aware_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "final_draw_continuation_aware_rate",
+        ),
+        top_action_final_draw_continuation_trigger_rate=_weighted_payload_rate(
+            top_diagnostics,
+            "final_draw_continuation_trigger_rate",
+        ),
+        top_action_mean_final_draw_continuation_rollouts=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_final_draw_continuation_rollouts",
+        ),
+        top_action_mean_final_draw_current_hand_value=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_final_draw_current_hand_value",
+        ),
+        top_action_mean_final_draw_continuation_value=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_final_draw_continuation_value",
+        ),
+        top_action_mean_final_draw_total_value=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_final_draw_total_value",
+        ),
+        top_action_mean_final_draw_continuation_runtime_seconds=_weighted_payload_rate(
+            top_diagnostics,
+            "mean_final_draw_continuation_runtime_seconds",
+        ),
         labeled_top1_rate=_optional_boolean_rate(bool(case["top1_agreement"]) for case in labeled_cases),
         labeled_top3_rate=_optional_boolean_rate(bool(case["top3_agreement"]) for case in labeled_cases),
         elapsed_seconds=float(payload["elapsed_seconds"]),
@@ -1292,6 +1471,13 @@ def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> di
         "phase_auto_search_activation_rate",
         "mean_phase_auto_search_tree_nodes",
         "mean_phase_auto_search_depth",
+        "final_draw_continuation_aware_rate",
+        "final_draw_continuation_trigger_rate",
+        "mean_final_draw_continuation_rollouts",
+        "mean_final_draw_current_hand_value",
+        "mean_final_draw_continuation_value",
+        "mean_final_draw_total_value",
+        "mean_final_draw_continuation_runtime_seconds",
         "top_action_root_foul_rate",
         "top_action_opponent_foul_rate",
         "top_action_both_foul_rate",
@@ -1312,6 +1498,13 @@ def _aggregate_deltas(left: BenchmarkAggregate, right: BenchmarkAggregate) -> di
         "top_action_phase_auto_search_activation_rate",
         "top_action_mean_phase_auto_search_tree_nodes",
         "top_action_mean_phase_auto_search_depth",
+        "top_action_final_draw_continuation_aware_rate",
+        "top_action_final_draw_continuation_trigger_rate",
+        "top_action_mean_final_draw_continuation_rollouts",
+        "top_action_mean_final_draw_current_hand_value",
+        "top_action_mean_final_draw_continuation_value",
+        "top_action_mean_final_draw_total_value",
+        "top_action_mean_final_draw_continuation_runtime_seconds",
         "labeled_top1_rate",
         "labeled_top3_rate",
         "elapsed_seconds",

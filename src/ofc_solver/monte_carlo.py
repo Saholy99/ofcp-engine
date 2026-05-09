@@ -107,6 +107,12 @@ def rank_actions_from_state(
         final_draw_auto_search_enabled=final_draw_auto_search,
         final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
         final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
+        final_draw_auto_include_continuation=(
+            effective_final_draw_auto_config.include_continuation if final_draw_auto_search else False
+        ),
+        final_draw_continuation_rollouts=(
+            effective_final_draw_auto_config.continuation_rollouts if final_draw_auto_search else 0
+        ),
     )
 
 
@@ -186,6 +192,12 @@ def rank_actions_from_observation(
         final_draw_auto_search_enabled=final_draw_auto_search,
         final_draw_auto_max_depth=effective_final_draw_auto_config.max_depth if final_draw_auto_search else None,
         final_draw_auto_max_nodes=effective_final_draw_auto_config.max_nodes if final_draw_auto_search else None,
+        final_draw_auto_include_continuation=(
+            effective_final_draw_auto_config.include_continuation if final_draw_auto_search else False
+        ),
+        final_draw_continuation_rollouts=(
+            effective_final_draw_auto_config.continuation_rollouts if final_draw_auto_search else 0
+        ),
     )
 
 
@@ -272,6 +284,11 @@ def _estimate(
         for reason in (result.phase_auto_search_reason for result in late_search_results)
         if reason is not None
     )
+    continuation_reasons = tuple(
+        reason
+        for reason in (result.continuation_reason for result in late_search_results)
+        if reason is not None
+    )
     return MoveEstimate(
         action_index=action_index,
         action=encode_action(action_index, action),
@@ -300,7 +317,26 @@ def _estimate(
         phase_auto_search_tree_nodes=sum(result.phase_auto_search_tree_nodes for result in late_search_results),
         phase_auto_search_depth=max((result.phase_auto_search_depth for result in late_search_results), default=0),
         late_search_runtime_seconds=sum(result.runtime_seconds for result in late_search_results),
+        final_draw_continuation_aware=any(result.continuation_aware for result in late_search_results),
+        final_draw_continuation_triggered=any(result.continuation_triggered for result in late_search_results),
+        final_draw_continuation_rollouts=sum(result.continuation_rollouts for result in late_search_results),
+        final_draw_current_hand_value=_mean_or_zero(result.current_hand_value for result in late_search_results),
+        final_draw_continuation_value=_mean_or_zero(result.continuation_value for result in late_search_results),
+        final_draw_total_value=_mean_or_zero(result.value for result in late_search_results),
+        final_draw_continuation_reason=(
+            ";".join(dict.fromkeys(continuation_reasons)) if continuation_reasons else None
+        ),
+        final_draw_continuation_runtime_seconds=sum(
+            result.continuation_runtime_seconds for result in late_search_results
+        ),
     )
+
+
+def _mean_or_zero(values) -> float:
+    values = tuple(float(value) for value in values)
+    if not values:
+        return 0.0
+    return sum(values) / len(values)
 
 
 def _evaluate_root_action(

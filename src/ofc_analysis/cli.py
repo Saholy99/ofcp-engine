@@ -10,7 +10,10 @@ import sys
 from ofc.state import HandPhase, PlayerId
 from ofc.transitions import legal_actions
 from ofc_analysis.action_codec import encode_actions
-from ofc_analysis.benchmark_generation import generate_late_final_benchmark
+from ofc_analysis.benchmark_generation import (
+    generate_final_draw_fantasyland_benchmark,
+    generate_late_final_benchmark,
+)
 from ofc_analysis.models import RenderedOutput
 from ofc_analysis.observation import project_observation
 from ofc_analysis.play import run_play_hand
@@ -113,6 +116,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 final_draw_auto_search_config=FinalDrawAutoSearchConfig(
                     max_depth=args.final_draw_auto_max_depth,
                     max_nodes=args.final_draw_auto_max_nodes,
+                    include_continuation=args.final_draw_auto_continuation,
+                    continuation_rollouts=args.final_draw_continuation_rollouts,
                 ),
             )
             output = render_move_analysis(analysis, as_json=args.as_json)
@@ -156,6 +161,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 final_draw_auto_search_config=FinalDrawAutoSearchConfig(
                     max_depth=args.final_draw_auto_max_depth,
                     max_nodes=args.final_draw_auto_max_nodes,
+                    include_continuation=args.final_draw_auto_continuation,
+                    continuation_rollouts=args.final_draw_continuation_rollouts,
                 ),
             )
             output = render_benchmark_run(run, as_json=args.as_json)
@@ -283,6 +290,26 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "scenario_dir": str(summary.scenario_dir),
                 "case_count": summary.case_count,
                 "tag_counts": summary.tag_counts,
+            }
+            _emit(RenderedOutput(text=json.dumps(payload, indent=2), payload=payload), as_json=args.as_json)
+            return 0
+
+        if args.command == "generate-final-draw-fantasyland-benchmark":
+            summary = generate_final_draw_fantasyland_benchmark(
+                manifest_path=args.manifest,
+                scenario_dir=args.scenario_dir,
+                seed=args.seed,
+                count=args.count,
+                rollouts=args.rollouts,
+            )
+            payload = {
+                "manifest_path": str(summary.manifest_path),
+                "scenario_dir": str(summary.scenario_dir),
+                "case_count": summary.case_count,
+                "tag_counts": summary.tag_counts,
+                "legal_action_count": summary.legal_action_count,
+                "fantasyland_trigger_case_count": summary.fantasyland_trigger_case_count,
+                "fantasyland_trigger_action_count": summary.fantasyland_trigger_action_count,
             }
             _emit(RenderedOutput(text=json.dumps(payload, indent=2), payload=payload), as_json=args.as_json)
             return 0
@@ -508,6 +535,14 @@ def _build_parser() -> argparse.ArgumentParser:
     generate_benchmark.add_argument("--rollouts", type=int, default=1)
     generate_benchmark.add_argument("--json", action="store_true", dest="as_json")
 
+    generate_final_fl_benchmark = subparsers.add_parser("generate-final-draw-fantasyland-benchmark")
+    generate_final_fl_benchmark.add_argument("manifest")
+    generate_final_fl_benchmark.add_argument("--scenario-dir", required=True)
+    generate_final_fl_benchmark.add_argument("--seed", default="final-draw-fantasyland-targeted")
+    generate_final_fl_benchmark.add_argument("--count", type=int, default=150)
+    generate_final_fl_benchmark.add_argument("--rollouts", type=int, default=2)
+    generate_final_fl_benchmark.add_argument("--json", action="store_true", dest="as_json")
+
     play_hand = subparsers.add_parser(
         "play-hand",
         description=(
@@ -596,6 +631,17 @@ def _add_final_draw_auto_search_args(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument("--final-draw-auto-max-depth", type=int, default=0)
     parser.add_argument("--final-draw-auto-max-nodes", type=int, default=64)
+    parser.add_argument(
+        "--final-draw-auto-continuation",
+        action="store_true",
+        help="Include one immediate Fantasyland continuation convention in final-draw auto exact evaluation.",
+    )
+    parser.add_argument(
+        "--final-draw-continuation-rollouts",
+        type=int,
+        default=1,
+        help="Number of sampled immediate Fantasyland continuation hands for final-draw auto exact evaluation.",
+    )
 
 
 def _emit(output, *, as_json: bool) -> None:
