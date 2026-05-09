@@ -39,6 +39,7 @@ from ofc_solver.benchmark import (
     run_root_action_risk_ablation_benchmark,
     run_root_action_risk_benchmark,
 )
+from ofc_solver.full_hand_benchmark import run_full_hand_benchmark
 from ofc_solver.monte_carlo import rank_actions_from_observation
 from ofc_solver.policy_registry import POLICY_NAMES, policy_from_name
 from ofc_solver.early_search import EarlySearchConfig
@@ -119,6 +120,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     include_continuation=args.final_draw_auto_continuation,
                     continuation_rollouts=args.final_draw_continuation_rollouts,
                 ),
+                solver_mode=args.solver_mode,
+                recommended_root_risk=args.recommended_root_risk,
+                recommended_initial_early_search=args.recommended_initial_early_search,
+                recommended_final_draw_auto=args.recommended_final_draw_auto,
             )
             output = render_move_analysis(analysis, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
@@ -164,6 +169,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     include_continuation=args.final_draw_auto_continuation,
                     continuation_rollouts=args.final_draw_continuation_rollouts,
                 ),
+                solver_mode=args.solver_mode,
+                recommended_root_risk=args.recommended_root_risk,
+                recommended_initial_early_search=args.recommended_initial_early_search,
+                recommended_final_draw_auto=args.recommended_final_draw_auto,
             )
             output = render_benchmark_run(run, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
@@ -265,6 +274,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             output = render_root_action_risk_ablation_benchmark(benchmark, as_json=args.as_json)
             _emit(output, as_json=args.as_json)
+            return 0
+
+        if args.command == "benchmark-full-hands":
+            benchmark = run_full_hand_benchmark(
+                player_0_policy=args.player_0_policy,
+                player_1_policy=args.player_1_policy,
+                hand_count=args.hands,
+                seed=args.seed,
+                rollouts_per_action=args.rollouts,
+            )
+            payload = benchmark.as_dict()
+            _emit(RenderedOutput(text=json.dumps(payload, indent=2, sort_keys=True), payload=payload), as_json=args.as_json)
             return 0
 
         if args.command == "compare-benchmarks":
@@ -371,6 +392,7 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_draw_safe_candidate_args(solve_move)
     _add_late_search_args(solve_move)
     _add_final_draw_auto_search_args(solve_move)
+    _add_solver_mode_args(solve_move)
     solve_move.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_solver = subparsers.add_parser("benchmark-solver")
@@ -395,7 +417,16 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_draw_safe_candidate_args(benchmark_solver)
     _add_late_search_args(benchmark_solver)
     _add_final_draw_auto_search_args(benchmark_solver)
+    _add_solver_mode_args(benchmark_solver)
     benchmark_solver.add_argument("--json", action="store_true", dest="as_json")
+
+    benchmark_full_hands = subparsers.add_parser("benchmark-full-hands")
+    benchmark_full_hands.add_argument("--player-0-policy", choices=("baseline", "recommended"), required=True)
+    benchmark_full_hands.add_argument("--player-1-policy", choices=("baseline", "recommended"), required=True)
+    benchmark_full_hands.add_argument("--hands", type=int, required=True)
+    benchmark_full_hands.add_argument("--seed", required=True)
+    benchmark_full_hands.add_argument("--rollouts", type=int, default=1)
+    benchmark_full_hands.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_early_search = subparsers.add_parser("benchmark-early-search")
     benchmark_early_search.add_argument("manifest")
@@ -633,14 +664,48 @@ def _add_final_draw_auto_search_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--final-draw-auto-max-nodes", type=int, default=64)
     parser.add_argument(
         "--final-draw-auto-continuation",
-        action="store_true",
-        help="Include one immediate Fantasyland continuation convention in final-draw auto exact evaluation.",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Include one immediate Fantasyland continuation convention in final-draw auto exact evaluation "
+            "(default: enabled). Use --no-final-draw-auto-continuation for current-hand-only diagnostics."
+        ),
     )
     parser.add_argument(
         "--final-draw-continuation-rollouts",
         type=int,
         default=1,
         help="Number of sampled immediate Fantasyland continuation hands for final-draw auto exact evaluation.",
+    )
+
+
+def _add_solver_mode_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--solver-mode",
+        choices=("manual", "recommended"),
+        default="manual",
+        help="Use manual flags or the recommended phase-gated solver policy.",
+    )
+    parser.add_argument(
+        "--recommended-no-root-risk",
+        action="store_false",
+        dest="recommended_root_risk",
+        default=True,
+        help="Disable cleaned root-risk inside --solver-mode recommended.",
+    )
+    parser.add_argument(
+        "--recommended-no-initial-early-search",
+        action="store_false",
+        dest="recommended_initial_early_search",
+        default=True,
+        help="Disable initial-deal early-search inside --solver-mode recommended.",
+    )
+    parser.add_argument(
+        "--recommended-no-final-draw-auto",
+        action="store_false",
+        dest="recommended_final_draw_auto",
+        default=True,
+        help="Disable final-draw auto-search inside --solver-mode recommended.",
     )
 
 

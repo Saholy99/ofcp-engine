@@ -359,7 +359,6 @@ class AnalysisCliTest(unittest.TestCase):
                     "1",
                     "--final-draw-auto-max-nodes",
                     "16",
-                    "--final-draw-auto-continuation",
                     "--final-draw-continuation-rollouts",
                     "1",
                     "--json",
@@ -374,6 +373,73 @@ class AnalysisCliTest(unittest.TestCase):
         self.assertEqual(1, payload["final_draw_continuation_rollouts"])
         self.assertIn("final_draw_continuation_triggered", payload["ranked_actions"][0])
         self.assertTrue(any(action["final_draw_continuation_triggered"] for action in payload["ranked_actions"]))
+
+    def test_solve_move_final_draw_auto_current_hand_only_diagnostic_flag(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            scenario_path = self._write_scenario(
+                temp_dir,
+                scenario_payload_from_state(solver_final_draw_state(enters_fantasyland=True)),
+            )
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "solve-move",
+                    str(scenario_path),
+                    "--observer",
+                    "player_0",
+                    "--rollouts",
+                    "1",
+                    "--seed",
+                    "final-current-only-cli",
+                    "--policy",
+                    "heuristic",
+                    "--final-draw-auto-search",
+                    "--final-draw-auto-max-depth",
+                    "1",
+                    "--final-draw-auto-max-nodes",
+                    "16",
+                    "--no-final-draw-auto-continuation",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertTrue(payload["final_draw_auto_search_enabled"])
+        self.assertFalse(payload["final_draw_auto_include_continuation"])
+        self.assertFalse(any(action["final_draw_continuation_aware"] for action in payload["ranked_actions"]))
+
+    def test_solve_move_recommended_mode_outputs_phase_diagnostics(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            scenario_path = self._write_scenario(temp_dir, self._initial_payload())
+
+            exit_code, stdout, stderr = self._run_cli(
+                [
+                    "solve-move",
+                    str(scenario_path),
+                    "--observer",
+                    "player_1",
+                    "--rollouts",
+                    "1",
+                    "--seed",
+                    "recommended-cli",
+                    "--policy",
+                    "heuristic",
+                    "--solver-mode",
+                    "recommended",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stderr)
+        payload = json.loads(stdout)
+        self.assertEqual("recommended", payload["solver_mode"])
+        self.assertEqual("initial_deal_early_search", payload["recommended_sub_policy"])
+        self.assertTrue(payload["recommended_solver_enabled"])
+        self.assertTrue(payload["early_search_enabled"])
+        self.assertTrue(payload["root_action_risk_enabled"])
 
     def test_solve_move_rejects_non_acting_observer(self) -> None:
         scenario_path = Path("scenarios/regression/immediate_scoring.json")
