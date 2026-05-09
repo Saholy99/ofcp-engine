@@ -20,9 +20,9 @@ OFC placement quality.
 Added a benchmark manifest and CLI workflow:
 
 ```bash
-python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_diagnostics.json --policy random --json
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmark_suites/solver_diagnostics.json --policy random --json
 python3 -m ofc_solver.benchmark_corpus
-python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_expansive.json --policy random --json
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmark_suites/solver_expansive.json --policy random --json
 ```
 
 The harness records:
@@ -63,7 +63,7 @@ Commands:
 
 ```bash
 python3 -m ofc_analysis.cli solve-move scenarios/regression/immediate_scoring.json --observer player_0 --rollouts 100 --seed 123 --policy heuristic
-python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmarks/solver_diagnostics.json --policy heuristic --json
+python3 -m ofc_analysis.cli benchmark-solver scenarios/benchmark_suites/solver_diagnostics.json --policy heuristic --json
 ```
 
 ## Heuristic Rollout Policy V1.1

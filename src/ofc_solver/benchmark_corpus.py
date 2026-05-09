@@ -36,7 +36,7 @@ class CorpusCase:
 
 
 def write_expansive_benchmark_corpus(
-    output_dir: Path = Path("scenarios/benchmarks"),
+    output_dir: Path = Path("scenarios/benchmark_suites"),
     *,
     manifest_name: str = "solver_expansive.json",
     generated_dir_name: str = "generated",

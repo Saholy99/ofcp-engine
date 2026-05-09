@@ -373,7 +373,7 @@ def _select_action(
 
 
 def _write_traces(benchmark: FullHandBenchmark, trace_dir: Path | str | None) -> None:
-    target_dir = Path(trace_dir) if trace_dir is not None else Path("reports/benchmark_outputs/full_hand_traces")
+    target_dir = Path(trace_dir) if trace_dir is not None else Path("reports/raw_benchmark_results/full_hand_traces")
     target_dir.mkdir(parents=True, exist_ok=True)
     for index, hand in enumerate(benchmark.hands):
         trace_path = target_dir / f"hand_{index:04d}.json"

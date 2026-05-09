@@ -22,7 +22,7 @@ from ofc_solver.full_hand_benchmark import run_full_hand_benchmark
 
 
 FIXTURE_DIR = Path("scenarios/regression")
-BENCHMARK_MANIFEST = Path("scenarios/benchmarks/solver_diagnostics.json")
+BENCHMARK_MANIFEST = Path("scenarios/benchmark_suites/solver_diagnostics.json")
 
 
 class SolverBenchmarkTest(unittest.TestCase):
