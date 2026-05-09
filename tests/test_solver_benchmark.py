@@ -395,6 +395,47 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual(first.deterministic_payload(), second.deterministic_payload())
         self.assertEqual(2, first.hand_count)
         self.assertTrue(first.zero_sum_consistent)
+        self.assertIn("standard_error_player_0_points", first.as_dict())
+
+    def test_full_hand_parallel_matches_serial_under_fixed_seed(self) -> None:
+        serial = run_full_hand_benchmark(
+            player_0_policy="baseline",
+            player_1_policy="recommended",
+            hand_count=2,
+            seed="full-hand-parallel-unit",
+            rollouts_per_action=1,
+            jobs=1,
+        )
+        parallel = run_full_hand_benchmark(
+            player_0_policy="baseline",
+            player_1_policy="recommended",
+            hand_count=2,
+            seed="full-hand-parallel-unit",
+            rollouts_per_action=1,
+            jobs=2,
+        )
+
+        self.assertEqual(serial.deterministic_payload(), parallel.deterministic_payload())
+
+    def test_full_hand_trace_output_writes_per_hand_json(self) -> None:
+        with TemporaryDirectory() as temp_dir:
+            benchmark = run_full_hand_benchmark(
+                player_0_policy="baseline",
+                player_1_policy="recommended",
+                hand_count=1,
+                seed="full-hand-trace-unit",
+                rollouts_per_action=1,
+                save_traces=True,
+                trace_dir=Path(temp_dir),
+            )
+            traces = list(Path(temp_dir).glob("*.json"))
+            payload = json.loads(traces[0].read_text(encoding="utf-8"))
+
+        self.assertEqual(1, benchmark.hand_count)
+        self.assertEqual(1, len(traces))
+        self.assertIn("initial_early_search_activations", payload)
+        self.assertIn("final_draw_auto_activations", payload)
+        self.assertIn("continuation_aware_final_draw_activations", payload)
 
     def test_benchmark_full_hands_cli_outputs_json(self) -> None:
         stdout = io.StringIO()
@@ -414,6 +455,9 @@ class SolverBenchmarkTest(unittest.TestCase):
                     "full-hand-cli",
                     "--rollouts",
                     "1",
+                    "--jobs",
+                    "1",
+                    "--summary-only",
                     "--json",
                 ]
             )
@@ -424,6 +468,8 @@ class SolverBenchmarkTest(unittest.TestCase):
         self.assertEqual(1, payload["hand_count"])
         self.assertTrue(payload["zero_sum_consistent"])
         self.assertEqual("recommended", payload["player_1_policy"])
+        self.assertNotIn("hands", payload)
+        self.assertIn("standard_error_player_0_points", payload)
 
     def test_benchmark_solver_cli_can_filter_by_tag(self) -> None:
         stdout = io.StringIO()

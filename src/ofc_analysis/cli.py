@@ -283,8 +283,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 hand_count=args.hands,
                 seed=args.seed,
                 rollouts_per_action=args.rollouts,
+                jobs=args.jobs,
+                save_traces=args.save_traces,
+                trace_dir=args.trace_dir,
+                max_seconds=args.max_seconds,
             )
-            payload = benchmark.as_dict()
+            payload = benchmark.as_dict(include_hands=not args.summary_only)
             _emit(RenderedOutput(text=json.dumps(payload, indent=2, sort_keys=True), payload=payload), as_json=args.as_json)
             return 0
 
@@ -426,6 +430,12 @@ def _build_parser() -> argparse.ArgumentParser:
     benchmark_full_hands.add_argument("--hands", type=int, required=True)
     benchmark_full_hands.add_argument("--seed", required=True)
     benchmark_full_hands.add_argument("--rollouts", type=int, default=1)
+    benchmark_full_hands.add_argument("--jobs", type=int, default=1)
+    benchmark_full_hands.add_argument("--save-traces", action="store_true")
+    benchmark_full_hands.add_argument("--trace-dir")
+    benchmark_full_hands.add_argument("--summary-only", action="store_true")
+    benchmark_full_hands.add_argument("--max-seconds", type=float)
+    benchmark_full_hands.add_argument("--quiet", action="store_true")
     benchmark_full_hands.add_argument("--json", action="store_true", dest="as_json")
 
     benchmark_early_search = subparsers.add_parser("benchmark-early-search")
